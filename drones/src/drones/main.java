@@ -1,9 +1,13 @@
 package drones;
 
 import java.io.File;
+import java.util.concurrent.Future;
 
 import com.graphhopper.GraphHopper;
+import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
+
+import drones.routing.RoutingHandler;
 
 /**
  * Main startup sequence.
@@ -13,6 +17,7 @@ import com.graphhopper.routing.util.EncodingManager;
 public class main {
 	
 	private static GraphHopper hopper;
+	private static RoutingHandler router;
 
 	/**
 	 * Entry point.
@@ -34,8 +39,30 @@ public class main {
 		hopper.importOrLoad();
 		System.out.println("Graph loaded.");
 		
-		// Test calculation of route
+		// Initialise routing handler
+		router = new RoutingHandler(hopper);
 		
+		// Test calculation of route
+		Future<PathWrapper> route = router.calculate(53.955391, -1.078967, 10.0);
+		System.out.print("Calculating route");
+		while(!route.isDone()) {
+			System.out.print(".");
+			try {
+				Thread.sleep(100);
+			} catch (Exception e) {
+				System.err.println("wtf?");
+				System.err.println(e.getMessage());
+			}
+		}
+		System.out.print("\n");
+		try {
+			PathWrapper path = route.get();
+			System.out.println("Route calculated!");
+			System.out.println("Distance: " + path.getDistance() + "m");
+			System.out.println("Waypoints: " + path.getPoints().toString());
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+		}
 	}
 
 }

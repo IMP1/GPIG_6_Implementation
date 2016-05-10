@@ -108,7 +108,7 @@ public class RoutingHandler {
 			}
 
 			// Return best route
-			return rsp.getBest();
+			return rsp.getBest(); // TODO: Add destination point as graphhopper only routes to nearest node?
 		}
 	}
 }
