@@ -8,9 +8,9 @@ import java.util.concurrent.Future;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.GraphHopper;
 import com.graphhopper.PathWrapper;
 
+import drones.Drone;
 import drones.sensors.SensorInterface;
 
 /**
@@ -23,19 +23,13 @@ import drones.sensors.SensorInterface;
  */
 public class RoutingHandler {
 	
-	// Private reference to the shared map
-	private GraphHopper map;
 	// Thread pool available
 	private ExecutorService threadPool;
-	// Navigation component to direct
-	// TODO: Implement and reference nav module
 
 	/**
-	 * Public constructor
-	 * @param hopper Shared map to route over
+	 * Public constructor. Initialises thread pool.
 	 */
-	public RoutingHandler(GraphHopper hopper) {
-		map = hopper;
+	public RoutingHandler() {
 		threadPool = Executors.newFixedThreadPool(2);
 	}
 	
@@ -48,7 +42,7 @@ public class RoutingHandler {
 	 * 		route upon completion
 	 */
 	public Future<PathWrapper> calculate(double lat, double lng, double radius) {
-		Callable<PathWrapper> task = new Router(lat, lng, radius, map);
+		Callable<PathWrapper> task = new Router(lat, lng, radius);
 		return threadPool.submit(task);
 	}
 
@@ -61,16 +55,27 @@ public class RoutingHandler {
 	 */
 	public void go(double lat, double lng, double radius) {
 		// Start a new thread to automatically handle routing completion
-		
+		Executors.newSingleThreadExecutor().execute(new Runnable() {
+		    @Override 
+		    public void run() {
+		    	Callable<PathWrapper> task = new Router(lat, lng, radius);
+		    	Future<PathWrapper> route = threadPool.submit(task);
+		    	try {
+		    		// Block until complete
+		    		Drone.nav().redirect(route.get(), lat, lng, radius);
+		    	} catch (Exception e) {
+		    		System.err.println(e.getMessage());
+		    	}
+		    }
+		});
 	}
 	
 	/**
 	 * Routing delegate.
 	 */
+	@SuppressWarnings("unused")
 	private class Router implements Callable<PathWrapper> {
 
-		// Map to route over
-		private GraphHopper map;
 		// Destination parameters
 		double lat, lng, radius;
 		
@@ -79,13 +84,11 @@ public class RoutingHandler {
 	 	 * @param lat Destination latitude in degrees
 	 	 * @param lng Estimated carrying capacity of a west african swallow
 	 	 * @param radius Radius size of area to scan
-	 	 * @param map Map over which to route
 	 	 */
-		public Router(double lat, double lng, double radius, GraphHopper map) {
+		public Router(double lat, double lng, double radius) {
 			this.lat = lat;
 			this.lng = lng;
 			this.radius = radius;
-			this.map = map;
 		}
 		
 		/**
@@ -98,7 +101,7 @@ public class RoutingHandler {
 			    setWeighting("fastest").
 			    setVehicle("foot").
 			    setLocale(Locale.UK);
-			GHResponse rsp = map.route(req);
+			GHResponse rsp = Drone.map().route(req);
 
 			// Log errors and return null result if so
 			if(rsp.hasErrors()) {
@@ -108,7 +111,7 @@ public class RoutingHandler {
 			}
 
 			// Return best route
-			return rsp.getBest(); // TODO: Add destination point as graphhopper only routes to nearest node?
+			return rsp.getBest();
 		}
 	}
 }
