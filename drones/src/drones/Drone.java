@@ -7,9 +7,9 @@ import com.graphhopper.GraphHopper;
 import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 
+import drones.mesh.MeshInterfaceThread;
 import drones.navigation.NavigationThread;
 import drones.routing.RoutingHandler;
-import drones.scanner.ScannerHandler;
 
 /**
  * Main startup sequence and singleton handler.
@@ -21,6 +21,7 @@ public class Drone {
 	// Singleton instances
 	private static GraphHopper map = null;
 	private static NavigationThread navThread = null;
+	private static MeshInterfaceThread meshThread = null;
 	
 	// Singleton accessors
 	// TODO: Handle synchronous read / write access to map
@@ -57,6 +58,10 @@ public class Drone {
 		// Initialise and release navigation thread
 		navThread = new NavigationThread();
 		navThread.start();
+		
+		// Initialise and begin mesh interface thread
+		meshThread = new MeshInterfaceThread();
+		meshThread.start();
 		
 		// Test calculation of route
 		Future<PathWrapper> route = router.calculate(53.955391, -1.078967, 10.0);
