@@ -22,11 +22,22 @@
 <div id='map'></div>
 <div id='controls'>
     <div id='filter-group' class='filter-group'>
-        <h1>Control Units</h2>
+        <h1>Search Units</h2>
     </div>
     <div id='search-areas' class='search-areas'>
         <h1>Search Areas</h2>
-        
+    </div>
+    <div id='additional-controls' class='additional-controls'>
+        <h1>Unit Controls</h2>
+        <button>
+            Assign Search Areas
+        </button>
+        <button>
+            Clear Search Areas
+        </button>
+        <button>
+            Recall All Search Units
+        </button>
     </div>
     
 </div>
@@ -65,16 +76,97 @@
       height: 100%;
     }
     
-    .search-areas{
+    .additional-controls{
         float:left;
         font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
         font-weight: 600;
-        width: 25%;
+        width: 29%;
         height:100%;
         text-align:center;
         border-right: 1px solid rgba(255,255,255,.2);
         overflow:scroll;
     }
+    
+    .search-areas{
+        float:left;
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        font-weight: 600;
+        width: 30%;
+        height:100%;
+        text-align:center;
+        border-right: 1px solid rgba(255,255,255,.2);
+        overflow:scroll;
+    }
+    
+        .search-areas button{
+            width:50%;
+            top:90%;
+            bottom:0;
+            float:left;
+        }
+        
+        .search-areas .search-area{
+            width:100%;
+/*            background:red;*/
+            height:70px;
+            overflow:hidden;
+            border-bottom: 1px solid rgba(255,255,255,.2);
+            border-top: 1px solid rgba(255,255,255,.2);
+        }
+        
+            .search-areas .search-area .header{
+                float:left;
+                width:15%;
+                height:100%;
+/*                background:green;*/
+    	        background:rgba(255, 255, 255, .1);
+                line-height:100%;
+                padding-top:10px;
+                font-size:50px;
+            }
+            
+            .search-areas .search-area .drone-assignment{
+                float:left;
+                width:10%;
+                
+                height:100%;
+                line-height:100%;
+                font-size:30px;
+            }
+            
+                .search-areas .search-area .drone-assignment .arrow{
+                    float:left;
+                    width:100%;
+                    height:50%;
+                    font-size:20px;
+                    line-height:35px;
+                }
+                
+            .search-areas .search-area .info{
+                float:left;
+                width:75%;
+                height:20px;
+/*                text-align:center;*/
+                text-transform: capitalize;
+                color:596074;
+            }
+            
+                .search-areas .search-area .info .icon {
+                    float:left;
+/*                    font-size: 10px;*/
+                    width:10%;
+                    height:100%;
+                    line-height:20px;
+                }
+                
+                .search-areas .search-area .info .text {
+                    float:left;
+/*                    font-size: 10px;*/
+                    height:100%;
+                    
+                    text-align:left;
+                    line-height:20px;
+                }
     
     .filter-group {
         float:left;
@@ -83,8 +175,6 @@
         width: 40%;
         height:100%;
         text-align:center;
-/*        color: #fff;*/
-/*        border-style: solid;*/
         border-right: 1px solid rgba(255,255,255,.2);
         overflow:scroll;
     }
@@ -101,14 +191,12 @@
        
         display: inline-block;;
         cursor: pointer;
-/*        background:#1d2130;*/
     }
     
     .filter-group .unit .info{
         float:left;
         width:30%;
         height:100%;
-/*        background:red;*/
         text-align:center;
         text-transform: capitalize;
         color:596074;
@@ -134,14 +222,12 @@
         float:left;
         width:70%;
         height:100%;
-/*        background:red;*/
     }
         
         .filter-group .unit .stats .stat{
             float:left;
             width:100%;
             height:20px;
-/*            background:blue;*/
         }
         
         .filter-group .unit .stats .stat .icon{
@@ -301,27 +387,17 @@ function addNewUnit(name, symbol, coordinates){
                 unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
                 
         }
-
-
-        // When the checkbox changes, update the visibility of the layer.
+        
         unit_element.addEventListener('click', function(e) {
-            //map.setCenter(unit.geometry.coordinates);
             
             map.flyTo({
-                // These options control the ending camera position: centered at
-                // the target, at zoom level 9, and north up.
                 center: offsetCoordinates(unit.geometry.coordinates),
                 zoom: defaultZoom,
                 bearing: 0,
         
-                // These options control the flight curve, making it move
-                // slowly and zoom out almost completely before starting
-                // to pan.
-                speed: 0.6, // make the flying slow
-                curve: 1, // change the speed at which it zooms out
+                speed: 0.6, 
+                curve: 1, 
         
-                // This can be any easing function: it takes a number between
-                // 0 and 1 and returns another number between 0 and 1.
                 easing: function (t) {
                     return t;
                 }
@@ -341,6 +417,55 @@ function setPosition(lat, long, marker) {
     marker.geometry.coordinates = [lat, long];
 }
 
+function addNewSearchArea(id){
+    
+    var searchAreas = document.getElementById('search-areas');
+    
+    var search_area = document.createElement('div');
+//        search_area.id = layerID;
+        search_area.className = 'search-area';
+//    	search_area.setAttribute('for', layerID);
+        searchAreas.appendChild(search_area);
+        
+        var search_area_header = document.createElement('div');
+        search_area_header.className = 'header';  
+        search_area_header.textContent = id;      
+        search_area.appendChild(search_area_header);
+        
+        var search_area_drone_numbers = document.createElement('div');
+        search_area_drone_numbers.className = 'drone-assignment';        
+        search_area.appendChild(search_area_drone_numbers);
+        
+            var search_area_drone_arrow_up = document.createElement('div');
+            search_area_drone_arrow_up.className = 'arrow fa fa-arrow-up';        
+            search_area_drone_numbers.appendChild(search_area_drone_arrow_up);
+            
+            var search_area_drone_arrow_down = document.createElement('div');
+            search_area_drone_arrow_down.className = 'arrow fa fa-arrow-down';        
+            search_area_drone_numbers.appendChild(search_area_drone_arrow_down);
+            
+        var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
+        var unit_text  = ['Assigned 2 Drones', 'Coordinates : [100, 200]', 'Radius : 250m'];
+        
+        for(var i = 0; i<3; i++){
+        
+            var unit_element_stats_stat = document.createElement('div');
+            unit_element_stats_stat.className = 'info';
+            search_area.appendChild(unit_element_stats_stat);
+            
+//                var unit_element_stats_stat_icon = document.createElement('div');
+//                unit_element_stats_stat_icon.className = 'icon fa '+unit_icons[i];
+//                unit_element_stats_stat.appendChild(unit_element_stats_stat_icon);
+                
+                var unit_element_stats_stat_text = document.createElement('div');
+                unit_element_stats_stat_text.className = 'text';
+                unit_element_stats_stat_text.textContent = unit_text[i];
+                unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
+                
+        }
+
+}
+
 map.on('load', function () {
     
     map.addSource("markers", {
@@ -353,22 +478,13 @@ map.on('load', function () {
     addNewUnit('drone2', 'marker', [-1.08525, 53.957266]);
     addNewUnit('drone3', 'marker', [-1.0925, 53.95989]);
    
-   map['doubleClickZoom'].disable();
+    map['doubleClickZoom'].disable();
    
-   //map.dragPan.disable();
-//   map.scrollZoom.disable();
-   
-    //window.setInterval(setPosition, 10);
-});
+    // Search Areas Test
+    
+    addNewSearchArea(3); 
 
-//map.on('mousemove', function (e) {
-//    document.getElementById('info').innerHTML =
-//        // e.point is the x, y coordinates of the mousemove event relative
-//        // to the top-left corner of the map
-//        JSON.stringify(e.point) + '<br />' +
-//            // e.lngLat is the longitude, latitude geographical position of the event
-//        JSON.stringify(e.lngLat);
-//});
+});
 
 // CIRCLES
  
