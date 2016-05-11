@@ -1,26 +1,30 @@
 package network;
 
+import java.util.Arrays;
+
 public class Report extends Message {
 
-	protected final static String PREFIX = "INFO:";
-	private final static String SEPARATOR = ", ";
+	protected final static String PREFIX = "INFO";
 	
 	String latitude;
 	String longitude;
 	String batteryStatus;
 	String status;
 	
-	public Report(String latitude, String longitude, String batteryStatus, String status) {
+	public Report(String id, String timestamp, String latitude, String longitude, String batteryStatus, String status) {
+		super(id, timestamp);
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.batteryStatus = batteryStatus;
 		this.status = status;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(PREFIX);
+		sb.append(id); sb.append(SEPARATOR);
+		sb.append(timestamp); sb.append(SEPARATOR);
+		sb.append(PREFIX); sb.append(SEPARATOR);
 		sb.append(latitude); sb.append(SEPARATOR);
 		sb.append(longitude); sb.append(SEPARATOR);
 		sb.append(batteryStatus);
@@ -28,16 +32,19 @@ public class Report extends Message {
 		return sb.toString();
 	}
 	
-	public static Report fromString(String message) {
+	public Report(String message) {
+		message = setup(this, message);
 		if (!message.startsWith(PREFIX)) throw new RuntimeException();
-		message = message.substring(PREFIX.length());
+		message = message.substring(PREFIX.length() + 1);
 		String data[] = message.split(SEPARATOR);
+		System.out.println(message);
+		System.out.println(Arrays.toString(data));
+		// Starting at 2 because of ID and timestamp.
 		if (data.length != 4) throw new RuntimeException();
-		String latitude = data[0];
-		String longitude = data[1];
-		String batteryStatus = data[2];
-		String status = data[4];
-		return new Report(latitude, longitude, batteryStatus, status);
+		latitude = data[0];
+		longitude = data[1];
+		batteryStatus = data[2];
+		status = data[3];
 	}
 
 }
