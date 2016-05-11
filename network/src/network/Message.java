@@ -21,8 +21,8 @@ public abstract class Message {
 		} 
 	}
 	
-	protected String id;
-	protected String timestamp;
+	public String id;
+	public String timestamp;
 	
 	Message(String id, String timestamp) {
 		this.id = id;

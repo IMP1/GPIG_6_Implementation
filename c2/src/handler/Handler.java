@@ -12,15 +12,15 @@ import datastore.Datastore;
 public abstract class Handler implements Runnable {
 	
 	protected Socket socket;
-	private Datastore datastore;
-	private BufferedReader reader;
+	protected Datastore datastore;
+	protected BufferedReader reader;
 	protected PrintWriter writer;
 
 	public Handler(Socket socket, Datastore datastore) throws IOException {
 		this.socket = socket;
 		this.datastore = datastore;
-		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		this.writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 	}
 
 }

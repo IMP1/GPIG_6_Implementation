@@ -6,11 +6,11 @@ public class ScanData extends Message {
 	private final static String DISTANCE_SEPARATOR = ",";
 
 	
-	String latitude;
-	String longitude;
-	String depth;
-	String flowRate;
-	String[] distanceReadings;
+	public String latitude;
+	public String longitude;
+	public String depth;
+	public 	String flowRate;
+	public String[] distanceReadings;
 	
 	public ScanData(String id, String timestamp, String latitude, String longitude, String depth, String flowRate, String[] distanceReadings) {
 		super(id, timestamp);

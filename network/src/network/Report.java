@@ -6,10 +6,10 @@ public class Report extends Message {
 
 	protected final static String PREFIX = "INFO";
 	
-	String latitude;
-	String longitude;
-	String batteryStatus;
-	String status;
+	public String latitude;
+	public String longitude;
+	public String batteryStatus;
+	public String status;
 	
 	public Report(String id, String timestamp, String latitude, String longitude, String batteryStatus, String status) {
 		super(id, timestamp);
