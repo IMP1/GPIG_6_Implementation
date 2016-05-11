@@ -1,539 +1,69 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset='utf-8' />
-    <title></title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
-    <link href='css/maki.css' rel='stylesheet' />
-    <link href='css/font-awesome.css' rel='stylesheet' />
-    <script src="selector.js"></script>
-    <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
-    </style>
-</head>
-<body>
-
-
-
-<div id='map'></div>
-<div id='controls'>
-    <div id='filter-group' class='filter-group'>
-        <h1>Search Units</h2>
-    </div>
-    <div id='search-areas' class='search-areas'>
-        <h1>Search Areas</h2>
-    </div>
-    <div id='additional-controls' class='additional-controls'>
-        <h1>Unit Controls</h2>
-        <button>
-            Assign Search Areas
-        </button>
-        <button>
-            Clear Search Areas
-        </button>
-        <button>
-            Recall All Search Units
-        </button>
-    </div>
     
-</div>
-
-    
- <nav>
-    <a id="circle" class="active">draw circle</a>
-  </nav>
-    
-<style>
-    
-    #controls{
-        position:absolute;
-        bottom:0%;
-        width:100%;
-        height:26.5%;
-/*        background:#1d2130;*/
-        background:rgba(0,0,0,.8);
-        color:#c0c8d2;
+    <head>
+        <meta charset='utf-8' />
+        <title>Group 6 - Sonar Mapping</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
         
+        <!--Lib Scripts-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
+        <script src="scripts/lib/selector.js"></script>   
         
-    }
-    
-    #controls h1{
-        color:white;
-    }
-    
-    #map { 
-/*      position:absolute; */
-      width: 100%;
-      height: 100%;
-    }
-    svg {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-    }
-    
-    .additional-controls{
-        float:left;
-        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-        font-weight: 600;
-        width: 29%;
-        height:100%;
-        text-align:center;
-        border-right: 1px solid rgba(255,255,255,.2);
-        overflow:scroll;
-    }
-    
-    .search-areas{
-        float:left;
-        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-        font-weight: 600;
-        width: 30%;
-        height:100%;
-        text-align:center;
-        border-right: 1px solid rgba(255,255,255,.2);
-        overflow:scroll;
-    }
-    
-        .search-areas button{
-            width:50%;
-            top:90%;
-            bottom:0;
-            float:left;
-        }
+        <!--Lib CSS-->
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
+        <link href='css/lib/maki.css' rel='stylesheet' />
+        <link href='css/lib/font-awesome.css' rel='stylesheet' />
         
-        .search-areas .search-area{
-            width:100%;
-/*            background:red;*/
-            height:70px;
-            overflow:hidden;
-            border-bottom: 1px solid rgba(255,255,255,.2);
-            border-top: 1px solid rgba(255,255,255,.2);
-        }
+        <!--Local CSS (from SASS)-->
+        <link href='css/index.css' rel='stylesheet' />
+        <link href='css/map.css' rel='stylesheet' />
+        <link href='css/controls.css' rel='stylesheet' />
+    
+    </head>
+    
+    <body>   
+    
+        <!--Map-->
+        <div id='map'></div>
         
-            .search-areas .search-area .header{
-                float:left;
-                width:15%;
-                height:100%;
-/*                background:green;*/
-    	        background:rgba(255, 255, 255, .1);
-                line-height:100%;
-                padding-top:10px;
-                font-size:50px;
-            }
+        <!--Control Panel-->
+        <div id='controls'>
             
-            .search-areas .search-area .drone-assignment{
-                float:left;
-                width:10%;
-                
-                height:100%;
-                line-height:100%;
-                font-size:30px;
-            }
+            <!--Search Unit Controls-->
+            <div id='filter-group' class='filter-group'>
+                <h1>Search Units</h2>
+            </div>
             
-                .search-areas .search-area .drone-assignment .arrow{
-                    float:left;
-                    width:100%;
-                    height:50%;
-                    font-size:20px;
-                    line-height:35px;
-                }
-                
-            .search-areas .search-area .info{
-                float:left;
-                width:75%;
-                height:20px;
-/*                text-align:center;*/
-                text-transform: capitalize;
-                color:596074;
-            }
+            <!--Search Area Controls-->
+            <div id='search-areas' class='search-areas'>
+                <h1>Search Areas</h2>
+            </div>
             
-                .search-areas .search-area .info .icon {
-                    float:left;
-/*                    font-size: 10px;*/
-                    width:10%;
-                    height:100%;
-                    line-height:20px;
-                }
-                
-                .search-areas .search-area .info .text {
-                    float:left;
-/*                    font-size: 10px;*/
-                    height:100%;
-                    
-                    text-align:left;
-                    line-height:20px;
-                }
-    
-    .filter-group {
-        float:left;
-        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-        font-weight: 600;
-        width: 40%;
-        height:100%;
-        text-align:center;
-        border-right: 1px solid rgba(255,255,255,.2);
-        overflow:scroll;
-    }
-    
-    .filter-group .unit:hover{
-        color:#596074;
-    }
-    
-    .filter-group .unit {
-        float:left;
-        width:50%;
-        height:100px;
-        outline: 1px solid rgba(255,255,255,.2);
-       
-        display: inline-block;;
-        cursor: pointer;
-    }
-    
-    .filter-group .unit .info{
-        float:left;
-        width:30%;
-        height:100%;
-        text-align:center;
-        text-transform: capitalize;
-        color:596074;
-    }
-    
-        .filter-group .unit .info .unit-icon {
-            float:left;
-            font-size: 60px;
-            width:100%;
-            height:70%;
-            line-height:130%;
-        }
-        
-        .filter-group .unit .info .unit-name {
-            float:left;
-            font-size: 10px;
-            height:30%;
-            width:100%;
-        }
-        
-    .filter-group .unit .stats{
-        padding-top:10px;
-        float:left;
-        width:70%;
-        height:100%;
-    }
-        
-        .filter-group .unit .stats .stat{
-            float:left;
-            width:100%;
-            height:20px;
-        }
-        
-        .filter-group .unit .stats .stat .icon{
-            float:left;
-            width:30px;
-            height:20px;
-            line-height: 20px;
-        }
-        
-        .filter-group .unit .stats .stat .text{
-            float:left;
-            height:20px;
-        }
-
-    #info {
-        display: block;
-        position: relative;
-        margin: 0px auto;
-        width: 50%;
-        padding: 10px;
-        border: none;
-        border-radius: 3px;
-        font-size: 12px;
-        text-align: center;
-        color: #222;
-        background: #fff;
-        opacity:.75;
-    }
-
-/*    .filter-group input[type=checkbox]:checked + label:before {
-        content: '✔';
-        margin-right: 5px;
-    }*/
-    
-    #circle {
-      background-color: rgba(20, 20, 20, 0.1);
-      font-family: Helvetica, sans-serif;
-      color: #3b83bd;
-      padding: 5px 8px;
-      border-radius: 3px;
-      cursor: pointer;
-      border: 1px solid #111;
-    }
-    #circle.active {
-      background-color: rgba(250, 250, 250, 0.9);
-    }
-</style>
-<    
-    
-<script>
-    
-var center = [-1.0873, 53.9600];
-var defaultZoom = 15;
-    
-mapboxgl.accessToken = 'pk.eyJ1IjoiY29ybWFja2FsaSIsImEiOiJjaW55dTRtMmUwMHJxdmZtMjMyajI0ZHNtIn0.crRNON_GYqYZDSWraRTfBw';
-var map = new mapboxgl.Map({
-    container: 'map', // container id
-    style: 'mapbox://styles/cormackali/cinyvygoz0004cbm9atdy33h5', //stylesheet location
-    center: offsetCoordinates(center), // starting position
-    zoom: defaultZoom, // starting zoom
-    doubleClickZoom: false,
-    interaction : false
-});
-
-map.addControl(new mapboxgl.Navigation());
-
-
-
-// Drone HUD
-
-var filterGroup = document.getElementById('filter-group');
-
-// Drones
-
-var Unit = function(name, symbol, coordinates){
-    this.type = "Feature";
-    this.properties = {
-        "name" : name,
-        "marker-symbol": symbol
-    }
-    this.geometry = {
-        "type": "Point",
-        "coordinates": coordinates
-    }
-}
-
-function offsetCoordinates(inputCoord){
-    
-    // Copy coords
-    var coords = [inputCoord[0], inputCoord[1]-.002];
-    return coords;
-}
-
-function addNewUnit(name, symbol, coordinates){
-    
-    var unit = new Unit(name, symbol, coordinates);
-    markers.features.push(unit);
-    
-    var marker_name = unit.properties['name'];
-    var symbol      = unit.properties['marker-symbol'];
-    var layerID     = marker_name;
-
-    // Add a layer for this symbol type if it hasn't been added already.
-    if (!map.getLayer(layerID)) {
-       
-        map.addLayer({
-            "id": layerID,
-            "type": "symbol",
-            "source": "markers",
-            "layout": {
-                "icon-image": symbol + "-15",
-                "icon-allow-overlap": true
-            },
-            "filter": ["==", "marker-symbol", symbol]
-        });
-
-        // Add HTML elements for each Unit
-        var unit_element = document.createElement('div');
-        unit_element.id = layerID;
-        unit_element.className = 'unit';
-    	unit_element.setAttribute('for', layerID);
-        filterGroup.appendChild(unit_element);
-        
-        var unit_element_info = document.createElement('div');
-        unit_element_info.className = 'info';        
-        unit_element.appendChild(unit_element_info);
-
-            var unit_element_icon = document.createElement('i');
-            unit_element_icon.className = 'unit-icon maki  maki-'+symbol;
-            unit_element_info.appendChild(unit_element_icon);
+            <!--Further Controls-->
+            <div id='additional-controls' class='additional-controls'>
+                <h1>Unit Controls</h2>
+                <button>
+                    Assign Search Areas
+                </button>
+                <button>
+                    Clear Search Areas
+                </button>
+                <button>
+                    Recall All Search Units
+                </button>
+            </div>
             
-            var unit_element_icon = document.createElement('div');
-            unit_element_icon.className = 'unit-name';
-            unit_element_icon.textContent = marker_name;
-            unit_element_info.appendChild(unit_element_icon);
+        </div>        
             
-        var unit_element_stats = document.createElement('div');
-        unit_element_stats.className = 'stats';        
-        unit_element.appendChild(unit_element_stats);
+        <!--D3 Circle Drawing-->
+        <nav>
+            <a id="circle" class="active">draw circle</a>
+        </nav>
         
-        var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
-        var unit_text  = ['Battery : 100%', 'State : Scanning', 'Connection : Strong', 'Depth : 10m'];
-        
-        for(var i = 0; i<4; i++){
-        
-            var unit_element_stats_stat = document.createElement('div');
-            unit_element_stats_stat.className = 'stat';
-            unit_element_stats.appendChild(unit_element_stats_stat);
-            
-                var unit_element_stats_stat_icon = document.createElement('div');
-                unit_element_stats_stat_icon.className = 'icon fa '+unit_icons[i];
-                unit_element_stats_stat.appendChild(unit_element_stats_stat_icon);
-                
-                var unit_element_stats_stat_text = document.createElement('div');
-                unit_element_stats_stat_text.className = 'text';
-                unit_element_stats_stat_text.textContent = unit_text[i];
-                unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
-                
-        }
-        
-        unit_element.addEventListener('click', function(e) {
-            
-            map.flyTo({
-                center: offsetCoordinates(unit.geometry.coordinates),
-                zoom: defaultZoom,
-                bearing: 0,
-        
-                speed: 0.6, 
-                curve: 1, 
-        
-                easing: function (t) {
-                    return t;
-                }
-            });
-            
-        });
-    }
+        <!--Local Scripts-->
+        <script src="scripts/c2_frontend.js"></script>
     
-}
-
-var markers = {
-    "type": "FeatureCollection",
-    "features": []
-};
-
-function setPosition(lat, long, marker) {
-    marker.geometry.coordinates = [lat, long];
-}
-
-function addNewSearchArea(id){
-    
-    var searchAreas = document.getElementById('search-areas');
-    
-    var search_area = document.createElement('div');
-//        search_area.id = layerID;
-        search_area.className = 'search-area';
-//    	search_area.setAttribute('for', layerID);
-        searchAreas.appendChild(search_area);
-        
-        var search_area_header = document.createElement('div');
-        search_area_header.className = 'header';  
-        search_area_header.textContent = id;      
-        search_area.appendChild(search_area_header);
-        
-        var search_area_drone_numbers = document.createElement('div');
-        search_area_drone_numbers.className = 'drone-assignment';        
-        search_area.appendChild(search_area_drone_numbers);
-        
-            var search_area_drone_arrow_up = document.createElement('div');
-            search_area_drone_arrow_up.className = 'arrow fa fa-arrow-up';        
-            search_area_drone_numbers.appendChild(search_area_drone_arrow_up);
-            
-            var search_area_drone_arrow_down = document.createElement('div');
-            search_area_drone_arrow_down.className = 'arrow fa fa-arrow-down';        
-            search_area_drone_numbers.appendChild(search_area_drone_arrow_down);
-            
-        var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
-        var unit_text  = ['Assigned 2 Drones', 'Coordinates : [100, 200]', 'Radius : 250m'];
-        
-        for(var i = 0; i<3; i++){
-        
-            var unit_element_stats_stat = document.createElement('div');
-            unit_element_stats_stat.className = 'info';
-            search_area.appendChild(unit_element_stats_stat);
-            
-//                var unit_element_stats_stat_icon = document.createElement('div');
-//                unit_element_stats_stat_icon.className = 'icon fa '+unit_icons[i];
-//                unit_element_stats_stat.appendChild(unit_element_stats_stat_icon);
-                
-                var unit_element_stats_stat_text = document.createElement('div');
-                unit_element_stats_stat_text.className = 'text';
-                unit_element_stats_stat_text.textContent = unit_text[i];
-                unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
-                
-        }
-
-}
-
-map.on('load', function () {
-    
-    map.addSource("markers", {
-        "type": "geojson",
-        "data": markers
-    });
-    
-    addNewUnit('c2', 'harbor', [-1.0873, 53.9600]);
-    addNewUnit('drone1', 'marker', [-1.083877, 53.9619]);
-    addNewUnit('drone2', 'marker', [-1.08525, 53.957266]);
-    addNewUnit('drone3', 'marker', [-1.0925, 53.95989]);
-   
-    map['doubleClickZoom'].disable();
-   
-    // Search Areas Test
-    
-    addNewSearchArea(3); 
-
-});
-
-// CIRCLES
- 
- var container = map.getCanvasContainer()
- var svg = d3.select(container).append("svg")
-
-var active = true;
-var circleControl = new circleSelector(svg)
-.projection(project)
-.inverseProjection(function(a) {
-return map.unproject({x: a[0], y: a[1]});
-})
-.activate(active);
-
-function project(d) {
-  return map.project(getLL(d));
-}
-
-function getLL(d) {
-  return new mapboxgl.LngLat(+d.lng, +d.lat)
-}
-
-d3.select("#circle").on("click", function() {
-  active = !active;
-  circleControl.activate(active)
-  if(active) {
-    map.dragPan.disable();
-  } else {
-    map.dragPan.enable();
-  }
-  d3.select(this).classed("active", active)
-})
-
-function render() {
-    circleControl.update(svg)
-}
-
-// re-render our visualization whenever the view changes
-map.on("viewreset", function() {
-render()
-})
-map.on("move", function() {
-render()
-})
-
-// C2 BACKEND CONTROLS
-
-
-</script>
-
-</body>
+    </body>
 </html>

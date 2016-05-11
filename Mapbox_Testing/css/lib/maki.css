@@ -10,8 +10,8 @@
 */
 @font-face {
     font-family: 'maki';
-    src: url('../fonts/maki/maki.eot?-ysahrq');
-    src: url('../fonts/maki/maki.eot?#iefix-ysahrq') format('embedded-opentype'), url('../fonts/maki/maki.woff?-ysahrq') format('woff'), url('../fonts/maki/maki.ttf?-ysahrq') format('truetype'), url('../fonts/maki/maki.svg?-ysahrq#maki') format('svg');
+    src: url('../../fonts/maki/maki.eot?-ysahrq');
+    src: url('../../fonts/maki/maki.eot?#iefix-ysahrq') format('embedded-opentype'), url('../../fonts/maki/maki.woff?-ysahrq') format('woff'), url('../../fonts/maki/maki.ttf?-ysahrq') format('truetype'), url('../../fonts/maki/maki.svg?-ysahrq#maki') format('svg');
     font-weight: normal;
     font-style: normal
 }
