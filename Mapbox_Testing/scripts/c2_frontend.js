@@ -1,14 +1,15 @@
 //// Utility Functions
 
 function offsetCoordinates(inputCoord){
-    var coords = [inputCoord[0], inputCoord[1]+verticalOffset];
+    var coords = [inputCoord[0]+latOffset, inputCoord[1]+longOffset];
     return coords;
 }
 
 //// Constant Vars
 var mapCenter  = [-1.0873, 53.9600];
 var defaultZoom = 15;
-var verticalOffset = -.002;
+var latOffset = -.005;
+var longOffset = 0;
 
 //// HTML Elements
 var filterGroup = document.getElementById('filter-group');
@@ -189,12 +190,17 @@ map.on('load', function () {
     addNewUnit('drone1', 'marker', [-1.083877, 53.9619]);
     addNewUnit('drone2', 'marker', [-1.08525, 53.957266]);
     addNewUnit('drone3', 'marker', [-1.0925, 53.95989]);
+    addNewUnit('drone4', 'marker', [-1.0925, 53.95989]);
+    addNewUnit('drone5', 'marker', [-1.0925, 53.95989]);
+    addNewUnit('drone6', 'marker', [-1.0925, 53.95989]);
    
    // Map Options
     map['doubleClickZoom'].disable();
    
     // Search Areas Test
+    addNewSearchArea(1); 
     addNewSearchArea(2); 
+    addNewSearchArea(3); 
 
 });
 
