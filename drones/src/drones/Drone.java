@@ -20,23 +20,15 @@ public class Drone {
 	
 	// Singleton instances
 	private static GraphHopper map = null;
-	private static RoutingHandler router = null;
 	private static NavigationThread navThread = null;
-	private static ScannerHandler scanner = null;
 	
 	// Singleton accessors
 	// TODO: Handle synchronous read / write access to map
 	public static GraphHopper map() {
 		return map;
 	}
-	public static RoutingHandler router() {
-		return router;
-	}
 	public static NavigationThread nav() {
 		return navThread;
-	}
-	public static ScannerHandler scanner() {
-		return scanner;
 	}
 
 	/**
@@ -60,7 +52,11 @@ public class Drone {
 		System.out.println("Graph loaded.");
 		
 		// Initialise routing handler
-		router = new RoutingHandler();
+		RoutingHandler router = new RoutingHandler(); // TODO: Initialise in Mesh Interface
+		
+		// Initialise and release navigation thread
+		navThread = new NavigationThread();
+		navThread.start();
 		
 		// Test calculation of route
 		Future<PathWrapper> route = router.calculate(53.955391, -1.078967, 10.0);

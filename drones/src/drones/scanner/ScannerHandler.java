@@ -5,8 +5,12 @@ package drones.scanner;
  * Placed in a separate thread as raw data from sensors will likely
  * need processing, though it is given as pre-processed information in
  * this prototype.
- * @author Martin Higgs
+ * @author Anthony Williams
  */
-public class ScannerHandler {
-	//TODO: Asynchronous scanner handling and giving data to transmit.
+public class ScannerHandler implements Runnable {
+
+	@Override
+	public void run() {
+		//TODO: Asynchronous scanner handling and giving data to transmit.
+	}
 }

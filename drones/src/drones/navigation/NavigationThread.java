@@ -19,7 +19,6 @@ public class NavigationThread extends Thread {
 	private boolean redirected = false;
 	private PathWrapper routeToTarget = null;
 	private double newLat, newLng, newRadius;
-
 	
 	/**
 	 * Thread initialisation.
