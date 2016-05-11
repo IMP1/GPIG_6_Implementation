@@ -1,7 +1,12 @@
 package drones.navigation;
 
-import com.graphhopper.PathWrapper;
+import java.util.Random;
 
+import com.graphhopper.PathWrapper;
+import com.graphhopper.routing.util.EdgeFilter;
+import com.graphhopper.util.PointList;
+
+import drones.Drone;
 import drones.sensors.SensorInterface;
 
 /**
@@ -12,26 +17,111 @@ import drones.sensors.SensorInterface;
  */
 public class NavigationThread extends Thread {
 	
+	// Number of short range checks to make before looking long distance
+	private static final int LOCAL_CHECK_LIMIT = 50;
+	// Seed for random number generator replicability
+	private static final long SEED = 32143786234L;
+	// Long and short range check distances (in meters)
+	private static final int SHORT_DST_CHECK = 2;
+	private static final int LONG_DST_CHECK = 10;
+	
+	// Current location
+	private double currLat, currLng;
+	// Location to check
+	private double chkLat, chkLng;
+	
 	// Current target area
-	private double lat, lng, radius;
+	private double tgtLat, tgtLng, tgtRadius;
 	
 	// Redirection information
 	private boolean redirected = false;
-	private PathWrapper routeToTarget = null;
+	private PointList newRoute = null;
 	private double newLat, newLng, newRadius;
+	
+	// Travel mode indicator
+	private boolean routing = false;
+	private int routeStepIndex = 0;
+	
+	// Random number generator for exploration
+	Random rnd = new Random(SEED);
 	
 	/**
 	 * Thread initialisation.
 	 * Starts at current location with no exploration to do.
 	 */
 	public NavigationThread() {
-		lat = SensorInterface.getGPSLatitude();
-		lng = SensorInterface.getGPSLongitude();
-		radius = 0.0;
+		tgtLat = SensorInterface.getGPSLatitude();
+		tgtLng = SensorInterface.getGPSLongitude();
+		tgtRadius = 0.0;
 	}
 	
+	/**
+	 * Main exploration loop.
+	 * Continuously explores target area until there exist no more points to scan.
+	 * When redirected to a new area, navigate along the defined path and then
+	 * return to exploring.
+	 */
 	public void run() {
-		// TODO: Navigation thread.
+		while(true) {
+			if(!checkForRedirect()) {
+				// Get current location
+				currLat = SensorInterface.getGPSLatitude();
+				currLng = SensorInterface.getGPSLongitude();
+				
+				// Check if area already scanned and request scan if not
+				try {
+					// TODO: Check map and make request
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					System.err.println(e);
+				}
+				
+				// Randomly select points until significantly far enough away from
+				// other scans / drones or interrupted
+				int chkCount = 0;
+				chkLat = currLat;
+				chkLng = currLng;
+				boolean waypointFound = false;
+				while(!waypointFound && !checkForRedirect()) {
+					double angle = 2 * Math.PI * rnd.nextDouble();
+
+					// After a certain number of short range hops are tried, start
+					// looking at long range hops
+					if (chkCount < LOCAL_CHECK_LIMIT) {
+						chkLat += Math.sin(angle) * SHORT_DST_CHECK;
+						chkLng += Math.cos(angle) * SHORT_DST_CHECK;
+					} else {
+						chkLat += Math.sin(angle) * LONG_DST_CHECK;
+						chkLng += Math.cos(angle) * LONG_DST_CHECK;
+					}
+
+					// TODO: If location in building, move to nearest edge.
+					Drone.map().getLocationIndex().findClosest(chkLat, chkLng, EdgeFilter.ALL_EDGES);
+
+					// If location outside search area, reset search to drone location.
+					if(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2) < tgtRadius) {
+						chkLat = currLat;
+						chkLng = currLng;
+					}
+					
+					// TODO: Check if point is viable for scanning
+				}
+				// TODO: Check for routing necessity based on object intersection
+			}
+				
+			if(checkForRedirect()) {
+				routing = true;
+				routeStepIndex = 0;
+				acknowledgeRedirect();
+			}
+
+			// Follow routing if required
+			if(routing) {
+				
+			}
+			
+			// Travelling abstraction. Assume constant movement speed.
+		}
 	}
 
 	/**
@@ -43,7 +133,7 @@ public class NavigationThread extends Thread {
 	 */
 	synchronized public void redirect(PathWrapper route, double lat, double lng, double radius) {
 		redirected = true;
-		routeToTarget = route;
+		newRoute = route.getPoints();
 		newLat = lat;
 		newLng = lng;
 		newRadius = radius;
