@@ -2,6 +2,10 @@ package network;
 
 public abstract class Message {
 
+	public static final String MESH_GROUP_ADDRESS = "234.0.0.6";
+	public static final int MESH_PORT = 4041;
+	public static final int PACKAGE_SIZE = 1024;
+	
 	protected final static String SEPARATOR = ";";
 	
 	public enum Type {
