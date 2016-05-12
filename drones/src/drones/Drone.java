@@ -2,15 +2,12 @@ package drones;
 
 import java.io.File;
 import java.util.UUID;
-import java.util.concurrent.Future;
 
 import com.graphhopper.GraphHopper;
-import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 
 import drones.mesh.MeshInterfaceThread;
 import drones.navigation.NavigationThread;
-import drones.routing.RoutingHandler;
 
 /**
  * Main startup sequence and singleton handler.
@@ -61,10 +58,12 @@ public class Drone {
 		// Initialise and release navigation thread
 		navThread = new NavigationThread();
 		navThread.start();
+		System.out.println("Navigation Thread started.");
 		
 		// Initialise and begin mesh interface thread
 		meshThread = new MeshInterfaceThread();
 		meshThread.start();
+		System.out.println("Mesh Interface created.");
 	}
 	
 }
