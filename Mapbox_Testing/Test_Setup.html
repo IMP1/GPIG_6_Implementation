@@ -20,6 +20,7 @@
         <link href='css/index.css' rel='stylesheet' />
         <link href='css/map.css' rel='stylesheet' />
         <link href='css/controls.css' rel='stylesheet' />
+        <link href='css/debug.css' rel='stylesheet' />
     
     </head>
     
@@ -27,6 +28,7 @@
     
         <!--Map-->
         <div id='map'></div>
+        <div id='map_overlays'></div>
         
         <!--Control Panel-->
         <div id='controls'>
@@ -56,14 +58,13 @@
             </div>
             
         </div>        
-            
-        <!--D3 Circle Drawing-->
-        <nav>
-            <a id="circle" class="active">draw circle</a>
-        </nav>
+        
+        <!--Debug-->
+        <!--<pre id='info'></pre>-->
         
         <!--Local Scripts-->
         <script src="scripts/c2_frontend.js"></script>
+        <!--<script src="scripts/c2_debug.js"></script>-->
     
     </body>
 </html>

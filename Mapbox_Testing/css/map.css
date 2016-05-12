@@ -1,8 +1,11 @@
-#map {
+#map, #map_overlays {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 100%; }
+
+#map_overlays {
+  pointer-events: none; }
 
 svg {
   position: absolute;

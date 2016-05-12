@@ -7,7 +7,7 @@ function circleSelector(svg) {
       var container = svg; // the container we render our points in
 
       // this will likely be overriden by leaflet projection
-      var project = d3.geo.mercator();
+      var project   = d3.geo.mercator();
       var unproject = d3.geo.mercator().invert;
 
       //we expose events on our component
@@ -40,6 +40,7 @@ function circleSelector(svg) {
         // we let the user know 
         update()
       })
+      
       svg.on("mousemove.circle", function() {
         if(!active) return;
         if(circleSelected) return;
@@ -81,6 +82,7 @@ function circleSelector(svg) {
       function update(g) {
         if(g) container = g;
         if(!circleCenter || !circleOuter) return;
+        
         var dist = distance(circleCenter, circleOuter)
         var circleLasso = container.selectAll("circle.lasso").data([dist])
         circleLasso.enter().append("circle").classed("lasso", true)
@@ -144,6 +146,7 @@ function circleSelector(svg) {
         dispatch.update();
       }
       this.update = update;
+      
       this.projection = function(val) {
         if(!val) return project;
         project = val;
