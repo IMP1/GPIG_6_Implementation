@@ -32,7 +32,7 @@ public abstract class Message {
 			final String dataMessage = Data.strip(rawMessage);
 			if (dataMessage.startsWith(ScanData.SCAN_DATA_PREFIX)) {
 				return ScanData.class;
-			} else if (message.startsWith(PathData.DATA_PREFIX)) {
+			} else if (dataMessage.startsWith(PathData.DATA_PREFIX)) {
 				return PathData.class;
 			} else if (dataMessage.startsWith(StatusData.STATUS_DATA_PREFIX)) {
 				return StatusData.class;
