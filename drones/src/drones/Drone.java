@@ -1,6 +1,7 @@
 package drones;
 
 import java.io.File;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 import com.graphhopper.GraphHopper;
@@ -17,6 +18,8 @@ import drones.routing.RoutingHandler;
  * Author: Martin Higgs
  */
 public class Drone {
+	
+	public final static String ID = UUID.randomUUID().toString();
 	
 	// Singleton instances
 	private static GraphHopper map = null;
