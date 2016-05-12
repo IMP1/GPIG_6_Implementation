@@ -1,11 +1,15 @@
 package drones.mesh;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+
+import drones.Drone;
+
+import network.*;
 
 /**
  * Mesh Networking Thread
@@ -44,6 +48,15 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	@Override
 	public void run() {
+		//TODO: remove testing
+		String id = Drone.ID;
+		LocalDateTime timestamp = LocalDateTime.now();
+		double latitude = 53.955391;
+		double longitude = -1.078967; 
+		double radius = 10.0;
+		PathCommand p = new PathCommand(id, timestamp, latitude, longitude, radius);
+		recieveMessage(p.toString());
+		//TODO: remove testing
 		while (true) {
 			try {
 				byte[] receiveData = new byte[network.Message.PACKAGE_SIZE];
@@ -62,7 +75,7 @@ public class MeshNetworkingThread extends Thread {
 	 * This is intended to be used when connection to the mesh
 	 * is lost and then reestablished.
 	 */
-	public void resendAllStoredMessages() {
+	protected void resendAllStoredMessages() {
 		for (network.Message message : unacknowledgedSentMessages) {
 			broadcastData(message);
 		}
@@ -74,14 +87,38 @@ public class MeshNetworkingThread extends Thread {
 	}
 	
 	private void recieveMessage(String message) {
-		System.out.printf("Receieved message: '%s'.\n" + message);
-		//TODO: resend if not bound for here, and not already sent from here.
-		//TODO: handle acknowledgments
-		//TODO: interpret commands from the C2
+		System.out.printf("Receieved message: '%s'.\n", message);
+		if (Message.getId(message).equals(Drone.ID)) {
+			Class<? extends Message> messageClass = Message.getType(message); 
+			if (Command.class.isAssignableFrom(messageClass)) {
+				handleCommand(message);
+			} else if (Acknowledgement.class.isAssignableFrom(messageClass)) {
+				handleAcknowledgement(message);
+			}
+		} else {
+			//TODO: resend if not bound for here, and not already sent from here.
+		}
+	}
+	
+	private void handleCommand(String message) {
+		if (MoveCommand.class.isAssignableFrom(Message.getType(message))) {
+			MoveCommand command = new MoveCommand(message);
+			Drone.mesh().addCommand(command);
+		} else if (PathCommand.class.isAssignableFrom(Message.getType(message))) {
+			PathCommand command = new PathCommand(message);
+			Drone.mesh().addCommand(command);
+		}
+	}
+	
+	private void handleAcknowledgement(String message) {
 		
 	}
 	
-	public void sendMessage(network.Message message) {
+	/**
+	 * Sends the string representation of this Message object across the mesh network.
+	 * @param message the message object to be sent.
+	 */
+	protected void sendMessage(network.Message message) {
 		sendMessage(message.toString());
 	}
 
