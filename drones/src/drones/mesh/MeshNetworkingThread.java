@@ -21,8 +21,7 @@ public class MeshNetworkingThread extends Thread {
 	private ArrayList<network.Message> unacknowledgedSentMessages;
 	private ArrayList<network.Message> sentMessages; //TODO: store as hashes for quicker lookup?
 	
-//	private DatagramSocket sendingSocket;
-	private MulticastSocket receivingSocket;
+	private MulticastSocket socket;
 	private InetAddress groupAddress;
 	
 	/**
@@ -31,9 +30,8 @@ public class MeshNetworkingThread extends Thread {
 	protected MeshNetworkingThread() {
 		try {
     		groupAddress = InetAddress.getByName(network.Message.MESH_GROUP_ADDRESS);
-//    		sendingSocket = new DatagramSocket(network.Message.MESH_PORT);
-    		receivingSocket = new MulticastSocket(network.Message.MESH_PORT);
-    		receivingSocket.joinGroup(groupAddress);
+    		socket = new MulticastSocket(network.Message.MESH_PORT);
+    		socket.joinGroup(groupAddress);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("Well, shit. :(");
@@ -42,7 +40,7 @@ public class MeshNetworkingThread extends Thread {
 
 	/**
 	 * Listens for any broadcasts to the group, and calls 
-	 * {@link #recieveMessage(String)} with the recieved message.
+	 * {@link #recieveMessage(String)} with the received message.
 	 */
 	@Override
 	public void run() {
@@ -50,7 +48,7 @@ public class MeshNetworkingThread extends Thread {
 			try {
 				byte[] receiveData = new byte[network.Message.PACKAGE_SIZE];
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-				receivingSocket.receive(receivePacket);
+				socket.receive(receivePacket);
 				String message = new String(receivePacket.getData());
 				recieveMessage(message);
 			} catch (IOException e) {
@@ -60,7 +58,7 @@ public class MeshNetworkingThread extends Thread {
 	}
 	
 	/**
-	 * Resends all unacknowledges messages.
+	 * Resends all unacknowledged messages.
 	 * This is intended to be used when connection to the mesh
 	 * is lost and then reestablished.
 	 */
@@ -87,10 +85,11 @@ public class MeshNetworkingThread extends Thread {
 		try {
 			byte[] data = message.getBytes();
 			if (data.length > network.Message.PACKAGE_SIZE) {
-				System.out.printf("THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d\n", data.length, network.Message.PACKAGE_SIZE);
+				System.err.printf("THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d\n", 
+								  data.length, network.Message.PACKAGE_SIZE);
 			}
 			DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, network.Message.MESH_PORT);
-			receivingSocket.send(packet);
+			socket.send(packet);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
