@@ -1,5 +1,12 @@
 package network;
 
+/**
+ * Abstract Message class. Subclasses are used for packing and unpacking data strings.
+ * This is shared across the C2 and Drone projects and used to ensure data is in the 
+ * expected format.
+ *  
+ * @author Huw Taylor and Alex Petherick
+ */
 public abstract class Message {
 
 	public static final String MESH_GROUP_ADDRESS = "234.0.0.6";
@@ -8,42 +15,63 @@ public abstract class Message {
 	
 	protected final static String SEPARATOR = ";";
 	
-	public enum Type {
-		INFO, COMMAND, SCAN_DATA;
-	}
-	
-	public static Type getType(String message) {
-		message = setup(null, message);
-		if (message.startsWith(Command.PREFIX)) {
-			return Type.COMMAND;
-		} else if (message.startsWith(Report.PREFIX)) {
-			return Type.INFO;
-		} else if (message.startsWith(ScanData.PREFIX)) {
-			return Type.SCAN_DATA;
+	public static Class<? extends Message> getType(final String rawMessage) {
+		final String message = Message.strip(rawMessage);
+		if (message.startsWith(Command.COMMAND_PREFIX)) {
+			final String commandMessage = Command.strip(rawMessage);
+			if (commandMessage.startsWith(MoveCommand.MOVE_COMMAND_PREFIX)) {
+				return MoveCommand.class;
+			/*
+			} else if (message.startsWith(PathCommand.COMMAND_PREFIX)) {
+				return PathCommand.class;
+			*/
+			} else {
+				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nMust be either COMMAND or DATA.");
+			}
+		} else if (message.startsWith(Data.DATA_PREFIX)) {
+			final String dataMessage = Data.strip(rawMessage);
+			if (dataMessage.startsWith(ScanData.SCAN_DATA_PREFIX)) {
+				return ScanData.class;
+			} else if (message.startsWith(PathData.DATA_PREFIX)) {
+				return PathData.class;
+			} else if (dataMessage.startsWith(StatusData.STATUS_DATA_PREFIX)) {
+				return StatusData.class;
+			} else {
+				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nMust be either COMMAND or DATA.");
+			}
 		} else {
-			throw new RuntimeException("This isn't a support message type: " + message);
-		} 
+			throw new RuntimeException("This isn't a supported message type: " + message + ".\nMust be either COMMAND or DATA.");
+		}
 	}
 	
-	public String id;
-	public String timestamp;
+	public final String id;
+	public final String timestamp;
 	
-	Message(String id, String timestamp) {
+	protected Message(String id, String timestamp) {
 		this.id = id;
 		this.timestamp = timestamp;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(id); sb.append(SEPARATOR);
+		sb.append(timestamp); sb.append(SEPARATOR);
+		return sb.toString();
+	}
 	
-	Message() {}
-	
-	static String setup(Message msgObj, String message) {
+	protected Message(String message) {
 		String data[] = message.split(SEPARATOR);
-		if (data.length < 2) throw new RuntimeException("No ID or Timestamp given.");
-		if (msgObj != null) {
-			msgObj.id = data[0];
-			msgObj.timestamp = data[1];
-		}
-		int metadataOffset = message.indexOf(SEPARATOR, message.indexOf(SEPARATOR) + 1) + 1; // second separator's index
-		return message.substring(metadataOffset);
+		if (data.length < 2) throw new RuntimeException("Both the Drone ID and the Timestamp need to be supplied.");
+		id = data[0];
+		timestamp = data[1];
+	}
+	
+	protected static String strip(String message) {
+		int firstSeparatorIndex = message.indexOf(SEPARATOR);
+		int secondSeparatorIndex = message.indexOf(SEPARATOR, firstSeparatorIndex + 1);
+		String strippedMessage = message.substring(secondSeparatorIndex + 1);
+		return strippedMessage;
 	}
 	
 }
