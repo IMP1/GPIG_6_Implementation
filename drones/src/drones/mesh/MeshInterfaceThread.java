@@ -1,58 +1,88 @@
 package drones.mesh;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import network.*;
 
 import com.graphhopper.PathWrapper;
 
 import drones.Drone;
 import drones.routing.RoutingHandler;
-/*TODO import ScannerHandler.Scan; */ 
+//TODO import ScannerHandler.Scan; 
 
+/**
+ * Mesh Interface Thread
+ * The interface of the Drone for the mesh. 
+ * Handles networking with the mesh, and handles commands given, 
+ * calling out to the drone's routing subsystem.
+ *  
+ * @author Huw Taylor
+ */
 public class MeshInterfaceThread extends Thread {
+	
+	//TODO have this be in the scanner side of things.
+	private class Scan {
+		public double lat, lon, depth, flow;
+		public double[] distanceReadings;
+	}
 
 	private MeshNetworkingThread networkingThread = null;
 	private RoutingHandler router = null;
 	private Future<PathWrapper> calculatedPath = null;
-	private ArrayList<String> commandBuffer = new ArrayList<String>();
-	private ArrayList<Object /*TODO Scan */> scanBuffer = new ArrayList<>();
-	
-	public void addScan(Object /*TODO Scan */ scan) {
+	private ArrayList<Command> commandBuffer = new ArrayList<>();
+	private ArrayList<Scan> scanBuffer = new ArrayList<>();
+
+	/**
+	 * Constructor for the Mesh Interface. 
+	 * Initialises the networking thread and routing handler. 
+	 */
+	public MeshInterfaceThread() {
+		router = new RoutingHandler();
+		networkingThread = new MeshNetworkingThread();
+		networkingThread.start();
+	}
+
+	/**
+	 * Add a scan to be send to the C2 across the mesh.
+	 * @param scan a wrapper around a set of numeric values
+	 */
+	public void addScan(Scan scan) {
 		synchronized (scanBuffer) {
 			scanBuffer.add(scan);
 		}
 	}
 	
-	private Object/*TODO Scan*/[] getScans() {
+	private Scan[] getScans() {
 		synchronized (scanBuffer) {
-			Object/*TODO Scan*/[] scans = scanBuffer.toArray(new Object/*TODO Scan*/[scanBuffer.size()]);
+			Scan[] scans = scanBuffer.toArray(new Scan[scanBuffer.size()]);
 			scanBuffer.clear();
 			return scans;
 		}
 	}
 	
-	protected void addCommand(String command) {
+	/**
+	 * Add a command to a command buffer for this drone to execute. 
+	 * Currently only called by the Networking thread after recieving
+	 * a command from the C2.
+	 * @param command the command for this drone to execute.
+	 */
+	protected void addCommand(Command command) {
 		synchronized (commandBuffer) {
 			commandBuffer.add(command);
 		}
 	}
 	
-	private String[] getCommands() {
+	private Command[] getCommands() {
 		synchronized (commandBuffer) {
-			String[] commands = commandBuffer.toArray(new String[commandBuffer.size()]);
+			Command[] commands = commandBuffer.toArray(new Command[commandBuffer.size()]);
 			commandBuffer.clear();
 			return commands;
 		}
 	}
 	
-	public MeshInterfaceThread() {
-		router = new RoutingHandler();
-		networkingThread = new MeshNetworkingThread();
-		networkingThread.start();
-		addCommand("ROUTETO;53.955391;-1.078967;10.0");
-	}
-
 	@Override
 	public void run() {
 		while (true) {
@@ -67,25 +97,30 @@ public class MeshInterfaceThread extends Thread {
 		if (calculatedPath != null && calculatedPath.isDone()) {
 			broadcastRouteData();
 		}
-		for (String command : getCommands()) {
-			System.out.printf("Doing '%s'.\n", command);
-			String[] data = command.split(";");
-			if (data[0].equals("ROUTETO")) {
-				requestRouteCalculation(Double.valueOf(data[1]), Double.valueOf(data[2]), Double.valueOf(data[3]));
+		for (Command command : getCommands()) {
+			if (command instanceof PathCommand) {
+				PathCommand pathCommand = (PathCommand)command;
+				requestRouteCalculation(pathCommand.latitude, pathCommand.longitude, pathCommand.radius);
+			} else if (command instanceof MoveCommand) {
+				MoveCommand moveCommand = (MoveCommand)command;
+				requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
 			}
 		}
-		for (Object /*TODO Scan*/ scan : getScans()) {
-			
+		for (Scan scan : getScans()) {
+			LocalDateTime timestamp = java.time.LocalDateTime.now();
+			network.ScanData scanData = new network.ScanData(Drone.ID, timestamp, scan.lat, scan.lon, scan.depth, scan.flow, scan.distanceReadings);
+			networkingThread.sendMessage(scanData); 
 		}
 	}
 	
 	private void broadcastRouteData() {
 		try {
-			String[] points = calculatedPath.get().getPoints().toString().replaceAll("\\(", "").split("\\), ");
-			for (String p : points) {
-				System.out.println(p);
+			double[] points = new double[calculatedPath.get().getPoints().size() * 2];
+			for (int i = 0; i < points.length - 1; i += 2) {
+				points[i] = calculatedPath.get().getPoints().getLatitude(i / 2);
+				points[i + 1] = calculatedPath.get().getPoints().getLongitude(i / 2);
 			}
-			String timestamp = java.time.LocalDateTime.now().toString();
+			LocalDateTime timestamp = java.time.LocalDateTime.now();
 			network.PathData pathMessage = new network.PathData(Drone.ID, timestamp, points);
 			networkingThread.sendMessage(pathMessage);
 		} catch (InterruptedException | ExecutionException e) {
@@ -94,11 +129,6 @@ public class MeshInterfaceThread extends Thread {
 		calculatedPath = null;
 	}
 	
-	private void recieveScanInformation(/*TODO: param for scan information*/) {
-		//TODO: decide where the buffer is going to be, 
-		//TODO: read from the buffer if there's anything there.
-	}
-
 	private void updateLocalMap() {
 		//TODO: decide where the map is going to be.
 		//TODO: write to the drone's centralised map data for the other subsystems to use.
