@@ -74,11 +74,15 @@ public class MeshNetworkingThread extends Thread {
 	}
 	
 	private void recieveMessage(String message) {
-		System.out.println("Receieved message: " + message);
+		System.out.printf("Receieved message: '%s'.\n" + message);
 		//TODO: resend if not bound for here, and not already sent from here.
 		//TODO: handle acknowledgments
 		//TODO: interpret commands from the C2
 		
+	}
+	
+	public void sendMessage(network.Message message) {
+		sendMessage(message.toString());
 	}
 
 	private void sendMessage(String message) {
