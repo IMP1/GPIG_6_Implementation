@@ -73,7 +73,8 @@
     height: 70px;
     overflow: hidden;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.2); }
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative; }
     .search-areas .search-area .header {
       float: left;
       width: 15%;
@@ -96,7 +97,7 @@
         line-height: 35px; }
     .search-areas .search-area .info {
       float: left;
-      width: 75%;
+      width: 65%;
       height: 20px;
       text-transform: capitalize;
       color: 596074; }
@@ -110,6 +111,22 @@
         height: 100%;
         text-align: left;
         line-height: 20px; }
+    .search-areas .search-area .controls {
+      position: absolute;
+      right: 0px;
+      width: 10%;
+      height: 70px;
+      line-height: 70px;
+      border-left: 1px solid rgba(255, 255, 255, 0.2); }
+      .search-areas .search-area .controls .button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 35px;
+        width: 100%;
+        line-height: 35px;
+        font-size: 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
 
 .additional-controls {
   float: left;

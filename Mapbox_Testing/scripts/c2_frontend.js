@@ -11,6 +11,25 @@ var defaultZoom = 15;
 var latOffset = -.005;
 var longOffset = 0;
 
+//// Global Vars
+var searchAreaCreationEnabled = true;
+var editingSearchArea = false;
+
+//// Button Events
+document.getElementById('btn-clear-all').addEventListener('click', function(e) {            
+    deleteAllSearchAreas();
+});
+
+function updateMap(){
+    if(editingSearchArea){
+        map['doubleClickZoom'].disable();
+        map['dragPan'].disable();
+    }else{
+        map['doubleClickZoom'].enable();
+        map['dragPan'].enable();
+    }
+}
+
 //// Map Setup
     
 mapboxgl.accessToken = 'pk.eyJ1IjoiY29ybWFja2FsaSIsImEiOiJjaW55dTRtMmUwMHJxdmZtMjMyajI0ZHNtIn0.crRNON_GYqYZDSWraRTfBw';
@@ -150,9 +169,7 @@ map.on('load', function () {
     addNewUnit('drone2', 'marker', [-1.08525, 53.957266]);
     addNewUnit('drone3', 'marker', [-1.0925, 53.95989]);
    
-    // Map Options
-    map['doubleClickZoom'].disable();
-    map['dragPan'].disable();
+    updateMap();
   
 
 });
@@ -181,6 +198,7 @@ function SearchArea(){
     this.id = searchAreaID++;
     this.center = [];
     this.outer  = [];
+    this.assignedDrones = 1;
 }
 
 function distance(ll0, ll1) {
@@ -190,36 +208,67 @@ function distance(ll0, ll1) {
     return dist;
 }
 
+var mouseDownCoords;
+
+function arraysEqual(a, b) {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length != b.length) return false;
+
+  // If you don't care about the order of the elements inside
+  // the array, you should sort both arrays here.
+
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+svg.on("mousedown", function() {
+    mouseDownCoords = d3.mouse(this);
+})
+
 svg.on("mouseup", function() {
     
-    // New Search Area
+    // New Search Area    
+    if(!searchAreaCreationEnabled) return;
     
     var p  = d3.mouse(this);
+    
+    console.log(p, mouseDownCoords)
+    
+    if(!arraysEqual(p, mouseDownCoords)) return;
+    
     var ll = unproject([p[0],p[1]])
     
     if(!currentSearchArea){        
         currentSearchArea = new SearchArea();
-        currentSearchArea.center = ll;    
+        currentSearchArea.center = ll;   
+        searchAreaArray.push(currentSearchArea); 
+        editingSearchArea = true;
+        updateMap();
     }else{
-        currentSearchArea.outer = ll;
-        searchAreaArray.push(currentSearchArea);
+        currentSearchArea.outer = ll;        
         addNewSearchArea(currentSearchArea); 
         currentSearchArea = null;
+        editingSearchArea = false;
+        updateMap();
     }
     
     redrawSearchAreas();
     
 })
 
-function addNewSearchArea(currentSearchArea){
+function addNewSearchArea(searchArea){
     
     var search_area = document.createElement('div');
+        search_area.id = 'control-searcharea-'+searchArea.id;
         search_area.className = 'search-area';
         searchAreas.appendChild(search_area);
         
         var search_area_header = document.createElement('div');
         search_area_header.className = 'header';  
-        search_area_header.textContent = currentSearchArea.id;      
+        search_area_header.textContent = searchArea.id;      
         search_area.appendChild(search_area_header);
         
         var search_area_drone_numbers = document.createElement('div');
@@ -229,49 +278,137 @@ function addNewSearchArea(currentSearchArea){
             var search_area_drone_arrow_up = document.createElement('div');
             search_area_drone_arrow_up.className = 'arrow fa fa-arrow-up';        
             search_area_drone_numbers.appendChild(search_area_drone_arrow_up);
+            search_area_drone_arrow_up.addEventListener('click', function(e) {            
+                changeDroneAssignmentForSearchArea(+1, searchArea);
+            });
             
             var search_area_drone_arrow_down = document.createElement('div');
             search_area_drone_arrow_down.className = 'arrow fa fa-arrow-down';        
             search_area_drone_numbers.appendChild(search_area_drone_arrow_down);
-            
+            search_area_drone_arrow_down.addEventListener('click', function(e) {            
+                changeDroneAssignmentForSearchArea(-1, searchArea);
+            });
+        
+        var unit_id    = ['assigned', '', '', '']
         var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
-        var unit_text  = ['Assigned 2 Drones', 'Coordinates : [100, 200]', 'Radius : 250m'];
+        var unit_text  = ['Assigned '+searchArea.assignedDrones+ ' Drones', 'Coordinates : [100, 200]', 'Radius : 250m'];
         
         for(var i = 0; i<3; i++){
         
-            var unit_element_stats_stat = document.createElement('div');
-            unit_element_stats_stat.className = 'info';
-            search_area.appendChild(unit_element_stats_stat);
+            var search_area_stats = document.createElement('div');
+            search_area_stats.className = 'info';
+            search_area.appendChild(search_area_stats);
                 
                 var unit_element_stats_stat_text = document.createElement('div');
                 unit_element_stats_stat_text.className = 'text';
+                unit_element_stats_stat_text.id = 'control-searcharea-'+searchArea.id+'-'+unit_id[i];
                 unit_element_stats_stat_text.textContent = unit_text[i];
-                unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
+                search_area_stats.appendChild(unit_element_stats_stat_text);
                 
         }
+        
+        var search_area_controls = document.createElement('div');
+            search_area_controls.className = 'controls';
+            search_area.appendChild(search_area_controls); 
+            
+            var search_area_controls_delete = document.createElement('div');
+                search_area_controls_delete.className = 'button icon fa fa-close';
+                search_area_controls.appendChild(search_area_controls_delete);
+                search_area_controls.addEventListener('click', function(e) {            
+                    deleteSearchArea(searchArea);
+                });
 
 }
 
-// svg.on("mousemove.circle", function() {
+function changeDroneAssignmentForSearchArea(inc, searchArea){
+    searchArea.assignedDrones += inc;
+    var htmlString = 'control-searcharea-'+searchArea.id+'-assigned';   
+    document.getElementById(htmlString).textContent = 'Assigned '+searchArea.assignedDrones+ ' Drones';
+}
+
+var removeByAttr = function(arr, attr, value){
+    var i = arr.length;
+    while(i--){
+       if( arr[i] 
+           && arr[i].hasOwnProperty(attr) 
+           && (arguments.length > 2 && arr[i][attr] === value ) ){ 
+           arr.splice(i,1);
+       }
+    }
+    return arr;
+}
+
+function deleteAllSearchAreas(){
     
-//     if(!currentSearchArea) return;
+    console.log('//TODO : Prompt Are you sure message.');
     
-//     var p = d3.mouse(this);
-//     var ll = unproject([p[0],p[1]])
+    searchAreaArray.forEach(function(searchArea){
+        deleteSearchAreaView(searchArea);
+    });
+    searchAreaArray = [];
+}
+
+function deleteSearchArea(searchArea){    
+    console.log('Removing Search Area '+searchArea.id);        
+    deleteSearchAreaView(searchArea);    
+    removeByAttr(searchAreaArray, 'id', searchArea.id);
+}
+
+function deleteSearchAreaView(searchArea){    
+    svg.selectAll('#SearchArea-'+searchArea.id).remove();
+    svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
+    svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();    
+    document.getElementById('control-searcharea-'+searchArea.id).remove();
+}
+
+svg.on("mousemove.circle", function() {
     
-//     currentSearchArea.outer = ll;
+    if(!currentSearchArea) return;
     
-//     redrawSearchAreas();
-// })
+    var p = d3.mouse(this);
+    var ll = unproject([p[0],p[1]])
+    
+    currentSearchArea.outer = ll;
+    
+    redrawSearchAreas();
+})
 
 var dispatch = d3.dispatch("redrawSearchAreas", "clear");
 d3.rebind(this, dispatch, "on")
+
+var drag = d3.behavior.drag()
+    .on("drag", function(d,i) {
+        // if(!active) return;
+        // if(circleSelected) {
+        // dragging = true;
+        // var p = d3.mouse(svg.node());
+        // var ll = unproject([p[0],p[1]])
+        // if(i) {
+        //     circleOuter = ll;
+        // } else {
+        //     var dlat = circleCenter.lat - ll.lat;
+        //     var dlng = circleCenter.lng - ll.lng;
+        //     circleCenter = ll;
+        //     circleOuter.lat -= dlat;
+        //     circleOuter.lng -= dlng;
+        // }
+        // update();
+        // } else {
+        // return false;
+        // }
+    })
+    .on("dragend", function(d) {
+        // // kind of a dirty hack...
+        // setTimeout(function() {
+        // dragging = false;
+        // },100)
+    })
 
 function redrawSearchAreas(){
 
     searchAreaArray.forEach(function(searchArea){
         
-        if(!searchArea.center || !searchArea.outer){
+        if(!searchArea.center){
            return; 
         } 
         
@@ -280,19 +417,21 @@ function redrawSearchAreas(){
         // Remove First
         svg.selectAll('#SearchArea-'+searchArea.id).remove();
         svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
+        svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();
         
         // Redraw
         var circleLasso = svg.selectAll('#SearchArea-'+searchArea.id)
             .data([dist])
             .enter()
-            .append("circle");        
+            .append("circle")     
             
-        circleLasso.attr({
+        .attr({
           cx: project(searchArea.center).x,
           cy: project(searchArea.center).y,
           r: dist,
           id:'SearchArea-'+searchArea.id
         })
+        
         .style({
           stroke: "#010",
           fill: "#010",
@@ -301,22 +440,46 @@ function redrawSearchAreas(){
         
         // Draw Line
         
-        var line = svg.selectAll("line.lasso")
+        var line = svg.selectAll('SearchArea-Line-'+searchArea.id)
             .data([searchArea.outer])
             .enter()
             .append("line")
             
-        line.attr({
+        .attr({
             x1: project(searchArea.center).x,
             y1: project(searchArea.center).y,
             x2: project(searchArea.outer).x,
             y2: project(searchArea.outer).y,
             id:'SearchArea-Line-'+searchArea.id
         })
+        
         .style({
             stroke: "#111",
             "stroke-dasharray": "5 5"
         })
+        
+        // Markers
+        
+        var markers = svg.selectAll('SearchArea-Marker-'+searchArea.id)
+            .data([searchArea.center, searchArea.outer])
+            .enter()
+            .append("circle")
+            
+        .attr({
+          cx: function(d) { return project(d).x},
+          cy: function(d) { return project(d).y},
+          r: 8,
+          stroke: "#010",
+          fill: "#b7feb7",
+          "fill-opacity":0.9,
+          id:'SearchArea-Marker-'+searchArea.id
+        })
+        
+        .style({
+          "cursor": "move"
+        })
+        
+        .call(drag)
         
         // Redraw
         dispatch.redrawSearchAreas();
