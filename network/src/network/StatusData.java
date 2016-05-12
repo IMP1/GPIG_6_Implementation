@@ -4,17 +4,17 @@ public class StatusData extends Data {
 
 	public final static String STATUS_DATA_PREFIX = "STATUS";
 	
-	public final String latitude;
-	public final String longitude;
-	public final String batteryStatus;
+	public final double latitude;
+	public final double longitude;
+	public final double batteryStatus;
 	public final String status;
 	
-	public StatusData(String id, String timestamp, String latitude, String longitude, String batteryStatus, String status) {
+	public StatusData(String id, java.time.LocalDateTime timestamp, double latitude, double longitude, double batteryStatus, String status) {
 		super(id, timestamp);
-		this.latitude = latitude;
-		this.longitude = longitude;
+		this.latitude      = latitude;
+		this.longitude     = longitude;
 		this.batteryStatus = batteryStatus;
-		this.status = status;
+		this.status        = status;
 	}
 
 	@Override
@@ -39,10 +39,10 @@ public class StatusData extends Data {
 			throw new RuntimeException("A STATUS Data Message must have 4 arguments: latitude, longitude, battery status, drone state.");
 		}
 		// TODO: add current path as an additional argument
-		latitude = data[0];
-		longitude = data[1];
-		batteryStatus = data[2];
-		status = data[3];
+		latitude      = Double.parseDouble(data[0]);
+		longitude     = Double.parseDouble(data[1]);
+		batteryStatus = Double.parseDouble(data[2]);
+		status        = data[3];
 	}
 
 }

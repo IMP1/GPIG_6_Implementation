@@ -1,5 +1,7 @@
 package network;
 
+import java.time.LocalDateTime;
+
 /**
  * Abstract Message class. Subclasses are used for packing and unpacking data strings.
  * This is shared across the C2 and Drone projects and used to ensure data is in the 
@@ -21,10 +23,8 @@ public abstract class Message {
 			final String commandMessage = Command.strip(rawMessage);
 			if (commandMessage.startsWith(MoveCommand.MOVE_COMMAND_PREFIX)) {
 				return MoveCommand.class;
-			/*
 			} else if (message.startsWith(PathCommand.COMMAND_PREFIX)) {
 				return PathCommand.class;
-			*/
 			} else {
 				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nMust be either COMMAND or DATA.");
 			}
@@ -44,12 +44,16 @@ public abstract class Message {
 		}
 	}
 	
-	public final String id;
-	public final String timestamp;
+	public static String getId(final String rawMessage) {
+		return rawMessage.split(SEPARATOR)[0];
+	}
 	
-	protected Message(String id, String timestamp) {
+	public final String id;
+	public final LocalDateTime timestamp;
+	
+	protected Message(String id, LocalDateTime timestamp) {
 		this.id = id;
-		this.timestamp = timestamp;
+		this.timestamp = java.time.LocalDateTime.now();
 	}
 
 	@Override
@@ -64,7 +68,7 @@ public abstract class Message {
 		String data[] = message.split(SEPARATOR);
 		if (data.length < 2) throw new RuntimeException("Both the Drone ID and the Timestamp need to be supplied.");
 		id = data[0];
-		timestamp = data[1];
+		timestamp = LocalDateTime.parse(data[1]);
 	}
 	
 	protected static String strip(String message) {

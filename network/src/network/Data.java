@@ -4,7 +4,7 @@ public abstract class Data extends Message {
 
 	public final static String DATA_PREFIX = "DATA";
 	
-	protected Data(String id, String timestamp) {
+	protected Data(String id, java.time.LocalDateTime timestamp) {
 		super(id, timestamp);
 	}
 	

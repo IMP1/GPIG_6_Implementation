@@ -1,5 +1,7 @@
 package network;
 
+import java.time.LocalDateTime;
+
 @SuppressWarnings("unused")
 public class Test {
 
@@ -11,23 +13,29 @@ public class Test {
 		testC2();
 	}
 	
-	private static void testMoveCommand() {		
-		String a = "1;2016;COMMAND;MOVE;1235.035353;-525106.525252;0";
-		System.out.println(Message.getType(a) + "\n\n");
-		MoveCommand c = new MoveCommand(a);
-		System.out.println(c.id);
-		System.out.println(c.timestamp);
-		System.out.println(c.latitude);
-		System.out.println(c.longitude);
-		System.out.println(c.radius);
-		System.out.println("\n\n");
+	private static void testMoveCommand() {
+		String droneID = "1200afja8ahfafhf";
+		LocalDateTime time = LocalDateTime.now();
+		double lat = 0.001252536;
+		double lon = 0.001252536;
+		double rad = 4.001252536;
+		MoveCommand c = new MoveCommand(droneID, time, lat, lon, rad);
 		
-		MoveCommand c2 = new MoveCommand("2", "2017", "x", "y", "r");
-		System.out.println(c2.toString());
+		String message = c.toString();
+		System.out.println(message);
+		
+		MoveCommand c2 = new MoveCommand(message);
+		System.out.println(c2.id);
+		System.out.println(c2.timestamp);
+		System.out.println(c2.latitude);
+		System.out.println(c2.longitude);
+		System.out.println(c2.radius);
+		
+		System.out.println("\n\n");
 	}
 	
 	private static void testReportMessage() {
-		String status = "0001;-1;DATA;STATUS;x;y;100;FINE THANKS HOW ARE YOU?";
+		String status = "0001;2016-05-12T17:31:13.269;DATA;STATUS;0.001256475;0.87252587;100;FINE THANKS HOW ARE YOU?";
 		System.out.println(Message.getType(status) + "\n\n");
 		
 		StatusData r = new StatusData(status);
@@ -40,7 +48,7 @@ public class Test {
 	}
 	
 	private static void testScanMessage() {
-		String scanData = "some_id;some_time;DATA;SCAN;lat;long;depth;flow;0,1,2,3,4";
+		String scanData = "some_id;2016-05-12T17:31:13.269;DATA;SCAN;0.0365364363;0.52636746;1337.101;1234.56789;0,1,2,3,4";
 		System.out.println(Message.getType(scanData) + "\n");
 		ScanData s = new ScanData(scanData);
 		System.out.println(s.id);
@@ -49,7 +57,7 @@ public class Test {
 		System.out.println(s.longitude);
 		System.out.println(s.depth);
 		System.out.println(s.flowRate);
-		for (String distance : s.distanceReadings) {
+		for (double distance : s.distanceReadings) {
 			System.out.print(distance + ", ");
 		}
 	}
@@ -57,15 +65,15 @@ public class Test {
 	private static void testPathMessage() {
 		// Data
 		final String id = "drone_id";
-		final String time = "unix_time";
-		final String[] points = new String[] { 
-			"53.95717145394973" , "-1.0783239204362758",
-			"53.95725918465687" , "-1.0784689578071749",
-			"53.9573716884264"  , "-1.078658947616643" ,
-			"53.957388824762155", "-1.078682603210567" ,
-			"53.95727725231522" , "-1.078708680243239" ,
-			"53.957098438376896", "-1.0790372508549075",
-			"53.956931545367794", "-1.079042093732404" , 
+		final LocalDateTime time = LocalDateTime.now();
+		final double[] points = new double[] { 
+			53.95717145394973 , -1.0783239204362758,
+			53.95725918465687 , -1.0784689578071749,
+			53.9573716884264  , -1.078658947616643 ,
+			53.957388824762155, -1.078682603210567 ,
+			53.95727725231522 , -1.078708680243239 ,
+			53.957098438376896, -1.0790372508549075,
+			53.956931545367794, -1.079042093732404 , 
 		};
 		// Sending
 		String message = "";
@@ -81,21 +89,21 @@ public class Test {
 		System.out.println(pathObj2.id);
 		System.out.println(pathObj2.timestamp);
 		System.out.println(pathObj2.points.length);
-		for (String point : pathObj2.points) {
+		for (double point : pathObj2.points) {
 			System.out.print(point + ", ");
 		}
 		if (!pathObj2.id.equals(id)) System.err.println("FAILURE: Not the same drone id.");
 		if (!pathObj2.timestamp.equals(time)) System.err.println("FAILURE: Not the same timestamp.");
 		if (pathObj2.points.length != points.length) System.err.println("FAILURE: Not the same number of points.");
 		for (int i = 0; i < pathObj2.points.length; i ++) {
-			if (!pathObj2.points[i].equals(points[i])) {
+			if (pathObj2.points[i] != points[i]) {
 				System.err.println("FAILURE: Point " + i + " is not the same. " + pathObj2.points[i] + " != " + points[i] + ".");
 			}
 		}
 	}
 	
 	private static void testC2() {
-		String message = "some_id;some_time;DATA;SCAN;lat;long;depth;flow;0,1,2,3,4";
+		String message = "some_id;2016-05-12T17:31:13.269;DATA;SCAN;0.0102;0.2864;6.02;0.12;0,1,2,3,4";
 		
 		// if ( CLASS_WE_CARE_ABOUT.class.isAssignableFrom(Message.getType(MESSAGE_STRING)) ) { ... }
 		

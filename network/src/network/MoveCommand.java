@@ -4,11 +4,11 @@ public class MoveCommand extends Command {
 	
 	public final static String MOVE_COMMAND_PREFIX = "MOVE";
 	
-	public final String latitude;
-	public final String longitude;
-	public final String radius;
+	public final double latitude;
+	public final double longitude;
+	public final double radius;
 	
-	public MoveCommand(String id, String timestamp, String latitude, String longitude, String radius) {
+	public MoveCommand(String id, java.time.LocalDateTime timestamp, double latitude, double longitude, double radius) {
 		super(id, timestamp);
 		this.latitude = latitude;
 		this.longitude = longitude;
@@ -36,9 +36,9 @@ public class MoveCommand extends Command {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A MOVE Command Message must have 3 arguments: latitude, longitude, radius.");
 		}
-		latitude = data[0];
-		longitude = data[1];
-		radius = data[2];
+		latitude  = Double.parseDouble(data[0]);
+		longitude = Double.parseDouble(data[1]);
+		radius    = Double.parseDouble(data[2]);
 	}
 
 }

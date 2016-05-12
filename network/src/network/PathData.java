@@ -5,9 +5,9 @@ public class PathData extends Data {
 	public final static String PATH_DATA_PREFIX = "PATH";
 	public final static String POINT_SEPARATOR = ",";
 	
-	public final String[] points;
+	public final double[] points;
 	
-	public PathData(String id, String timestamp, String[] points) {
+	public PathData(String id, java.time.LocalDateTime timestamp, double[] points) {
 		super(id, timestamp);
 		this.points = points;
 	}
@@ -17,7 +17,7 @@ public class PathData extends Data {
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
 		sb.append(PATH_DATA_PREFIX); sb.append(SEPARATOR);
-		for (String distance : points) {
+		for (double distance : points) {
 			sb.append(distance); sb.append(POINT_SEPARATOR);
 		}
 		return sb.toString();
@@ -33,7 +33,11 @@ public class PathData extends Data {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A SCAN Data Message must have 5 arguments: latitude, longitude, depth reading, flow rate, distance readings.");
 		}
-		points = data[0].split(POINT_SEPARATOR);
+		String[] pointData = data[0].split(POINT_SEPARATOR);
+		points = new double[pointData.length];
+		for (int i = 0; i < points.length; i ++) {
+			points[i] = Double.parseDouble(pointData[i]);
+		}
 	}
 	
 }

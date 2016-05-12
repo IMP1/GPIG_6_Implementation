@@ -4,7 +4,7 @@ public abstract class Command extends Message {
 
 	public final static String COMMAND_PREFIX = "COMMAND";
 	
-	protected Command(String id, String timestamp) {
+	protected Command(String id, java.time.LocalDateTime timestamp) {
 		super(id, timestamp);
 	}
 	
