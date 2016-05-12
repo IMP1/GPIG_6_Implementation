@@ -7,6 +7,7 @@ import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.util.PointList;
 
 import drones.Drone;
+import drones.MapHelper;
 import drones.sensors.SensorInterface;
 
 /**
@@ -95,8 +96,10 @@ public class NavigationThread extends Thread {
 						chkLng += Math.cos(angle) * LONG_DST_CHECK;
 					}
 
-					// TODO: If location in building, move to nearest edge.
-					Drone.map().getLocationIndex().findClosest(chkLat, chkLng, EdgeFilter.ALL_EDGES);
+					// Move point to nearest outdoors location if indoors
+					double[] point = MapHelper.getExternalPoint(chkLat, chkLng);
+					chkLat = point[0];
+					chkLng = point[1];
 
 					// If location outside search area, reset search to drone location.
 					if(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2) < tgtRadius) {
@@ -106,21 +109,23 @@ public class NavigationThread extends Thread {
 					
 					// TODO: Check if point is viable for scanning
 				}
-				// TODO: Check for routing necessity based on object intersection
+				// TODO: Check for routing necessity based on structure intersection
 			}
 				
 			if(checkForRedirect()) {
 				routing = true;
 				routeStepIndex = 0;
 				acknowledgeRedirect();
+				
+				// TODO: Accept routing for navigation (watch for race conditions!)
 			}
 
 			// Follow routing if required
 			if(routing) {
-				
+				// TODO: Follow set of waypoints specified by route and finally target
 			}
 			
-			// Travelling abstraction. Assume constant movement speed.
+			// TODO: Travelling abstraction. Assume constant movement speed.
 		}
 	}
 
