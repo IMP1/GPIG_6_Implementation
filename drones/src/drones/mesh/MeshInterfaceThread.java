@@ -6,7 +6,9 @@ import java.util.concurrent.Future;
 
 import com.graphhopper.PathWrapper;
 
+import drones.Drone;
 import drones.routing.RoutingHandler;
+/*TODO import ScannerHandler.Scan; */ 
 
 public class MeshInterfaceThread extends Thread {
 
@@ -14,6 +16,21 @@ public class MeshInterfaceThread extends Thread {
 	private RoutingHandler router = null;
 	private Future<PathWrapper> calculatedPath = null;
 	private ArrayList<String> commandBuffer = new ArrayList<String>();
+	private ArrayList<Object /*TODO Scan */> scanBuffer = new ArrayList<>();
+	
+	public void addScan(Object /*TODO Scan */ scan) {
+		synchronized (scanBuffer) {
+			scanBuffer.add(scan);
+		}
+	}
+	
+	private Object/*TODO Scan*/[] getScans() {
+		synchronized (scanBuffer) {
+			Object/*TODO Scan*/[] scans = scanBuffer.toArray(new Object/*TODO Scan*/[scanBuffer.size()]);
+			scanBuffer.clear();
+			return scans;
+		}
+	}
 	
 	protected void addCommand(String command) {
 		synchronized (commandBuffer) {
@@ -57,6 +74,9 @@ public class MeshInterfaceThread extends Thread {
 				requestRouteCalculation(Double.valueOf(data[1]), Double.valueOf(data[2]), Double.valueOf(data[3]));
 			}
 		}
+		for (Object /*TODO Scan*/ scan : getScans()) {
+			
+		}
 	}
 	
 	private void broadcastRouteData() {
@@ -65,9 +85,9 @@ public class MeshInterfaceThread extends Thread {
 			for (String p : points) {
 				System.out.println(p);
 			}
-			//TODO: make new network message subclass for route
-			//TODO: use points to create route
-			//TODO: send route
+			String timestamp = java.time.LocalDateTime.now().toString();
+			network.PathData pathMessage = new network.PathData(Drone.ID, timestamp, points);
+			networkingThread.sendMessage(pathMessage);
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
