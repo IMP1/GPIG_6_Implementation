@@ -1,6 +1,7 @@
 package datastore;
 
 import java.util.HashMap;
+import com.google.gson.*;
 
 public class Datastore {
 	private HashMap<String, Drone> drones;
@@ -27,5 +28,9 @@ public class Datastore {
 	public void addScan(String id, Scan scan) {
 		scans.put(id,  scan);
 		
+	}
+	public String getDronesAsJSON(){
+		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		return gson.toJson(drones);
 	}
 }

@@ -14,7 +14,7 @@ public class Drone {
 		this.batteryLevel = batteryLevel;
 		this.locLat = locLat;
 		this.locLong = locLong;
-		this.status = status;
+		this.status = status.trim();
 		this.timestamp = timestamp;
 	}
 	
