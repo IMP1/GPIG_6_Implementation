@@ -48,6 +48,10 @@ public abstract class Message {
 		return rawMessage.split(SEPARATOR)[0];
 	}
 	
+	public static LocalDateTime getTimestamp(final String rawMessage) {
+		return LocalDateTime.parse(rawMessage.split(SEPARATOR)[1]);
+	}
+	
 	public final String id;
 	public final LocalDateTime timestamp;
 	

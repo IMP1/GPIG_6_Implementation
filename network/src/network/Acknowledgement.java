@@ -1,6 +1,6 @@
 package network;
 
-public abstract class Acknowledgement extends Message {
+public class Acknowledgement extends Message {
 
 	public final static String ACKNOWLEDGEMENT_PREFIX = "ACK";
 	
