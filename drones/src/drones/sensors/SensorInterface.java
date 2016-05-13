@@ -1,5 +1,11 @@
 package drones.sensors;
 
+import java.io.FileReader;
+import java.io.IOException;
+
+import au.com.bytecode.opencsv.*;
+
+
 /**
  * Sensor interface.
  * All static methods as these will eventually be piped out to hardware.
@@ -19,4 +25,42 @@ public abstract class SensorInterface {
 	// TODO: Set GPS via 'Navigation'
 
 	// TODO: Create and read in pre-defined sonar, depth and flow data
+	public static double[] getDataForPoint(double lat, double lon){
+		CSVReader reader = null;
+		double[] output = new double[366];
+		
+		try{
+			reader = new CSVReader(new FileReader("../gpig_6_implementation/sonar.csv"));
+		}
+		catch (Exception e){
+			// ohnoes
+			System.out.println(e.getMessage());
+		}
+		String [] line;
+		try {
+			while ((line = reader.readNext()) != null){
+				if(Double.parseDouble(line[0]) == lat && Double.parseDouble(line[1]) == lon){
+					System.out.println("Hurray");
+					System.out.println("Depth: " + line[2] + " Flow: " + line [3]);
+					for (int i = 4; i < line.length; i++){
+						
+						System.out.print(line[i] + ",");
+					}
+					System.out.println();
+					
+					for (int i = 0 ; i < line.length; i++){
+						output[i] = Double.parseDouble(line[i]);
+					}
+					break;
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+		
+		return output;
+	}
 }
