@@ -1,14 +1,14 @@
 package network;
 
-public abstract class Command extends Message {
+public class Acknowledgement extends Message {
 
-	public final static String COMMAND_PREFIX = "COMMAND";
+	public final static String ACKNOWLEDGEMENT_PREFIX = "ACK";
 	
-	protected Command(String id, java.time.LocalDateTime timestamp) {
+	protected Acknowledgement(String id, java.time.LocalDateTime timestamp) {
 		super(id, timestamp);
 	}
 	
-	protected Command(String message) {
+	protected Acknowledgement(String message) {
 		super(message);
 	}
 	
@@ -19,12 +19,12 @@ public abstract class Command extends Message {
 		int separatorIndex = message.indexOf(SEPARATOR);
 		return message.substring(separatorIndex + 1);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
-		sb.append(COMMAND_PREFIX); sb.append(SEPARATOR);
+		sb.append(ACKNOWLEDGEMENT_PREFIX); sb.append(SEPARATOR);
 		return sb.toString();
 	}
 	

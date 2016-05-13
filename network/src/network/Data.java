@@ -1,14 +1,14 @@
 package network;
 
-public abstract class Command extends Message {
+public abstract class Data extends Message {
 
-	public final static String COMMAND_PREFIX = "COMMAND";
+	public final static String DATA_PREFIX = "DATA";
 	
-	protected Command(String id, java.time.LocalDateTime timestamp) {
+	protected Data(String id, java.time.LocalDateTime timestamp) {
 		super(id, timestamp);
 	}
 	
-	protected Command(String message) {
+	protected Data(String message) {
 		super(message);
 	}
 	
@@ -24,7 +24,7 @@ public abstract class Command extends Message {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
-		sb.append(COMMAND_PREFIX); sb.append(SEPARATOR);
+		sb.append(DATA_PREFIX); sb.append(SEPARATOR);
 		return sb.toString();
 	}
 	

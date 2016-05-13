@@ -1,15 +1,13 @@
 package drones;
 
 import java.io.File;
-import java.util.concurrent.Future;
+import java.util.UUID;
 
 import com.graphhopper.GraphHopper;
-import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 
+import drones.mesh.MeshInterfaceThread;
 import drones.navigation.NavigationThread;
-import drones.routing.RoutingHandler;
-import drones.scanner.ScannerHandler;
 
 /**
  * Main startup sequence and singleton handler.
@@ -18,9 +16,12 @@ import drones.scanner.ScannerHandler;
  */
 public class Drone {
 	
+	public final static String ID = UUID.randomUUID().toString();
+	
 	// Singleton instances
 	private static GraphHopper map = null;
 	private static NavigationThread navThread = null;
+	private static MeshInterfaceThread meshThread = null;
 	
 	// Singleton accessors
 	// TODO: Handle synchronous read / write access to map
@@ -29,6 +30,9 @@ public class Drone {
 	}
 	public static NavigationThread nav() {
 		return navThread;
+	}
+	public static MeshInterfaceThread mesh() {
+		return meshThread;
 	}
 
 	/**
@@ -51,34 +55,15 @@ public class Drone {
 		map.importOrLoad();
 		System.out.println("Graph loaded.");
 		
-		// Initialise routing handler
-		RoutingHandler router = new RoutingHandler(); // TODO: Initialise in Mesh Interface
-		
 		// Initialise and release navigation thread
 		navThread = new NavigationThread();
 		navThread.start();
+		System.out.println("Navigation Thread started.");
 		
-		// Test calculation of route
-		Future<PathWrapper> route = router.calculate(53.955391, -1.078967, 10.0);
-		System.out.print("Calculating route");
-		while(!route.isDone()) {
-			System.out.print(".");
-			try {
-				Thread.sleep(10);
-			} catch (Exception e) {
-				System.err.println("wtf?");
-				System.err.println(e.getMessage());
-			}
-		}
-		System.out.print("\n");
-		try {
-			PathWrapper path = route.get();
-			System.out.println("Route calculated!");
-			System.out.println("Distance: " + path.getDistance() + "m");
-			System.out.println("Waypoints: " + path.getPoints().toString());
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		}
+		// Initialise and begin mesh interface thread
+		meshThread = new MeshInterfaceThread();
+		meshThread.start();
+		System.out.println("Mesh Interface created.");
 	}
-
+	
 }
