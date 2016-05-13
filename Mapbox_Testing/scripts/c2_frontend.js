@@ -433,7 +433,7 @@ function redrawSearchAreas(){
         })
         
         .style({
-          stroke: "#010",
+          stroke: "#414852",
           fill: "#010",
           "fill-opacity": 0.1
         })       
@@ -454,7 +454,7 @@ function redrawSearchAreas(){
         })
         
         .style({
-            stroke: "#111",
+            stroke: "#414852",
             "stroke-dasharray": "5 5"
         })
         
@@ -469,8 +469,8 @@ function redrawSearchAreas(){
           cx: function(d) { return project(d).x},
           cy: function(d) { return project(d).y},
           r: 8,
-          stroke: "#010",
-          fill: "#b7feb7",
+          stroke: "#414852",
+          fill: "#414852",
           "fill-opacity":0.9,
           id:'SearchArea-Marker-'+searchArea.id
         })

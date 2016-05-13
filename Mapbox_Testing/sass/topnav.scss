@@ -1,0 +1,64 @@
+@import 'global_vars';
+@import 'global_colors';
+
+#top-nav{
+	position:absolute;
+	width:100%;
+	height:$top_nav_height;
+	background:white;
+	
+	#left-section{
+		position:relative;
+		float:left;
+		width:$controls_width;
+		height:100%;
+		
+		$logosize:30px;
+		
+		#logo{
+			padding-left:10px;
+			float:left;
+			margin-top:$top_nav_height/2-$logosize/2;
+			width:$logosize;
+			height:$logosize;
+		}
+		
+		#title{
+			float:left;
+			height:$logosize;
+			padding-left:10px;
+			margin-top:$top_nav_height/2-$logosize/2+1;
+			font-size:20px;
+			color:$highlight_color;
+			font-weight: 700;
+		}
+	}
+	
+	#right-section{
+		position:relative;
+		float:left;
+		width:auto;
+		width:auto;
+		height:$top_nav_height;
+		line-height:$top_nav_height;
+		
+		button{
+			background:$highlight_color;
+			color:white;
+			border:none;
+			border-radius:$border_radius;
+			padding:10px;
+			$margin:5px;
+			margin:0 $margin 0 $margin;
+			outline:none;
+			font-size:13px;
+			font-weight: 500;
+			min-width:200px;
+			:hover{
+				background:rgba($highlight_color, .5);
+			}
+		}
+		
+	}
+	
+}
