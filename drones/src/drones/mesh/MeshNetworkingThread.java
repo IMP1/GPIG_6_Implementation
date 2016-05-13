@@ -24,6 +24,7 @@ public class MeshNetworkingThread extends Thread {
 	
 	private ArrayList<network.Message> unacknowledgedSentMessages;
 	private ArrayList<network.Message> sentMessages; //TODO: store as hashes for quicker lookup?
+	private ArrayList<String> dealtWithMessages;
 	
 	private MulticastSocket socket;
 	private InetAddress groupAddress;
@@ -32,6 +33,9 @@ public class MeshNetworkingThread extends Thread {
 	 * Constructor called from MeshInterfaceThread. Initialises sockets.
 	 */
 	protected MeshNetworkingThread() {
+		sentMessages = new ArrayList<network.Message>();
+		unacknowledgedSentMessages = new ArrayList<network.Message>();
+		dealtWithMessages = new ArrayList<String>();
 		try {
     		groupAddress = InetAddress.getByName(network.Message.MESH_GROUP_ADDRESS);
     		socket = new MulticastSocket(network.Message.MESH_PORT);
@@ -48,15 +52,16 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	@Override
 	public void run() {
-		//TODO: remove testing
+		//TODO: Remove Testing:
+		// <testing>
 		String id = Drone.ID;
 		LocalDateTime timestamp = LocalDateTime.now();
 		double latitude = 53.955391;
 		double longitude = -1.078967; 
 		double radius = 10.0;
 		PathCommand p = new PathCommand(id, timestamp, latitude, longitude, radius);
-		recieveMessage(p.toString());
-		//TODO: remove testing
+		sendMessage(p.toString());
+		// </testing>
 		while (true) {
 			try {
 				byte[] receiveData = new byte[network.Message.PACKAGE_SIZE];
@@ -83,35 +88,71 @@ public class MeshNetworkingThread extends Thread {
 	
 	private void broadcastData(network.Message message) {
 		sendMessage(message.toString());
-		sentMessages.add(message);
 	}
 	
 	private void recieveMessage(String message) {
-		System.out.printf("Receieved message: '%s'.\n", message);
+		if (dealtWithMessages.contains(message)) {
+			System.out.println("DUP");
+			System.out.println(message);
+			System.out.println("Ignoring.");
+			return;
+		}
+		System.out.println("RECV");
+		final Class<? extends Message> messageClass = Message.getType(message);
 		if (Message.getId(message).equals(Drone.ID)) {
-			Class<? extends Message> messageClass = Message.getType(message); 
 			if (Command.class.isAssignableFrom(messageClass)) {
 				handleCommand(message);
 			} else if (Acknowledgement.class.isAssignableFrom(messageClass)) {
 				handleAcknowledgement(message);
+			} else {
+				// Data from this drone (being resent across the mesh)
+				//TODO: remove debug
+				// <debug>
+				System.out.printf("Receieved data from ourself.\n");
+				System.out.printf("(Message = '%s')\n", message);
+				// </debug>
 			}
 		} else {
-			//TODO: resend if not bound for here, and not already sent from here.
+			if (Data.class.isAssignableFrom(messageClass)) {
+				handleOtherData(message);
+			}
+			rebroadcast(message);
 		}
 	}
 	
 	private void handleCommand(String message) {
+		String droneID = Message.getId(message);
+		System.out.printf("Receieved command for Drone %s%s.\n", droneID, droneID.equals(Drone.ID) ? " (That's me!)" : "");
 		if (MoveCommand.class.isAssignableFrom(Message.getType(message))) {
 			MoveCommand command = new MoveCommand(message);
 			Drone.mesh().addCommand(command);
+			dealtWithMessages.add(message);
 		} else if (PathCommand.class.isAssignableFrom(Message.getType(message))) {
 			PathCommand command = new PathCommand(message);
 			Drone.mesh().addCommand(command);
+			dealtWithMessages.add(message);
 		}
 	}
 	
 	private void handleAcknowledgement(String message) {
-		
+		//TODO: Handle Acknowledgements:
+		//      Check whether this acknowledgement is for us.
+		//      If so, remove the corresponding message from the unacknowledged list
+		//      If not, rebroadcast it.
+	}
+	
+	/**
+	 * Handles data being sent from other drones.
+	 * Uses it to update local information and retransmits the message along the mesh. 
+	 * @param message
+	 */
+	private void handleOtherData(String message) {
+		System.out.printf("Receieved data from Drone %s.\n", Message.getId(message));
+		dealtWithMessages.add(message);
+	}
+	
+	private void rebroadcast(String message) {
+		sendMessage(message);
 	}
 	
 	/**
@@ -120,13 +161,15 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	protected void sendMessage(network.Message message) {
 		sendMessage(message.toString());
+		sentMessages.add(message);
 	}
 
 	private void sendMessage(String message) {
 		try {
 			byte[] data = message.getBytes();
+			System.out.printf("Sending %d bytes of data (out of the current maximum %d).\n", data.length, network.Message.PACKAGE_SIZE);
 			if (data.length > network.Message.PACKAGE_SIZE) {
-				System.err.printf("THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d\n", 
+				System.err.printf("THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d.\n", 
 								  data.length, network.Message.PACKAGE_SIZE);
 			}
 			DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, network.Message.MESH_PORT);
