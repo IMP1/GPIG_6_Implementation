@@ -110,7 +110,19 @@ public class MeshInterfaceThread extends Thread {
 			networkingThread.sendMessage(scanData); 
 		}
 		
-		//TODO: get current state (position + battery level from sensors)
+		handleBatteryLevel();
+		
+		sendCurrentState();
+	}
+	
+	private void handleBatteryLevel() {
+		// TODO handle battery stuff
+		//      if it's too low, oh no!
+		// TODO make sure drone.sensors has some way of giving battery level (random number)
+	}
+	
+	private void sendCurrentState() {
+		
 	}
 	
 	private void broadcastRouteData() {
