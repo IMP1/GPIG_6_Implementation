@@ -25,6 +25,13 @@ public class FrontendServerHandler implements Runnable{
 	@Override
 	public void run() {
 		System.out.println("Frontend Server Request Received, handler started");
+		try {
+			String message = reader.readLine();
+			System.out.println(message);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		writer.println("YoYo");
 		try {
 			socket.close();
