@@ -23,7 +23,8 @@ import network.*;
 public class MeshNetworkingThread extends Thread {
 	
 	private ArrayList<network.Message> unacknowledgedSentMessages;
-	private ArrayList<network.Message> sentMessages = new ArrayList<network.Message>(); //TODO: store as hashes for quicker lookup?
+	private ArrayList<network.Message> sentMessages; //TODO: store as hashes for quicker lookup?
+	private ArrayList<String> dealtWithMessages;
 	
 	private MulticastSocket socket;
 	private InetAddress groupAddress;
@@ -32,6 +33,9 @@ public class MeshNetworkingThread extends Thread {
 	 * Constructor called from MeshInterfaceThread. Initialises sockets.
 	 */
 	protected MeshNetworkingThread() {
+		sentMessages = new ArrayList<network.Message>();
+		unacknowledgedSentMessages = new ArrayList<network.Message>();
+		dealtWithMessages = new ArrayList<String>();
 		try {
     		groupAddress = InetAddress.getByName(network.Message.MESH_GROUP_ADDRESS);
     		socket = new MulticastSocket(network.Message.MESH_PORT);
@@ -87,9 +91,12 @@ public class MeshNetworkingThread extends Thread {
 	}
 	
 	private void recieveMessage(String message) {
-		
-		//TODO: check if we've already got this message and dealt with it,
-		//      and ignore it if so.
+		if (dealtWithMessages.contains(message)) {
+			System.out.println("DUP");
+			System.out.println(message);
+			System.out.println("Ignoring.");
+			return;
+		}
 		System.out.println("RECV");
 		final Class<? extends Message> messageClass = Message.getType(message);
 		if (Message.getId(message).equals(Drone.ID)) {
@@ -98,9 +105,12 @@ public class MeshNetworkingThread extends Thread {
 			} else if (Acknowledgement.class.isAssignableFrom(messageClass)) {
 				handleAcknowledgement(message);
 			} else {
+				// Data from this drone (being resent across the mesh)
 				//TODO: remove debug
+				// <debug>
 				System.out.printf("Receieved data from ourself.\n");
 				System.out.printf("(Message = '%s')\n", message);
+				// </debug>
 			}
 		} else {
 			if (Data.class.isAssignableFrom(messageClass)) {
@@ -116,14 +126,19 @@ public class MeshNetworkingThread extends Thread {
 		if (MoveCommand.class.isAssignableFrom(Message.getType(message))) {
 			MoveCommand command = new MoveCommand(message);
 			Drone.mesh().addCommand(command);
+			dealtWithMessages.add(message);
 		} else if (PathCommand.class.isAssignableFrom(Message.getType(message))) {
 			PathCommand command = new PathCommand(message);
 			Drone.mesh().addCommand(command);
+			dealtWithMessages.add(message);
 		}
 	}
 	
 	private void handleAcknowledgement(String message) {
-		
+		//TODO: Handle Acknowledgements:
+		//      Check whether this acknowledgement is for us.
+		//      If so, remove the corresponding message from the unacknowledged list
+		//      If not, rebroadcast it.
 	}
 	
 	/**
@@ -133,6 +148,7 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	private void handleOtherData(String message) {
 		System.out.printf("Receieved data from Drone %s.\n", Message.getId(message));
+		dealtWithMessages.add(message);
 	}
 	
 	private void rebroadcast(String message) {
