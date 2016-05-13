@@ -1,6 +1,9 @@
+@import 'global_vars';
+@import 'global_colors';
+
 #map, #map_overlays {
       position:absolute; 
-      top:0; 
+      top:$top_nav_height; 
       bottom:0;
       width:100%; 
 }
