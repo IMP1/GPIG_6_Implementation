@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset='utf-8' />
+        <title>Group 6 - Sonar Mapping</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        
+        <!--Lib Scripts-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
+        <script src="scripts/lib/selector.js"></script>   
+        
+        <!--Lib CSS-->
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
+        <link href='css/lib/maki.css' rel='stylesheet' />
+        <link href='css/lib/font-awesome.css' rel='stylesheet' />
+        
+        <!--Local CSS (from SASS)-->
+        <link href='css/index.css' rel='stylesheet' />
+        <link href='css/map.css' rel='stylesheet' />
+        <link href='css/controls.css' rel='stylesheet' />
+        <link href='css/debug.css' rel='stylesheet' />
+    
+    </head>
+    
+    <body>   
+    
+        <!--Map-->
+        <div id='map'></div>
+        <div id='map_overlays'></div>
+        
+        <!--Control Panel-->
+        <div id='controls'>
+            
+            <!--Search Unit Controls-->
+            <div id='filter-group' class='filter-group'>
+                <h1>Search Units</h2>
+            </div>
+            
+            <!--Search Area Controls-->
+            <div id='search-areas' class='search-areas'>
+                <h1>Search Areas</h2>
+            </div>
+            
+            <!--Further Controls-->
+            <div id='additional-controls' class='additional-controls'>
+                <h1>Unit Controls</h2>
+                <button>
+                    Assign Search Areas
+                </button>
+                <button id="btn-clear-all">
+                    Clear Search Areas
+                </button>
+                <button>
+                    Recall All Search Units
+                </button>
+            </div>
+            
+        </div>        
+        
+        <!--Debug-->
+        <!--<pre id='info'></pre>-->
+        
+        <!--Local Scripts-->
+        <script src="scripts/c2_frontend.js"></script>
+        <!--<script src="scripts/c2_debug.js"></script>-->
+    
+    </body>
+</html>
