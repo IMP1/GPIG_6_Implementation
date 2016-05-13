@@ -18,6 +18,13 @@ import drones.sensors.SensorInterface;
  */
 public class NavigationThread extends Thread {
 	
+	// Navigation types
+	public static enum NavStatus {
+		ROUTE_TO_TARGET_AREA,
+		ROUTE_TO_CHECK_LOCATION,
+		BUMBLING
+	}
+	
 	// Number of short range checks to make before looking long distance
 	private static final int LOCAL_CHECK_LIMIT = 50;
 	// Seed for random number generator replicability
@@ -40,7 +47,7 @@ public class NavigationThread extends Thread {
 	private double newLat, newLng, newRadius;
 	
 	// Travel mode indicator
-	private boolean routing = false;
+	private NavStatus routing = NavStatus.BUMBLING;
 	private int routeStepIndex = 0;
 	
 	// Random number generator for exploration
@@ -113,7 +120,7 @@ public class NavigationThread extends Thread {
 			}
 				
 			if(checkForRedirect()) {
-				routing = true;
+				routing = NavStatus.ROUTE_TO_TARGET_AREA;
 				routeStepIndex = 0;
 				acknowledgeRedirect();
 				
@@ -121,7 +128,7 @@ public class NavigationThread extends Thread {
 			}
 
 			// Follow routing if required
-			if(routing) {
+			if(routing != NavStatus.BUMBLING) {
 				// TODO: Follow set of waypoints specified by route and finally target
 			}
 			
