@@ -5,13 +5,15 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import network.*;
+import network.Command;
+import network.PathCommand;
+import network.MoveCommand;
 
 import com.graphhopper.PathWrapper;
 
 import drones.Drone;
 import drones.routing.RoutingHandler;
-//TODO import ScannerHandler.Scan; 
+import drones.scanner.ScannerHandler.Scan; 
 
 /**
  * Mesh Interface Thread
@@ -22,16 +24,10 @@ import drones.routing.RoutingHandler;
  * @author Huw Taylor
  */
 public class MeshInterfaceThread extends Thread {
-	
-	//TODO have this be in the scanner side of things.
-	private class Scan {
-		public double lat, lon, depth, flow;
-		public double[] distanceReadings;
-	}
 
 	private MeshNetworkingThread networkingThread = null;
 	private RoutingHandler router = null;
-	private Future<PathWrapper> calculatedPath = null;
+	private Future<PathWrapper> path = null;
 	private ArrayList<Command> commandBuffer = new ArrayList<>();
 	private ArrayList<Scan> scanBuffer = new ArrayList<>();
 
@@ -94,9 +90,10 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void tick() {
-		if (calculatedPath != null && calculatedPath.isDone()) {
+		if (path != null && path.isDone()) {
 			broadcastRouteData();
 		}
+
 		for (Command command : getCommands()) {
 			if (command instanceof PathCommand) {
 				PathCommand pathCommand = (PathCommand)command;
@@ -106,19 +103,23 @@ public class MeshInterfaceThread extends Thread {
 				requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
 			}
 		}
+
 		for (Scan scan : getScans()) {
 			LocalDateTime timestamp = java.time.LocalDateTime.now();
 			network.ScanData scanData = new network.ScanData(Drone.ID, timestamp, scan.lat, scan.lon, scan.depth, scan.flow, scan.distanceReadings);
 			networkingThread.sendMessage(scanData); 
 		}
+		
+		//TODO: get current state (position + battery level from sensors)
 	}
 	
 	private void broadcastRouteData() {
 		try {
-			double[] points = new double[calculatedPath.get().getPoints().size() * 2];
+			final PathWrapper currentPath = path.get();
+			double[] points = new double[currentPath.getPoints().size() * 2];
 			for (int i = 0; i < points.length - 1; i += 2) {
-				points[i] = calculatedPath.get().getPoints().getLatitude(i / 2);
-				points[i + 1] = calculatedPath.get().getPoints().getLongitude(i / 2);
+				points[i] = currentPath.getPoints().getLatitude(i / 2);
+				points[i + 1] = currentPath.getPoints().getLongitude(i / 2);
 			}
 			LocalDateTime timestamp = java.time.LocalDateTime.now();
 			network.PathData pathMessage = new network.PathData(Drone.ID, timestamp, points);
@@ -126,16 +127,19 @@ public class MeshInterfaceThread extends Thread {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
-		calculatedPath = null;
+		path = null;
 	}
 	
-	private void updateLocalMap() {
-		//TODO: decide where the map is going to be.
-		//TODO: write to the drone's centralised map data for the other subsystems to use.
+	/**
+	 * Adds scan data from another drone's broadcast to this drone's local map.
+	 * @param scanData another drone's scan data
+	 */
+	protected void addExternalScanData(Scan scan) {
+		drones.MapHelper.addScan(scan);
 	}
 	
 	private void requestRouteCalculation(double latitude, double longitude, double radius) {
-		calculatedPath = router.calculate(latitude, longitude, radius);
+		path = router.calculate(latitude, longitude, radius);
 	}
 	
 	private void requestRouteNavigation(double latitude, double longitude, double radius) {
