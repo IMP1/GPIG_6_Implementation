@@ -53,7 +53,7 @@ public abstract class Message {
 	
 	protected Message(String id, LocalDateTime timestamp) {
 		this.id = id;
-		this.timestamp = java.time.LocalDateTime.now();
+		this.timestamp = timestamp;
 	}
 
 	@Override
