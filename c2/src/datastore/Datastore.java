@@ -6,10 +6,12 @@ import com.google.gson.*;
 public class Datastore {
 	private HashMap<String, Drone> drones;
 	private HashMap<String, Scan> scans;
+	Gson gson;
 	
 	public Datastore(){
 		drones = new HashMap<String,Drone>();
 		scans = new HashMap<String, Scan>();
+		gson = new GsonBuilder().disableHtmlEscaping().create();
 	}
 	
 	public boolean droneExists(String id){
@@ -30,7 +32,17 @@ public class Datastore {
 		
 	}
 	public String getDronesAsJSON(){
-		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		
 		return gson.toJson(drones);
+	}
+	
+	public String getScansAsJSON(String[] known_scans){
+		HashMap<String, Scan> temp = (HashMap<String, Scan>) scans.clone();
+		for (final String id : known_scans) {
+			System.out.println(id);
+			temp.remove(id);
+		}
+		return gson.toJson(temp);
+		
 	}
 }

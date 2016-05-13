@@ -1,12 +1,20 @@
 window.setInterval(pollFunc, 3000);
 
 function pollFunc(){
-	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", "http://localhost:8081/drones", false ); // false for synchronous request
-    xmlHttp.send( null );
-    var drones = JSON.parse(xmlHttp.responseText);
+	//Drone info
+	var xmlHttpDrone = new XMLHttpRequest();
+    xmlHttpDrone.open( "GET", "http://localhost:8081/GetDroneInfo", false ); // false for synchronous request
+    xmlHttpDrone.send( null );
+    var drones = JSON.parse(xmlHttpDrone.responseText);
     for(var key in drones){
-    	addNewUnit(key, drones[key])
     	console.log(key);
     }
+    //Scan info
+    known_scans = ["12016-05-12T17:31:13.269","2","3"];
+    var known_scans_string = known_scans.join(",")
+	var xmlHttpScan = new XMLHttpRequest();
+    xmlHttpScan.open( "GET", "http://localhost:8081/GetScanInfo?known_scans="+known_scans_string, false ); // false for synchronous request
+    xmlHttpScan.send( null );
+    var scans = JSON.parse(xmlHttpScan.responseText);
+    console.log(scans);
 }

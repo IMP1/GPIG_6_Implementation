@@ -42,7 +42,7 @@ public class FrontendServerHandler implements Runnable{
 	}
 	
 	public void process_request(String request){
-		if(request.contains("drones")){
+		if(request.contains("GetDroneInfo")){
 			String data = getDroneData();
 			reply(data);
 		}
@@ -55,12 +55,25 @@ public class FrontendServerHandler implements Runnable{
 		if(request.contains("RecallUnits")){
 			//TODO - GET TO THE CHOPPA.
 		}
+		if(request.contains("GetScanInfo")){
+			System.out.println(request);
+			String known_scans_string = request.replace("GET /GetScanInfo?known_scans=", "").replace(" HTTP/1.1", "");//ew.
+			String[] known_scans = known_scans_string.split(",");
+			String data = getScanData(known_scans);
+			reply(data);
+			//TODO scanny scan scan
+		}
 	}
 	
 	public String getDroneData(){
 		return datastore.getDronesAsJSON();
 		
 	}
+	
+	public String getScanData(String[] known_scans){
+		return datastore.getScansAsJSON(known_scans);
+	}
+	
 	public void reply(String content){
 		writer.println("HTTP/1.1 200 OK");
 		writer.println("Access-Control-Allow-Origin:*");
