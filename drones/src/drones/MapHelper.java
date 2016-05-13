@@ -1,9 +1,13 @@
 package drones;
 
+import java.util.ArrayList;
+
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeIteratorState;
+
+import drones.scanner.ScannerHandler.Scan;
 
 /**
  * Abstract helper class containing static methods
@@ -11,6 +15,8 @@ import com.graphhopper.util.EdgeIteratorState;
  * @author Martin Higgs
  */
 public abstract class MapHelper {
+	
+	private static ArrayList<Scan> scanDataList = new ArrayList<Scan>();
 	
 	/**
 	 * Get the closest outdoors point to the specified location.
@@ -34,4 +40,13 @@ public abstract class MapHelper {
 
 		return result;
 	}
+	
+	public static void addScan(Scan scanData) {
+		synchronized (scanDataList) {
+			scanDataList.add(scanData);
+		}
+	}
+	
+	//TODO: functions used by navigation and routing regarding querying the list of scan data.
+	
 }
