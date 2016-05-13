@@ -39,7 +39,9 @@ public abstract class Message {
 			} else {
 				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nMust be either COMMAND or DATA.");
 			}
-		} else {
+		} else if (message.startsWith(Acknowledgement .ACKNOWLEDGEMENT_PREFIX)) {
+			return Acknowledgement.class;
+		}else{
 			throw new RuntimeException("This isn't a supported message type: " + message + ".\nMust be either COMMAND or DATA.");
 		}
 	}
