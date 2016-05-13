@@ -32,11 +32,16 @@ public class NavigationThread extends Thread {
 	// Long and short range check distances (in meters)
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
+	// Constant travel speed
+	private static final int MOVE_DISTANCE = 1;
+	private static final int WAIT_TIME_MILLIS = 500;
 	
 	// Current location
 	private double currLat, currLng;
 	// Location to check
 	private double chkLat, chkLng;
+	// Next waypoint
+	private double nxtLat, nxtLng;
 	
 	// Current target area
 	private double tgtLat, tgtLng, tgtRadius;
@@ -69,6 +74,7 @@ public class NavigationThread extends Thread {
 	 * When redirected to a new area, navigate along the defined path and then
 	 * return to exploring.
 	 */
+	@SuppressWarnings("deprecation")
 	public void run() {
 		while(true) {
 			if(!checkForRedirect()) {
@@ -109,7 +115,7 @@ public class NavigationThread extends Thread {
 					chkLng = point[1];
 
 					// If location outside search area, reset search to drone location.
-					if(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2) < tgtRadius) {
+					if(Math.pow(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2), -2) < tgtRadius) {
 						chkLat = currLat;
 						chkLng = currLng;
 					}
@@ -117,6 +123,12 @@ public class NavigationThread extends Thread {
 					// TODO: Check if point is viable for scanning
 				}
 				// TODO: Check for routing necessity based on structure intersection
+				if (false) {
+					
+				} else {
+					nxtLat = chkLat;
+					nxtLng = chkLng;
+				}
 			}
 				
 			if(checkForRedirect()) {
@@ -132,7 +144,28 @@ public class NavigationThread extends Thread {
 				// TODO: Follow set of waypoints specified by route and finally target
 			}
 			
-			// TODO: Travelling abstraction. Assume constant movement speed.
+			// Travelling abstraction. Assume constant movement speed.
+			while (nxtLat - currLat < 0.01 && nxtLng - currLng < 0.01) {
+				// Move
+				if (Math.pow(Math.pow(nxtLat - currLat, 2) + Math.pow(nxtLng - currLng, 2), -2) < MOVE_DISTANCE) {
+					SensorInterface.setGPS(nxtLat, nxtLng);
+				} else {
+					double angle = Math.tanh((nxtLat - currLat) / (nxtLng - currLng));
+					SensorInterface.setGPS(Math.sin(angle) * MOVE_DISTANCE, 
+							Math.cos(angle) * MOVE_DISTANCE);
+				}
+
+				// Wait
+				try {
+					Thread.sleep(WAIT_TIME_MILLIS);
+				} catch (InterruptedException e) {
+					System.err.println(e);
+				}
+
+				// Update position
+				currLat = SensorInterface.getGPSLatitude();
+				currLng = SensorInterface.getGPSLongitude();
+			}
 		}
 	}
 
