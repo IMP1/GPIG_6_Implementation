@@ -21,6 +21,10 @@
         <link href='css/map.css' rel='stylesheet' />
         <link href='css/controls.css' rel='stylesheet' />
         <link href='css/debug.css' rel='stylesheet' />
+        <link href='css/topnav.css' rel='stylesheet' />
+        
+        <!--Fonts-->
+        <link href='https://fonts.googleapis.com/css?family=Lato:400,900italic,700italic,400italic,300italic,100italic,900,700,300,100' rel='stylesheet' type='text/css'>
     
     </head>
     
@@ -29,32 +33,70 @@
         <!--Map-->
         <div id='map'></div>
         <div id='map_overlays'></div>
+            
+        <!--Top Nav-->
+        <div id='top-nav'>
+            <div id='left-section'>
+                <img src="" id="logo"></img>
+            	<div id="title">Sonar Mapping Assistant</div>
+            </div>
+            <div id='right-section'>
+                	<button>
+                    Assign Search Areas
+                    </button>
+                    <button id="btn-clear-all">
+                        Clear Search Areas
+                    </button>
+                    <button>
+                        Recall All Search Units
+                    </button>
+                    <button>
+                        Hide Controls
+                    </button>
+            </div>
+        </div>
         
         <!--Control Panel-->
         <div id='controls'>
             
+            <!--Environmental Factors-->
+            <h1>Environment</h2>
+            <div id="environmental-factors" class='panel'>
+                <div class="weather-overview">
+                
+                </div>
+                <div class="weather-overview">
+                    
+                </div>                             
+            </div>
+            
             <!--Search Unit Controls-->
-            <div id='filter-group' class='filter-group'>
-                <h1>Search Units</h2>
+            <h1>Search Units</h2>
+            <div id='filter-group' class='panel'>
+                
             </div>
             
             <!--Search Area Controls-->
-            <div id='search-areas' class='search-areas'>
-                <h1>Search Areas</h2>
+            <h1>Search Areas</h2>
+            <div id='search-areas' class='panel'>
+                
             </div>
             
-            <!--Further Controls-->
-            <div id='additional-controls' class='additional-controls'>
-                <h1>Unit Controls</h2>
-                <button>
-                    Assign Search Areas
-                </button>
-                <button id="btn-clear-all">
-                    Clear Search Areas
-                </button>
-                <button>
-                    Recall All Search Units
-                </button>
+            <!--Notifications-->
+            <h1>Messages</h2>
+            <div id='messages' class='panel'>
+                <div id='message' class='message high-level'>
+                    <h3>High Level Message</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum feugiat purus et massa viverra posuere. </p>
+                </div>
+                <div id='message' class='message standard'>
+                    <h3>Standard Message</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum feugiat purus et massa viverra posuere.</p>
+                </div>
+                <div id='message' class='message success'>
+                    <h3>Success Message</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum feugiat purus et massa viverra posuere.</p>
+                </div>
             </div>
             
         </div>        
