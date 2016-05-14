@@ -3,10 +3,8 @@ package drones.navigation;
 import java.util.Random;
 
 import com.graphhopper.PathWrapper;
-import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.util.PointList;
 
-import drones.Drone;
 import drones.MapHelper;
 import drones.sensors.SensorInterface;
 
@@ -33,8 +31,8 @@ public class NavigationThread extends Thread {
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
 	// Constant travel speed
-	private static final int MOVE_DISTANCE = 1;
-	private static final int WAIT_TIME_MILLIS = 500;
+	private static final double MOVE_DISTANCE = 0.5;
+	private static final int WAIT_TIME_MILLIS = 250;
 	
 	// Current location
 	private double currLat, currLng;
@@ -42,6 +40,8 @@ public class NavigationThread extends Thread {
 	private double chkLat, chkLng;
 	// Next waypoint
 	private double nxtLat, nxtLng;
+	// Current route
+	private PointList currRoute;
 	
 	// Current target area
 	private double tgtLat, tgtLng, tgtRadius;
@@ -122,26 +122,45 @@ public class NavigationThread extends Thread {
 					
 					// TODO: Check if point is viable for scanning
 				}
-				// TODO: Check for routing necessity based on structure intersection
-				if (false) {
-					
+
+				// Check for routing necessity based on structure intersection
+				if (MapHelper.pathBlocked(currLat, currLng, chkLat, chkLng)) {
+					routing = NavStatus.ROUTE_TO_CHECK_LOCATION;
+					currRoute = MapHelper.route(currLat, currLng, chkLat, chkLng).getPoints();
 				} else {
+					routing = NavStatus.BUMBLING;
 					nxtLat = chkLat;
 					nxtLng = chkLng;
 				}
 			}
 				
+			// Check for redirection before continuing too far
 			if(checkForRedirect()) {
+				// TODO: Replace synchronised with a lock. Currently can get fudged if redirected in this block!
 				routing = NavStatus.ROUTE_TO_TARGET_AREA;
 				routeStepIndex = 0;
+				currRoute = newRoute;
+				tgtLat = newLat;
+				tgtLng = newLng;
+				tgtRadius = newRadius;
 				acknowledgeRedirect();
-				
-				// TODO: Accept routing for navigation (watch for race conditions!)
 			}
 
 			// Follow routing if required
 			if(routing != NavStatus.BUMBLING) {
-				// TODO: Follow set of waypoints specified by route and finally target
+				if (routeStepIndex < currRoute.getSize()) {
+					nxtLat = currRoute.getLatitude(routeStepIndex);
+					nxtLat = currRoute.getLongitude(routeStepIndex);
+					routeStepIndex += 1;
+				} else if (routing == NavStatus.ROUTE_TO_TARGET_AREA) {
+					nxtLat = tgtLat;
+					nxtLng = tgtLng;
+					routing = NavStatus.BUMBLING;
+				} else {
+					nxtLat = chkLat;
+					nxtLng = chkLng;
+					routing = NavStatus.BUMBLING;
+				}
 			}
 			
 			// Travelling abstraction. Assume constant movement speed.
