@@ -1,18 +1,15 @@
 package droneserver;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.net.Socket;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import broadcast.Broadcast;
 import datastore.Datastore;
 import datastore.Drone;
 import datastore.Scan;
 import network.Acknowledgement;
-import network.Command;
 import network.Message;
+import network.PathData;
 import network.ScanData;
 import network.StatusData;
 
@@ -67,9 +64,14 @@ public class DroneServerHandler implements Runnable {
 				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, scandata.distanceReadings);
 				datastore.addScan(ident, scan);
 			}
+		} else if(Message.getType(data) == PathData.class){
+			PathData pathdata = new PathData(data);
+			if(pathdata.pathCommandID == datastore.getSearchArea().id){
+				datastore.getSearchArea().addEta(pathdata.id, pathdata.eta);
+			}
 		}
 		//TODO - should this be moved?
-		if(Message.getType(data) != Acknowledgement.class){
+		if(Message.getType(data) == StatusData.class | Message.getType(data)==ScanData.class){
 			Acknowledgement ack = new Acknowledgement(id, dt);
 			Broadcast.broadcast(ack.toString());
 		}
