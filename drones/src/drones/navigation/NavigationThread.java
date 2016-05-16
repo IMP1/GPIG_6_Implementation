@@ -217,4 +217,15 @@ public class NavigationThread extends Thread {
 	synchronized private void acknowledgeRedirect() {
 		redirected = false;
 	}
+	
+	/**
+	 * Get the current route that the drone is following.
+	 * @return Null if the drone is not currently following a route.
+	 * 		Otherwise return the set of points it is following to the target.
+	 */
+	synchronized public PointList getCurrentPath() {
+		if (routing == NavStatus.BUMBLING)
+			return null;
+		return currRoute;
+	}
 }

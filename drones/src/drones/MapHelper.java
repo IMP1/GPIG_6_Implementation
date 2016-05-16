@@ -5,12 +5,6 @@ import java.util.Locale;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.PathWrapper;
-import com.graphhopper.routing.util.EdgeFilter;
-import com.graphhopper.storage.index.LocationIndex;
-import com.graphhopper.storage.index.QueryResult;
-import com.graphhopper.util.EdgeIteratorState;
-
-import drones.sensors.SensorInterface;
 
 /**
  * Abstract helper class containing static methods
@@ -28,13 +22,6 @@ public abstract class MapHelper {
 	 */
 	public static double[] getExternalPoint(double lat, double lng) {
 		double[] result = {lat, lng};
-		
-		// Return the closest edge to the point
-		LocationIndex index = Drone.map().getLocationIndex();
-		QueryResult qr = index.findClosest(lat, lng, EdgeFilter.ALL_EDGES );
-		EdgeIteratorState edge = qr.getClosestEdge();
-		
-		// TODO: Check if edge is a building
 		
 		// TODO: Check if point is inside the building nodes
 		// http://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon
