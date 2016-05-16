@@ -8,12 +8,12 @@ import java.util.concurrent.Future;
 import network.Command;
 import network.PathCommand;
 import network.MoveCommand;
+import network.ScanData;
 
 import com.graphhopper.PathWrapper;
 
 import drones.Drone;
-import drones.routing.RoutingHandler;
-import drones.scanner.ScannerHandler.Scan; 
+import drones.routing.RoutingHandler; 
 
 /**
  * Mesh Interface Thread
@@ -29,7 +29,7 @@ public class MeshInterfaceThread extends Thread {
 	private RoutingHandler router = null;
 	private Future<PathWrapper> path = null;
 	private ArrayList<Command> commandBuffer = new ArrayList<>();
-	private ArrayList<Scan> scanBuffer = new ArrayList<>();
+	private ArrayList<ScanData> scanBuffer = new ArrayList<>();
 
 	/**
 	 * Constructor for the Mesh Interface. 
@@ -45,15 +45,15 @@ public class MeshInterfaceThread extends Thread {
 	 * Add a scan to be send to the C2 across the mesh.
 	 * @param scan a wrapper around a set of numeric values
 	 */
-	public void addScan(Scan scan) {
+	public void addScan(ScanData scan) {
 		synchronized (scanBuffer) {
 			scanBuffer.add(scan);
 		}
 	}
 	
-	private Scan[] getScans() {
+	private ScanData[] getScans() {
 		synchronized (scanBuffer) {
-			Scan[] scans = scanBuffer.toArray(new Scan[scanBuffer.size()]);
+			ScanData[] scans = scanBuffer.toArray(new ScanData[scanBuffer.size()]);
 			scanBuffer.clear();
 			return scans;
 		}
@@ -104,9 +104,9 @@ public class MeshInterfaceThread extends Thread {
 			}
 		}
 
-		for (Scan scan : getScans()) {
+		for (ScanData scan : getScans()) {
 			LocalDateTime timestamp = java.time.LocalDateTime.now();
-			network.ScanData scanData = new network.ScanData(Drone.ID, timestamp, scan.lat, scan.lon, scan.depth, scan.flow, scan.distanceReadings);
+			network.ScanData scanData = new network.ScanData(Drone.ID, timestamp, scan.latitude, scan.longitude, scan.depth, scan.flowRate, scan.distanceReadings);
 			networkingThread.sendMessage(scanData); 
 		}
 		
@@ -146,7 +146,7 @@ public class MeshInterfaceThread extends Thread {
 	 * Adds scan data from another drone's broadcast to this drone's local map.
 	 * @param scanData another drone's scan data
 	 */
-	protected void addExternalScanData(Scan scan) {
+	protected void addExternalScanData(ScanData scan) {
 		drones.MapHelper.addScan(scan);
 	}
 	

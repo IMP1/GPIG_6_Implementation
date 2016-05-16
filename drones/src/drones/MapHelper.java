@@ -7,7 +7,7 @@ import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.EdgeIteratorState;
 
-import drones.scanner.ScannerHandler.Scan;
+import network.ScanData;
 
 /**
  * Abstract helper class containing static methods
@@ -16,7 +16,7 @@ import drones.scanner.ScannerHandler.Scan;
  */
 public abstract class MapHelper {
 	
-	private static ArrayList<Scan> scanDataList = new ArrayList<Scan>();
+	private static ArrayList<ScanData> scanDataList = new ArrayList<ScanData>();
 	
 	/**
 	 * Get the closest outdoors point to the specified location.
@@ -41,7 +41,7 @@ public abstract class MapHelper {
 		return result;
 	}
 	
-	public static void addScan(Scan scanData) {
+	public static void addScan(ScanData scanData) {
 		synchronized (scanDataList) {
 			scanDataList.add(scanData);
 		}
