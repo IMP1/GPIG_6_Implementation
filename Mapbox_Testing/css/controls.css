@@ -1,0 +1,185 @@
+#controls {
+  position: absolute;
+  bottom: 0%;
+  top: 60px;
+  width: 500px;
+  height: calc(100% - $top_nav_height);
+  color: #c0c8d2;
+  background-image: linear-gradient(rgba(65, 72, 82, 0.85), rgba(54, 62, 72, 0.85)); }
+  #controls h1 {
+    background: rgba(54, 62, 72, 0.12);
+    height: 50px;
+    margin: 0;
+    padding-left: 10px;
+    text-align: left;
+    color: white;
+    line-height: 50px;
+    font-size: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+  #controls .panel {
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: scroll; }
+
+#messages {
+  height: 200px;
+  width: 100%; }
+  #messages .message {
+    border-radius: 15px;
+    padding: 8px;
+    margin: 8px;
+    color: white; }
+    #messages .message h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0; }
+    #messages .message p {
+      margin: 0; }
+  #messages .high-level {
+    background-image: linear-gradient(#e20000, #f30000); }
+  #messages .med-level {
+    background-image: linear-gradient(#e29000, #e28500); }
+  #messages .standard {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)); }
+  #messages .success {
+    background-image: linear-gradient(#85e200, #7acf02); }
+
+#environmental-factors {
+  height: 120px; }
+  #environmental-factors .weather-overview {
+    float: left;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    width: 90px;
+    height: 100%; }
+
+#filter-group {
+  font-weight: 600;
+  width: 100%;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  height: 200px; }
+  #filter-group :hover {
+    color: white; }
+  #filter-group .unit {
+    font-weight: 300;
+    font-size: 15px;
+    float: left;
+    width: 50%;
+    height: 100px;
+    outline: 1px solid rgba(255, 255, 255, 0.2);
+    display: inline-block;
+    cursor: pointer; }
+    #filter-group .unit .info {
+      float: left;
+      width: 30%;
+      height: 100%;
+      text-align: center;
+      text-transform: capitalize; }
+      #filter-group .unit .info .unit-icon {
+        float: left;
+        font-size: 60px;
+        width: 100%;
+        height: 70%;
+        line-height: 130%; }
+      #filter-group .unit .info .unit-name {
+        float: left;
+        font-size: 10px;
+        height: 30%;
+        width: 100%;
+        color: #79dcde;
+        font-weight: 600; }
+    #filter-group .unit .stats {
+      padding-top: 10px;
+      float: left;
+      width: 70%;
+      height: 100%; }
+      #filter-group .unit .stats .stat {
+        float: left;
+        width: 100%;
+        height: 20px; }
+        #filter-group .unit .stats .stat .icon {
+          float: left;
+          width: 30px;
+          height: 20px;
+          line-height: 20px; }
+        #filter-group .unit .stats .stat .text {
+          float: left;
+          height: 20px; }
+
+#search-areas {
+  font-weight: 600;
+  width: 100%;
+  height: 265px;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.2); }
+  #search-areas .search-area {
+    width: 100%;
+    height: 70px;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative; }
+    #search-areas .search-area .header {
+      float: left;
+      width: 15%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      line-height: 100%;
+      padding-top: 10px;
+      font-size: 50px; }
+    #search-areas .search-area .drone-assignment {
+      float: left;
+      width: 10%;
+      height: 100%;
+      line-height: 100%;
+      font-size: 30px; }
+      #search-areas .search-area .drone-assignment .arrow {
+        float: left;
+        width: 100%;
+        height: 50%;
+        font-size: 20px;
+        line-height: 35px; }
+    #search-areas .search-area .info {
+      float: left;
+      width: 65%;
+      height: 20px;
+      text-transform: capitalize;
+      color: 596074; }
+      #search-areas .search-area .info .icon {
+        float: left;
+        width: 10%;
+        height: 100%;
+        line-height: 20px; }
+      #search-areas .search-area .info .text {
+        float: left;
+        height: 100%;
+        text-align: left;
+        line-height: 20px; }
+    #search-areas .search-area .controls {
+      position: absolute;
+      right: 0px;
+      width: 10%;
+      height: 70px;
+      line-height: 70px;
+      border-left: 1px solid rgba(255, 255, 255, 0.2); }
+      #search-areas .search-area .controls .button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 35px;
+        width: 100%;
+        line-height: 35px;
+        font-size: 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+
+.additional-controls {
+  float: left;
+  font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  width: 100%;
+  height: 20%;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: scroll; }
+
+/*# sourceMappingURL=controls.css.map */
