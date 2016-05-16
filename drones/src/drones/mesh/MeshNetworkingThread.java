@@ -22,21 +22,33 @@ import network.*;
  */
 public class MeshNetworkingThread extends Thread {
 	
-	private ArrayList<network.Message> unacknowledgedMessages;
+	private ArrayList<Message> unacknowledgedMessages;
 	private ArrayList<String> dealtWithMessages;
 	
 	private MulticastSocket socket;
 	private InetAddress groupAddress;
 	
+	private Message[] getUnacknowledgedMessages() {
+		synchronized (unacknowledgedMessages) {
+			return unacknowledgedMessages.toArray(new Message[unacknowledgedMessages.size()]);
+		}
+	}
+	
+	private void addUnacknowledgedMessage(Message m) {
+		synchronized (unacknowledgedMessages) {
+			unacknowledgedMessages.add(m);
+		}
+	}
+	
 	/**
 	 * Constructor called from MeshInterfaceThread. Initialises sockets.
 	 */
 	protected MeshNetworkingThread() {
-		unacknowledgedMessages = new ArrayList<network.Message>();
+		unacknowledgedMessages = new ArrayList<Message>();
 		dealtWithMessages = new ArrayList<String>();
 		try {
-    		groupAddress = InetAddress.getByName(network.Message.MESH_GROUP_ADDRESS);
-    		socket = new MulticastSocket(network.Message.MESH_PORT);
+    		groupAddress = InetAddress.getByName(Message.MESH_GROUP_ADDRESS);
+    		socket = new MulticastSocket(Message.MESH_PORT);
     		socket.joinGroup(groupAddress);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -78,7 +90,7 @@ public class MeshNetworkingThread extends Thread {
 	 * is lost and then reestablished.
 	 */
 	protected void resendAllStoredMessages() {
-		for (network.Message message : unacknowledgedMessages) {
+		for (network.Message message : getUnacknowledgedMessages()) {
 			sendMessage(message);
 		}
 	}
@@ -131,13 +143,13 @@ public class MeshNetworkingThread extends Thread {
 	}
 	
 	private void handleScanAcknowledgement(ScanAcknowledgement ack) {
-		for (int i = unacknowledgedMessages.size() - 1; i >= 0; i --) {
-			if (unacknowledgedMessages.get(i).timestamp.equals(ack.timestamp)) {
-				unacknowledgedMessages.remove(i);
+		synchronized (unacknowledgedMessages) {
+			for (int i = unacknowledgedMessages.size() - 1; i >= 0; i --) {
+				if (unacknowledgedMessages.get(i).timestamp.equals(ack.timestamp)) {
+					unacknowledgedMessages.remove(i);
+				}
 			}
 		}
-		//TODO: Handle Acknowledgements:
-		//      If so, remove the corresponding message from the unacknowledged list
 	}
 	
 	/**
@@ -164,7 +176,7 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	protected void sendMessage(network.Message message) {
 		sendMessage(message.toString());
-		unacknowledgedMessages.add(message);
+		addUnacknowledgedMessage(message);
 	}
 
 	private void sendMessage(String message) {
