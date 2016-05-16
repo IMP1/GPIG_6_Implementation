@@ -59,11 +59,11 @@ public class Drone {
 		navThread = new NavigationThread();
 		navThread.start();
 		System.out.println("Navigation Thread started.");
-
+		
 		// Initialise and begin mesh interface thread
 		meshThread = new MeshInterfaceThread();
 		meshThread.start();
 		System.out.println("Mesh Interface created.");
 	}
-
+	
 }
