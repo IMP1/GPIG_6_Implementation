@@ -53,7 +53,8 @@ public class MeshNetworkingThread extends Thread {
 	}
 	
 	/**
-	 * Constructor called from MeshInterfaceThread. Initialises sockets.
+	 * Constructor called from MeshInterfaceThread. 
+	 * Initialises sockets and joins the relevant multicast group.
 	 */
 	protected MeshNetworkingThread() {
 		try {
@@ -101,7 +102,7 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	protected void resendAllStoredMessages() {
 		for (network.Message message : getUnacknowledgedMessages()) {
-			sendMessage(message);
+			sendMessage(message, false);
 		}
 	}
 	
@@ -116,6 +117,7 @@ public class MeshNetworkingThread extends Thread {
 		System.out.println("RECV");
 		final Class<? extends Message> messageClass = Message.getType(message);
 		if (Message.getId(message).equals(Drone.ID)) {
+			System.out.println("It's for us!");
 			if (Command.class.isAssignableFrom(messageClass)) {
 				handleCommand(message);
 			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
@@ -129,12 +131,14 @@ public class MeshNetworkingThread extends Thread {
 				// </debug>
 			}
 		} else {
+			System.out.println("Not for us.");
 			if (Data.class.isAssignableFrom(messageClass)) {
 				handleOtherData(message);
 			}
-			// Commands for other drones
-			// Acks from other drones
-			rebroadcast(message);
+			// Messages are just rebroadcast across the mesh.
+			// * Commands for other drones
+			// * Acks from other drones
+			sendMessage(message);
 		}
 	}
 	
@@ -186,17 +190,15 @@ public class MeshNetworkingThread extends Thread {
 		addDealtWithMessage(message);
 	}
 	
-	private void rebroadcast(String message) {
-		sendMessage(message);
-	}
-	
 	/**
 	 * Sends the string representation of this Message object across the mesh network.
 	 * @param message the message object to be sent.
 	 */
-	protected void sendMessage(network.Message message) {
+	protected void sendMessage(network.Message message, boolean needsAcknowledgement) {
 		sendMessage(message.toString());
-		addUnacknowledgedMessage(message);
+		if (needsAcknowledgement) {
+			addUnacknowledgedMessage(message);
+		}
 	}
 
 	private void sendMessage(String message) {

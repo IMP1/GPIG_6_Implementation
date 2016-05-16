@@ -58,6 +58,8 @@ public class MeshInterfaceThread extends Thread {
 			scanBuffer.add(scan);
 			drones.MapHelper.addScan(scan); //TODO: check to see if this is done elsewhere. 
 		}
+		//TODO: Check to see if the drone is full up of scan. 
+		//      If so, maybe set state to returning.
 	}
 	
 	/**
@@ -100,11 +102,13 @@ public class MeshInterfaceThread extends Thread {
 			tick();
 			try {
 				Thread.sleep(MILLISECOND_TICK_DELAY);
-			} catch (InterruptedException e) { /* oh no(!) */ }
+			} catch (InterruptedException e) { e.printStackTrace(); /* oh no(!) */ }
 		}
 	}
 	
 	private void tick() {
+		System.out.println("tick.");
+		
 		for (String commandID : paths.keySet()) {
 			if (paths.get(commandID).isDone()) {
 				try {
@@ -133,7 +137,7 @@ public class MeshInterfaceThread extends Thread {
 		for (ScanData scan : getScans()) {
 			LocalDateTime timestamp = java.time.LocalDateTime.now();
 			network.ScanData scanData = new network.ScanData(Drone.ID, timestamp, scan.latitude, scan.longitude, scan.depth, scan.flowRate, scan.distanceReadings);
-			networkingThread.sendMessage(scanData); 
+			networkingThread.sendMessage(scanData, true); 
 		}
 		
 		handleBatteryLevel();
@@ -172,19 +176,19 @@ public class MeshInterfaceThread extends Thread {
 			path = new double[0];
 		}
 		StatusData currentState = new StatusData(id, time, lat, lon, batteryLevel, state, path);
-		networkingThread.sendMessage(currentState);
+		networkingThread.sendMessage(currentState, false);
 	}
 	
 	private void broadcastRouteData(String commandID, PathWrapper calculatedPath) {
 		LocalDateTime timestamp = java.time.LocalDateTime.now();
 		PathData pathMessage = new PathData(Drone.ID, timestamp, commandID, calculatedPath.getDistance());
-		networkingThread.sendMessage(pathMessage);
+		networkingThread.sendMessage(pathMessage, false);
 	}
 	
 	private void broadcastUndoableRoute(String commandID) {
 		LocalDateTime timestamp = java.time.LocalDateTime.now();
 		PathData pathMessage = new PathData(Drone.ID, timestamp, commandID, Double.MAX_VALUE);
-		networkingThread.sendMessage(pathMessage);
+		networkingThread.sendMessage(pathMessage, false);
 	}
 	
 	/**
