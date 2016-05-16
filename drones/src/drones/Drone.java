@@ -24,7 +24,7 @@ public class Drone {
 	private static MeshInterfaceThread meshThread = null;
 	
 	// Singleton accessors
-	// TODO: Handle synchronous read / write access to map
+	// TODO: Handle synchronous read / write access to map (move to MapHelper and make protected?)
 	public static GraphHopper map() {
 		return map;
 	}
