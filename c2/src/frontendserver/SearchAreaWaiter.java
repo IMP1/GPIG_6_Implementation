@@ -36,6 +36,5 @@ public class SearchAreaWaiter implements Runnable {
 		//then set the datastores search area to null to allow another thread to jump in.
 		Integer[] selectedDrones = new Integer[this.searchArea.numberRequested];
 		HashMap theReplies = (HashMap) this.searchArea.etas.clone();
-
-
+	}
 }
