@@ -2,14 +2,16 @@ package datastore;
 
 import java.time.LocalDateTime;
 
+import network.StatusData.DroneState;
+
 public class Drone {
 	private double batteryLevel;
 	private double locLat;
 	private double locLong;
-	private String status;
+	private DroneState status;
 	private LocalDateTime timestamp;
 	
-	public Drone(double batteryLevel, double locLat, double locLong, String status, LocalDateTime timestamp) {
+	public Drone(double batteryLevel, double locLat, double locLong, DroneState status, LocalDateTime timestamp) {
 		super();
 		this.batteryLevel = batteryLevel;
 		this.locLat = locLat;
@@ -36,10 +38,10 @@ public class Drone {
 	public void setLocLong(double locLong) {
 		this.locLong = locLong;
 	}
-	public String getStatus() {
+	public DroneState getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(DroneState status) {
 		this.status = status;
 	}
 
