@@ -71,7 +71,7 @@ public class DroneServerHandler implements Runnable {
 			}
 		}
 		//TODO - should this be moved?
-		if(Message.getType(data) == StatusData.class | Message.getType(data)==ScanData.class){
+		if( Message.getType(data)==ScanData.class){
 			Acknowledgement ack = new Acknowledgement(id, dt);
 			Broadcast.broadcast(ack.toString());
 		}

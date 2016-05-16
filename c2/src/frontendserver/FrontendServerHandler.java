@@ -58,11 +58,13 @@ public class FrontendServerHandler implements Runnable{
 			Double loclat = 0.235343;
 			Double loclong = -1.234325434;
 			Integer numberRequested = 2;
+			Double searchRadius = 0.2;
 			etaRequestID++;
 			String uniqueID = UUID.randomUUID().toString();
-			SearchArea searchArea = new SearchArea(uniqueID, loclat, loclong, numberRequested);
-			SearchAreaWaiter waiterThead = new SearchAreaWaiter(searchArea, datastore);
-			new Thread(waiterThead).start();
+			SearchArea searchArea = new SearchArea(uniqueID, loclat, loclong, numberRequested, searchRadius);
+			SearchAreaWaiter waiter = new SearchAreaWaiter(searchArea, datastore);
+			String[] result = waiter.doWait();
+			reply(result.toString());//maybe?
 		}
 		if(request.contains("ClearSearchAreas")){
 			//TODO - More clever things.
