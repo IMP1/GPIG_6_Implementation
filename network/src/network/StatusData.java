@@ -49,7 +49,7 @@ public class StatusData extends Data {
 		if (!message.startsWith(STATUS_DATA_PREFIX)) throw new RuntimeException("A Data Type {SCAN, STATUS, PATH} needs to be supplied.");
 		final String statusMessage = message.substring(STATUS_DATA_PREFIX.length() + 1);
 		String data[] = statusMessage.split(SEPARATOR);
-		if (data.length != 5) {
+		if (data.length < 5) {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A STATUS Data Message must have 5 arguments: latitude, longitude, battery status, drone state, current path.");
 		}

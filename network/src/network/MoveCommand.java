@@ -32,7 +32,7 @@ public class MoveCommand extends Command {
 		if (!commandMessage.startsWith(MOVE_COMMAND_PREFIX)) throw new RuntimeException("A Command Type {PATH, MOVE} needs to be supplied.");
 		final String moveMessage = commandMessage.substring(MOVE_COMMAND_PREFIX.length() + 1);
 		String data[] = moveMessage.split(SEPARATOR);
-		if (data.length != 3) {
+		if (data.length < 3) {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A MOVE Command Message must have 3 arguments: latitude, longitude, radius.");
 		}

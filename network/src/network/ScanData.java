@@ -41,7 +41,7 @@ public class ScanData extends Data {
 		if (!message.startsWith(SCAN_DATA_PREFIX)) throw new RuntimeException("A Data Type {SCAN, STATUS, PATH} needs to be supplied.");
 		final String scanMessage = message.substring(SCAN_DATA_PREFIX.length() + 1);
 		String data[] = scanMessage.split(SEPARATOR);
-		if (data.length != 5) {
+		if (data.length < 5) {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A SCAN Data Message must have 5 arguments: latitude, longitude, depth reading, flow rate, distance readings.");
 		}
