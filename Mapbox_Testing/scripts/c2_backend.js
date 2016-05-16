@@ -52,12 +52,12 @@ function getUnitsInfo(){
 	
 	// Get JSON from API endpoints
 	
-//	var xmlHttpUnits = new XMLHttpRequest();
-//    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", false ); // false for synchronous request
-//    	xmlHttpUnits.send( null );
+	var xmlHttpUnits = new XMLHttpRequest();
+    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", false ); // false for synchronous request
+    	xmlHttpUnits.send( null );
     
 	// Parse JSON
-	var unitsJSON = unitExamples;//JSON.parse(xmlHttpUnits.responseText);
+	var unitsJSON = JSON.parse(xmlHttpUnits.responseText);
 	
 	Object.keys(unitsJSON).forEach(function (unitKey) {
 	   
