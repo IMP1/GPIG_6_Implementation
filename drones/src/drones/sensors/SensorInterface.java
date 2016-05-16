@@ -1,5 +1,7 @@
 package drones.sensors;
 
+import network.ScanData;
+
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -61,9 +63,10 @@ public abstract class SensorInterface {
 	// TODO: Set GPS via 'Navigation'
 
 	// TODO: Create and read in pre-defined sonar, depth and flow data
-	public static double[] getDataForPoint(double lat, double lon){
+	public static ScanData getDataForPoint(double lat, double lon){
 		CSVReader reader = null;
-		double[] output = new double[366];
+		double[] output = new double[360];
+		ScanData outputs = null;
 		
 		try{
 			reader = new CSVReader(new FileReader("../sonar.csv"));
@@ -85,8 +88,9 @@ public abstract class SensorInterface {
 					System.out.println();
 					
 					for (int i = 0 ; i < line.length; i++){
-						output[i] = Double.parseDouble(line[i]);
+						output[i] = Double.parseDouble(line[i + 4]);
 					}
+					outputs = new ScanData("SCAN", java.time.LocalDateTime.now(), lat, lon, Double.parseDouble(line[2]), Double.parseDouble(line[3]), output);
 					break;
 				}
 			}
@@ -94,9 +98,12 @@ public abstract class SensorInterface {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if (outputs == null){
+			outputs = new ScanData("Whelp");
+		}
 
 
 		
-		return output;
+		return outputs;
 	}
 }
