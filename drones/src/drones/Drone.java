@@ -58,7 +58,7 @@ public class Drone {
 		// Initialise and release navigation thread
 		navThread = new NavigationThread();
 		navThread.start();
-		System.out.println("Navigation Thread started.");		
+		System.out.println("Navigation Thread started.");
 
 		// Initialise and begin mesh interface thread
 		meshThread = new MeshInterfaceThread();
