@@ -56,6 +56,7 @@ public class MeshInterfaceThread extends Thread {
 	public void addScan(ScanData scan) {
 		synchronized (scanBuffer) {
 			scanBuffer.add(scan);
+			drones.MapHelper.addScan(scan); //TODO: check to see if this is done elsewhere. 
 		}
 	}
 	
