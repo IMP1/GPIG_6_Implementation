@@ -8,14 +8,44 @@ package drones.sensors;
  * @author Anthony Williams and Martin Higgs
  */
 public abstract class SensorInterface {
+	
+	// Default location on startup
+	private static final double DEFAULT_GPS_LAT = 53.957184;
+	private static final double DEFAULT_GPS_LONG = -1.078302;
+	
+	// Static demo variables for modification
+	private static double gpsLat = DEFAULT_GPS_LAT;
+	private static double gpsLng = DEFAULT_GPS_LONG;
+
+	/**
+	 * Get the current latitude (via GPS)
+	 * @return Current latitude in degrees
+	 */
 	public static double getGPSLatitude() {
-		return 53.957184;
+		return gpsLat;
 	}
 	
+	/**
+	 * Get the current longitude (via GPS)
+	 * @return Current longitude in degrees
+	 */
 	public static double getGPSLongitude() {
-		return -1.078302;
+		return gpsLng;
 	}
 	
+	/**
+	 * DEMO FUNCTION FOR USE BY NAVIGATION THREAD ONLY.
+	 * Set current location to return from GPS
+	 * @param lat Latitude in degrees
+	 * @param lng Longitude in degrees
+	 */
+	@Deprecated
+	public static void setGPS(double lat, double lng) {
+		gpsLat = lat;
+		gpsLng = lng;
+	}
+	
+
 	public static double getBatteryLevel() {
 		final double max_battery = 0.7;
 		final double min_battery = 0.6;
