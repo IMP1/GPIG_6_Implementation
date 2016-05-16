@@ -26,7 +26,7 @@ public abstract class Message {
 			} else if (message.startsWith(PathCommand.COMMAND_PREFIX)) {
 				return PathCommand.class;
 			} else {
-				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nMust be either COMMAND or DATA.");
+				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
 			}
 		} else if (message.startsWith(Data.DATA_PREFIX)) {
 			final String dataMessage = Data.strip(rawMessage);
@@ -37,10 +37,12 @@ public abstract class Message {
 			} else if (dataMessage.startsWith(StatusData.STATUS_DATA_PREFIX)) {
 				return StatusData.class;
 			} else {
-				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nMust be either COMMAND or DATA.");
+				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
 			}
+		} else if (message.startsWith(Acknowledgement.ACKNOWLEDGEMENT_PREFIX)) {
+			return Acknowledgement.class;
 		} else {
-			throw new RuntimeException("This isn't a supported message type: " + message + ".\nMust be either COMMAND or DATA.");
+			throw new RuntimeException("This isn't a supported message type: " + message + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
 		}
 	}
 	

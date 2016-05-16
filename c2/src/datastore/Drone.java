@@ -1,13 +1,15 @@
 package datastore;
 
+import java.time.LocalDateTime;
+
 public class Drone {
-	private String batteryLevel;
-	private String locLat;
-	private String locLong;
+	private double batteryLevel;
+	private double locLat;
+	private double locLong;
 	private String status;
-	private String timestamp;
+	private LocalDateTime timestamp;
 	
-	public Drone(String batteryLevel, String locLat, String locLong, String status, String timestamp) {
+	public Drone(double batteryLevel, double locLat, double locLong, String status, LocalDateTime timestamp) {
 		super();
 		this.batteryLevel = batteryLevel;
 		this.locLat = locLat;
@@ -16,22 +18,22 @@ public class Drone {
 		this.timestamp = timestamp;
 	}
 	
-	public String getBatteryLevel() {
+	public double getBatteryLevel() {
 		return batteryLevel;
 	}
-	public void setBatteryLevel(String batteryStatus) {
+	public void setBatteryLevel(double batteryStatus) {
 		this.batteryLevel = batteryStatus;
 	}
-	public String getLocLat() {
+	public double getLocLat() {
 		return locLat;
 	}
-	public void setLocLat(String locLat) {
-		this.locLat = locLat;
+	public void setLocLat(double latitude) {
+		this.locLat = latitude;
 	}
-	public String getLocLong() {
+	public double getLocLong() {
 		return locLong;
 	}
-	public void setLocLong(String locLong) {
+	public void setLocLong(double locLong) {
 		this.locLong = locLong;
 	}
 	public String getStatus() {
@@ -41,11 +43,11 @@ public class Drone {
 		this.status = status;
 	}
 
-	public String getTimestamp() {
+	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(String timestamp) {
+	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
 	}
 
