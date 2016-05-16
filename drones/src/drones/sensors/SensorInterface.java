@@ -30,7 +30,7 @@ public abstract class SensorInterface {
 		double[] output = new double[366];
 		
 		try{
-			reader = new CSVReader(new FileReader("../gpig_6_implementation/sonar.csv"));
+			reader = new CSVReader(new FileReader("../sonar.csv"));
 		}
 		catch (Exception e){
 			// ohnoes

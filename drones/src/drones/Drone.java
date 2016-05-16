@@ -46,7 +46,7 @@ public class Drone {
 		map = new GraphHopper().forDesktop();
 		// File locations relative to working dir
 		if ((args.length < 1) || !(new File(args[0]).exists()))
-			map.setOSMFile("../gpig_6_implementation/york.osm");
+			map.setOSMFile("../york.osm");
 		else
 			map.setOSMFile(args[0]);
 		map.setGraphHopperLocation("graph"); // Graph data storage
