@@ -9,6 +9,7 @@ import datastore.Drone;
 import datastore.Scan;
 import network.Acknowledgement;
 import network.Message;
+import network.PathData;
 import network.ScanData;
 import network.StatusData;
 
@@ -62,6 +63,11 @@ public class DroneServerHandler implements Runnable {
 				System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
 				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, scandata.distanceReadings);
 				datastore.addScan(ident, scan);
+			}
+		} else if(Message.getType(data) == PathData.class){
+			PathData pathdata = new PathData(data);
+			if(pathdata.pathCommandID == datastore.getSearchArea().id){
+				datastore.getSearchArea().addEta(pathdata.id, pathdata.eta);
 			}
 		}
 		//TODO - should this be moved?
