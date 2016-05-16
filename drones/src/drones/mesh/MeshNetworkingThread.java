@@ -22,8 +22,7 @@ import network.*;
  */
 public class MeshNetworkingThread extends Thread {
 	
-	private ArrayList<network.Message> unacknowledgedSentMessages;
-	private ArrayList<network.Message> sentMessages; //TODO: store as hashes for quicker lookup?
+	private ArrayList<network.Message> unacknowledgedMessages;
 	private ArrayList<String> dealtWithMessages;
 	
 	private MulticastSocket socket;
@@ -33,8 +32,7 @@ public class MeshNetworkingThread extends Thread {
 	 * Constructor called from MeshInterfaceThread. Initialises sockets.
 	 */
 	protected MeshNetworkingThread() {
-		sentMessages = new ArrayList<network.Message>();
-		unacknowledgedSentMessages = new ArrayList<network.Message>();
+		unacknowledgedMessages = new ArrayList<network.Message>();
 		dealtWithMessages = new ArrayList<String>();
 		try {
     		groupAddress = InetAddress.getByName(network.Message.MESH_GROUP_ADDRESS);
@@ -80,16 +78,13 @@ public class MeshNetworkingThread extends Thread {
 	 * is lost and then reestablished.
 	 */
 	protected void resendAllStoredMessages() {
-		for (network.Message message : unacknowledgedSentMessages) {
-			broadcastData(message);
+		for (network.Message message : unacknowledgedMessages) {
+			sendMessage(message);
 		}
 	}
 	
-	private void broadcastData(network.Message message) {
-		sendMessage(message.toString());
-	}
-	
 	private void recieveMessage(String message) {
+		resendAllStoredMessages();
 		if (dealtWithMessages.contains(message)) {
 			System.out.println("DUP");
 			System.out.println(message);
@@ -101,8 +96,8 @@ public class MeshNetworkingThread extends Thread {
 		if (Message.getId(message).equals(Drone.ID)) {
 			if (Command.class.isAssignableFrom(messageClass)) {
 				handleCommand(message);
-			} else if (Acknowledgement.class.isAssignableFrom(messageClass)) {
-				handleAcknowledgement(message);
+			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
+				handleScanAcknowledgement(new ScanAcknowledgement(message));
 			} else {
 				// Data from this drone (being resent across the mesh)
 				//TODO: remove debug
@@ -115,6 +110,8 @@ public class MeshNetworkingThread extends Thread {
 			if (Data.class.isAssignableFrom(messageClass)) {
 				handleOtherData(message);
 			}
+			// Commands for other drones
+			// Acks from other drones
 			rebroadcast(message);
 		}
 	}
@@ -133,11 +130,14 @@ public class MeshNetworkingThread extends Thread {
 		}
 	}
 	
-	private void handleAcknowledgement(String message) {
+	private void handleScanAcknowledgement(ScanAcknowledgement ack) {
+		for (int i = unacknowledgedMessages.size() - 1; i >= 0; i --) {
+			if (unacknowledgedMessages.get(i).timestamp.equals(ack.timestamp)) {
+				unacknowledgedMessages.remove(i);
+			}
+		}
 		//TODO: Handle Acknowledgements:
-		//      Check whether this acknowledgement is for us.
 		//      If so, remove the corresponding message from the unacknowledged list
-		//      If not, rebroadcast it.
 	}
 	
 	/**
@@ -147,6 +147,10 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	private void handleOtherData(String message) {
 		System.out.printf("Receieved data from Drone %s.\n", Message.getId(message));
+		if (ScanData.class.isAssignableFrom(Message.getType(message))) {
+			ScanData data = new ScanData(message);
+			Drone.mesh().addExternalScanData(data);
+		}
 		dealtWithMessages.add(message);
 	}
 	
@@ -160,7 +164,7 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	protected void sendMessage(network.Message message) {
 		sendMessage(message.toString());
-		sentMessages.add(message);
+		unacknowledgedMessages.add(message);
 	}
 
 	private void sendMessage(String message) {
