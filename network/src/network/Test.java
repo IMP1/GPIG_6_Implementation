@@ -128,9 +128,10 @@ public class Test {
 	private static void testPathMessage() {
 		System.out.println("\tTEST: Path Message");
 		String id = "67yth4wge9ew9";
+		String commandID = "sghij3etg83tnjwgf";
 		LocalDateTime time = LocalDateTime.now();
 		double eta = 12;
-		PathData p = new PathData(id, time, eta);
+		PathData p = new PathData(id, time, commandID, eta);
 		
 		String message = p.toString();
 		System.out.println(message);
@@ -138,11 +139,13 @@ public class Test {
 		PathData p2 = new PathData(message);
 		System.out.println(p2.id);
 		System.out.println(p2.timestamp);
+		System.out.println(p2.pathCommandID);
 		System.out.println(p2.eta);
 		
 		System.out.flush();
 		if (!p2.id.equals(id)) System.err.println("FAILURE: Not the same drone id.");
 		if (!p2.timestamp.equals(time)) System.err.println("FAILURE: Not the same timestamp.");
+		if (!p2.pathCommandID.equals(commandID)) System.err.println("FAILURE: Not the same drone id.");
 		if (p2.eta != eta) System.err.println("FAILURE: Not the same number eta.");
 		System.err.flush();
 		

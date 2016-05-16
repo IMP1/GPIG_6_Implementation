@@ -7,8 +7,8 @@ public class PathCommand extends Command {
 	public final double latitude;
 	public final double longitude;
 	
-	public PathCommand(String id, java.time.LocalDateTime timestamp, double latitude, double longitude) {
-		super(id, timestamp);
+	public PathCommand(String pathCommandID, java.time.LocalDateTime timestamp, double latitude, double longitude) {
+		super(pathCommandID, timestamp);
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}

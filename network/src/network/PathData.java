@@ -8,10 +8,12 @@ public class PathData extends Data {
 	 * Predicted time until destination in seconds.
 	 */
 	public final double eta;
+	public final String pathCommandID;
 	
-	public PathData(String id, java.time.LocalDateTime timestamp, double eta) {
+	public PathData(String id, java.time.LocalDateTime timestamp, String pathCommandID, double eta) {
 		super(id, timestamp);
 		this.eta = eta;
+		this.pathCommandID = pathCommandID;
 	}
 
 	@Override
@@ -29,11 +31,12 @@ public class PathData extends Data {
 		if (!message.startsWith(PATH_DATA_PREFIX)) throw new RuntimeException("A Data Type {SCAN, STATUS, PATH} needs to be supplied.");
 		final String scanMessage = message.substring(PATH_DATA_PREFIX.length() + 1);
 		String data[] = scanMessage.split(SEPARATOR);
-		if (data.length != 1) {
+		if (data.length != 2) {
 			System.err.println(rawMessage);
-			throw new RuntimeException("");
+			throw new RuntimeException("A Path Data reply must have a path command ID, and an eta to the destination.");
 		}
-		eta = Double.parseDouble(data[0]);
+		pathCommandID = data[0];
+		eta = Double.parseDouble(data[1]);
 	}
 	
 }
