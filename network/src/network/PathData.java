@@ -21,6 +21,7 @@ public class PathData extends Data {
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
 		sb.append(PATH_DATA_PREFIX); sb.append(SEPARATOR);
+		sb.append(pathCommandID); sb.append(SEPARATOR);
 		sb.append(eta);
 		return sb.toString();
 	}
