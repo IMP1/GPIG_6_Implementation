@@ -171,6 +171,8 @@ map.on('load', function () {
    
     updateMap();
   
+    // Backend Call
+    getUnitsInfo();
 
 });
 
@@ -492,48 +494,3 @@ function redrawSearchAreas(){
 map.on("render", function() {
     redrawSearchAreas()
 })
-
-
-// CIRCLES
-
-
-
-// var active = true;
-
-// var circleControl = new circleSelector(svg)
-//     .projection(project)
-//     .inverseProjection(function(a) {
-//         return map.unproject({x: a[0], y: a[1]});
-//     })
-//     .activate(active);
-
-// function project(d) {
-//   return map.project(getLL(d));
-// }
-
-// function getLL(d) {
-//   return new mapboxgl.LngLat(+d.lng, +d.lat)
-// }
-
-// d3.select("#circle").on("click", function() {
-//   active = !active;
-//   circleControl.activate(active)
-//   if(active) {
-//     map.dragPan.disable();
-//   } else {
-//     map.dragPan.enable();
-//   }
-//   d3.select(this).classed("active", active)
-// })
-
-// function render() {
-//     circleControl.update(svg)
-// }
-
-// // re-render our visualization whenever the view changes
-// map.on("viewreset", function() {
-// render()
-// })
-// map.on("move", function() {
-// render()
-// })
