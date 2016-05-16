@@ -16,6 +16,12 @@ public abstract class SensorInterface {
 		return -1.078302;
 	}
 	
+	public static double getBatteryLevel() {
+		final double max_battery = 0.7;
+		final double min_battery = 0.6;
+		return Math.random() * (max_battery - min_battery) + min_battery;
+	}
+	
 	// TODO: Set GPS via 'Navigation'
 
 	// TODO: Create and read in pre-defined sonar, depth and flow data

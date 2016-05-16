@@ -6,13 +6,11 @@ public class PathCommand extends Command {
 	
 	public final double latitude;
 	public final double longitude;
-	public final double radius;
 	
-	public PathCommand(String id, java.time.LocalDateTime timestamp, double latitude, double longitude, double radius) {
+	public PathCommand(String id, java.time.LocalDateTime timestamp, double latitude, double longitude) {
 		super(id, timestamp);
 		this.latitude = latitude;
 		this.longitude = longitude;
-		this.radius = radius;
 	}
 	
 	@Override
@@ -22,7 +20,6 @@ public class PathCommand extends Command {
 		sb.append(PATH_COMMAND_PREFIX); sb.append(SEPARATOR);
 		sb.append(latitude); sb.append(SEPARATOR);
 		sb.append(longitude); sb.append(SEPARATOR);
-		sb.append(radius);
 		return sb.toString();
 	}
 	
@@ -32,13 +29,12 @@ public class PathCommand extends Command {
 		if (!commandMessage.startsWith(PATH_COMMAND_PREFIX)) throw new RuntimeException("A Command Type {PATH, MOVE} needs to be supplied.");
 		final String moveMessage = commandMessage.substring(PATH_COMMAND_PREFIX.length() + 1);
 		String data[] = moveMessage.split(SEPARATOR);
-		if (data.length != 3) {
+		if (data.length != 2) {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A MOVE Command Message must have 3 arguments: latitude, longitude, radius.");
 		}
 		latitude  = Double.parseDouble(data[0]);
 		longitude = Double.parseDouble(data[1]);
-		radius    = Double.parseDouble(data[2]);
 	}
 
 }
