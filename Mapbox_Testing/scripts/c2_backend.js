@@ -37,7 +37,6 @@ var units = [];
 function addNewUnit(id, symbol, coordinates, batteryLevel, status, lastUpdated){
 	
 	// Map symbol is generated based on ID
-	console.log(id)
 	if(id == "c2"){
 		symbol = "castle";
 	}else{
@@ -51,11 +50,14 @@ function addNewUnit(id, symbol, coordinates, batteryLevel, status, lastUpdated){
 
 function getUnitsInfo(){
 	
-	//TODO : Get JSON from API endpoints
+	// Get JSON from API endpoints
 	
+	var xmlHttpUnits = new XMLHttpRequest();
+    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", false ); // false for synchronous request
+    	xmlHttpUnits.send( null );
+    
 	// Parse JSON
-	
-	var unitsJSON = unitExamples;
+	var unitsJSON = JSON.parse(xmlHttpUnits.responseText);
 	
 	Object.keys(unitsJSON).forEach(function (unitKey) {
 	   
@@ -78,18 +80,38 @@ function getUnitsInfo(){
     	   unit = addNewUnit(unitKey, 'marker', coordinates, unitJSON.batteryLevel, unitJSON.status, unitJSON.timestamp);
 		   var marker = addNewUnitMarker(unit);
 		   unit.marker = marker;
-		   console.log(unit);
 	   }
 	   
 	   // TODO : Remove Units if they no longer exist
 	   
 	});
 	
+	// Redraw Map
 	map.getSource('markers').setData(markers);
 	
 }
 
 function setupAPICalls(){
-	setInterval(function(){getUnitsInfo()}, 1000);
-	map.repaint = true;
+	setInterval(getUnitsInfo(), 1000);
+}
+
+function pollFunc(){
+	//Drone info
+	var xmlHttpDrone = new XMLHttpRequest();
+    xmlHttpDrone.open( "GET", "http://localhost:8081/GetDroneInfo", false ); // false for synchronous request
+    xmlHttpDrone.send( null );
+    var drones = JSON.parse(xmlHttpDrone.responseText);
+    console.log(drones);
+    // for(var key in drones){
+    // 	console.log(key);
+    // }
+    // console.log(drones);
+    //Scan info
+    known_scans = ["12016-05-12T17:31:13.269","2","3"];
+    var known_scans_string = known_scans.join(",")
+	var xmlHttpScan = new XMLHttpRequest();
+    xmlHttpScan.open( "GET", "http://localhost:8081/GetScanInfo?known_scans="+known_scans_string, false ); // false for synchronous request
+    xmlHttpScan.send( null );
+    var scans = JSON.parse(xmlHttpScan.responseText);
+    // console.log(scans);
 }
