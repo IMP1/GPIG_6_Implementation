@@ -5,14 +5,21 @@ public class StatusData extends Data {
 	public final static String STATUS_DATA_PREFIX = "STATUS";
 	public final static String POINT_SEPARATOR = ",";
 	
+	public enum DroneState {
+		IDLE,
+		MOVING,
+		SCANNING,
+		BATERRY_LOW
+	}
+	
 	public final double latitude;
 	public final double longitude;
 	public final double batteryStatus;
-	public final String status;
+	public final DroneState status;
 	public final double[] currentPath;
 	
 	public StatusData(String id, java.time.LocalDateTime timestamp, double latitude, double longitude, 
-			          double batteryStatus, String status, double[] currentPath) {
+			          double batteryStatus, DroneState status, double[] currentPath) {
 		super(id, timestamp);
 		this.latitude      = latitude;
 		this.longitude     = longitude;
@@ -29,6 +36,7 @@ public class StatusData extends Data {
 		sb.append(latitude); sb.append(SEPARATOR);
 		sb.append(longitude); sb.append(SEPARATOR);
 		sb.append(batteryStatus); sb.append(SEPARATOR);
+		sb.append(status.name()); sb.append(SEPARATOR);
 		for (double point : currentPath) {
 			sb.append(point); sb.append(POINT_SEPARATOR);
 		}
@@ -48,7 +56,7 @@ public class StatusData extends Data {
 		latitude      = Double.parseDouble(data[0]);
 		longitude     = Double.parseDouble(data[1]);
 		batteryStatus = Double.parseDouble(data[2]);
-		status        = data[3];
+		status        = DroneState.valueOf(data[3]);
 		String[] pathData = data[4].split(POINT_SEPARATOR);
 		currentPath = new double[pathData.length];
 		for (int i = 0; i < currentPath.length; i ++) {

@@ -57,9 +57,8 @@ public class MeshNetworkingThread extends Thread {
 		String id = Drone.ID;
 		LocalDateTime timestamp = LocalDateTime.now();
 		double latitude = 53.955391;
-		double longitude = -1.078967; 
-		double radius = 10.0;
-		PathCommand p = new PathCommand(id, timestamp, latitude, longitude, radius);
+		double longitude = -1.078967;
+		PathCommand p = new PathCommand(id, timestamp, latitude, longitude);
 		sendMessage(p.toString());
 		// </testing>
 		while (true) {

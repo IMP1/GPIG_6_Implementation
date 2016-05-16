@@ -11,6 +11,7 @@ import network.MoveCommand;
 import network.PathData;
 import network.ScanData;
 import network.StatusData;
+import network.StatusData.DroneState;
 
 import com.graphhopper.PathWrapper;
 
@@ -138,7 +139,7 @@ public class MeshInterfaceThread extends Thread {
 		final double lat = SensorInterface.getGPSLatitude();
 		final double lon = SensorInterface.getGPSLongitude();
 		final double batteryLevel = SensorInterface.getBatteryLevel();
-		final String state = "TOTALLY FINE";
+		final DroneState state = DroneState.IDLE;
 		// final double[] currentPath = Drone.nav().getCurrentPath();
 		final double[] currentPath = new double[] { 0, 0, 0, 0 };
 		StatusData currentState = new StatusData(id, time, lat, lon, batteryLevel, state, currentPath);
