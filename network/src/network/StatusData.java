@@ -9,7 +9,7 @@ public class StatusData extends Data {
 		IDLE,
 		MOVING,
 		SCANNING,
-		BATERRY_LOW
+		BATTERY_LOW
 	}
 	
 	public final double latitude;
