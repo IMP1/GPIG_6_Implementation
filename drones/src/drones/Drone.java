@@ -6,11 +6,8 @@ import java.util.UUID;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.util.EncodingManager;
 
-
 import drones.mesh.MeshInterfaceThread;
 import drones.navigation.NavigationThread;
-import drones.routing.RoutingHandler;
-import drones.sensors.SensorInterface;
 
 /**
  * Main startup sequence and singleton handler.
@@ -58,9 +55,6 @@ public class Drone {
 		map.importOrLoad();
 		System.out.println("Graph loaded.");
 		
-		// Initialise routing handler
-		RoutingHandler router = new RoutingHandler(); // TODO: Initialise in Mesh Interface
-		
 		// Initialise and release navigation thread
 		navThread = new NavigationThread();
 		navThread.start();
@@ -69,7 +63,7 @@ public class Drone {
 		// Initialise and begin mesh interface thread
 		meshThread = new MeshInterfaceThread();
 		meshThread.start();
-		System.out.println("Mesh Interface created.");	
+		System.out.println("Mesh Interface created.");
 	}
 
 }
