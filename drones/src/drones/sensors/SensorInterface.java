@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import au.com.bytecode.opencsv.*;
+import drones.Drone;
 
 
 /**
@@ -96,7 +97,7 @@ public abstract class SensorInterface {
 					for (int i = 0 ; i < line.length - 4; i++){
 						output[i] = Double.parseDouble(line[i + 4]);
 					}
-					outputs = new ScanData("SCAN", java.time.LocalDateTime.now(), lat, lon, Double.parseDouble(line[2]), Double.parseDouble(line[3]), output);
+					outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, Double.parseDouble(line[2]), Double.parseDouble(line[3]), output);
 					break;
 				}
 			}
@@ -105,7 +106,7 @@ public abstract class SensorInterface {
 			e.printStackTrace();
 		}
 		if (outputs == null){
-			outputs = new ScanData("Whelp");
+			outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, 5.0, 2.5, output);
 		}
 
 

@@ -6,6 +6,7 @@ import com.graphhopper.PathWrapper;
 import com.graphhopper.util.PointList;
 
 import drones.MapHelper;
+import drones.scanner.ScannerHandler;
 import drones.sensors.SensorInterface;
 
 /**
@@ -58,6 +59,10 @@ public class NavigationThread extends Thread {
 	// Random number generator for exploration
 	Random rnd = new Random(SEED);
 	
+	// Sensor interface
+	
+	ScannerHandler sensori = new ScannerHandler();
+	
 	/**
 	 * Thread initialisation.
 	 * Starts at current location with no exploration to do.
@@ -85,6 +90,7 @@ public class NavigationThread extends Thread {
 				// Check if area already scanned and request scan if not
 				try {
 					// TODO: Check map and make request
+					sensori.run();
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					System.err.println(e);
