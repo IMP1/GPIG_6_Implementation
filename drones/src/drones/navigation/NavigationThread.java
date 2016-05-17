@@ -31,8 +31,8 @@ public class NavigationThread extends Thread {
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
 	// Constant travel speed
-	private static final double MOVE_DISTANCE = 0.5;
-	private static final int WAIT_TIME_MILLIS = 250;
+	private static final double MOVE_DISTANCE = 1.0;
+	private static final int WAIT_TIME_MILLIS = 500;
 	
 	// Current location
 	private double currLat, currLng;
@@ -77,7 +77,7 @@ public class NavigationThread extends Thread {
 	@SuppressWarnings("deprecation")
 	public void run() {
 		while(true) {
-			if(!checkForRedirect()) {
+			if(!checkForRedirect() && routing == NavStatus.BUMBLING) {
 				// Get current location
 				currLat = SensorInterface.getGPSLatitude();
 				currLng = SensorInterface.getGPSLongitude();
@@ -108,6 +108,7 @@ public class NavigationThread extends Thread {
 						chkLat += Math.sin(angle) * LONG_DST_CHECK;
 						chkLng += Math.cos(angle) * LONG_DST_CHECK;
 					}
+					chkCount += 1;
 
 					// Move point to nearest outdoors location if indoors
 					double[] point = MapHelper.getExternalPoint(chkLat, chkLng);
@@ -115,8 +116,7 @@ public class NavigationThread extends Thread {
 					chkLng = point[1];
 
 					// If location outside search area, reset search to drone location.
-					// FIXME: RADIUS IN METERS, LAT LONG IN DEGREES
-					if(Math.pow(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2), -2) < tgtRadius) {
+					if(latLongDiffInMeters(tgtLat - chkLat, tgtLng - chkLng) > tgtRadius) {
 						chkLat = currLat;
 						chkLng = currLng;
 					}
@@ -125,13 +125,15 @@ public class NavigationThread extends Thread {
 				}
 
 				// Check for routing necessity based on structure intersection
-				if (MapHelper.pathBlocked(currLat, currLng, chkLat, chkLng)) {
-					routing = NavStatus.ROUTE_TO_CHECK_LOCATION;
-					currRoute = MapHelper.route(currLat, currLng, chkLat, chkLng).getPoints();
-				} else {
-					routing = NavStatus.BUMBLING;
-					nxtLat = chkLat;
-					nxtLng = chkLng;
+				if (!checkForRedirect()) {
+					if (MapHelper.pathBlocked(currLat, currLng, chkLat, chkLng)) {
+						routing = NavStatus.ROUTE_TO_CHECK_LOCATION;
+						currRoute = MapHelper.route(currLat, currLng, chkLat, chkLng).getPoints();
+					} else {
+						routing = NavStatus.BUMBLING;
+						nxtLat = chkLat;
+						nxtLng = chkLng;
+					}
 				}
 			}
 				
@@ -151,7 +153,7 @@ public class NavigationThread extends Thread {
 			if(routing != NavStatus.BUMBLING) {
 				if (routeStepIndex < currRoute.getSize()) {
 					nxtLat = currRoute.getLatitude(routeStepIndex);
-					nxtLat = currRoute.getLongitude(routeStepIndex);
+					nxtLng = currRoute.getLongitude(routeStepIndex);
 					routeStepIndex += 1;
 				} else if (routing == NavStatus.ROUTE_TO_TARGET_AREA) {
 					nxtLat = tgtLat;
@@ -165,16 +167,18 @@ public class NavigationThread extends Thread {
 			}
 			
 			// Travelling abstraction. Assume constant movement speed.
-			while (nxtLat - currLat < 0.01 && nxtLng - currLng < 0.01) {
+			while (latLongDiffInMeters(nxtLat - currLat, nxtLng - currLng) < 0.01) {
 				// Move
-				// FIXME: RADIUS IN METERS, LAT LONG IN DEGREES
-				if (Math.pow(Math.pow(nxtLat - currLat, 2) + Math.pow(nxtLng - currLng, 2), -2) < MOVE_DISTANCE) {
+				if (latLongDiffInMeters(nxtLat - currLat, nxtLng - currLng) < MOVE_DISTANCE) {
 					SensorInterface.setGPS(nxtLat, nxtLng);
 				} else {
 					double angle = Math.tanh((nxtLat - currLat) / (nxtLng - currLng));
-					SensorInterface.setGPS(Math.sin(angle) * MOVE_DISTANCE, 
-							Math.cos(angle) * MOVE_DISTANCE);
+					// FIXME: NEEDS TO BE ADDITIVE
+					SensorInterface.setGPS(currLat + (Math.sin(angle) * mToD(MOVE_DISTANCE)), 
+							currLng + (Math.cos(angle) * mToD(MOVE_DISTANCE)));
 				}
+				System.err.println("LAT: " + SensorInterface.getGPSLatitude() 
+					+ ", LONG: " + SensorInterface.getGPSLongitude());
 
 				// Wait
 				try {
@@ -203,6 +207,7 @@ public class NavigationThread extends Thread {
 		newLat = lat;
 		newLng = lng;
 		newRadius = radius;
+		System.err.println("REDIRECTED");
 	}
 	
 	/**
@@ -229,5 +234,29 @@ public class NavigationThread extends Thread {
 		if (routing == NavStatus.BUMBLING)
 			return null;
 		return currRoute;
+	}
+	
+	// Earth's radius in meters for distance calculation
+	private static final int EARTH_RADIUS = 6731000;
+	
+	/**
+	 * Private helper for naively calculating distance in metres, ignores curvature of earth.
+	 * @param latDiff Latitude difference in degrees
+	 * @param longDiff Longitude difference in degrees
+	 * @return Absolute difference in metres
+	 */
+	private static double latLongDiffInMeters(double latDiff, double longDiff) {
+		double latDiffM = Math.tan(latDiff) * EARTH_RADIUS;
+		double longDiffM = Math.tan(latDiff) * EARTH_RADIUS;
+		return Math.pow(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2), -2);
+	}
+	
+	/**
+	 * Convert meters to degrees
+	 * @param m Meters distance
+	 * @return Degrees (ignoring curvature of earth
+	 */
+	private static double mToD(double m) {
+		return m / EARTH_RADIUS;
 	}
 }
