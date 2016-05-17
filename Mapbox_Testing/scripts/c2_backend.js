@@ -134,14 +134,18 @@ function pollFunc(){
 
 function assignSearchAreas(){
 	
-//	searchAreaArray.forEach(function(searchArea) {
-//		
-//	}, this);
-//	
-//	var known_scans_string = known_scans.join(",")
-//	var xmlHttpScan = new XMLHttpRequest();
-//    xmlHttpScan.open( "GET", "http://localhost:8081/GetScanInfo?known_scans="+known_scans_string, false ); // false for synchronous request
-//    xmlHttpScan.send( null );
-//    var scans = JSON.parse(xmlHttpScan.responseText);
+	searchAreaArray.forEach(function(searchArea) {
+		
+		console.log(searchArea.center);
+		
+		var xmlHttpAssignSearchAreas = new XMLHttpRequest();
+		var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat+"&longitude="+searchArea.center.lng+"&numberRequested="+searchArea.assignedDrones+"&radius="+searchArea.radius;
+	    xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
+	    xmlHttpAssignSearchAreas.send( null );
+	    //var scans = JSON.parse(xmlHttpAssignSearchAreas.responseText);
+		
+		console.log(urlString);
+		
+	}, this);	
 	
 }
