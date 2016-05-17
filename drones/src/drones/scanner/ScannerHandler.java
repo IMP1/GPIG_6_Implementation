@@ -8,7 +8,7 @@ package drones.scanner;
  * @author Anthony Williams
  */
 public class ScannerHandler implements Runnable {
-
+	
 	@Override
 	public void run() {
 		//TODO: Asynchronous scanner handling and giving data to transmit.

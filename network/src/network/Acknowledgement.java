@@ -4,7 +4,7 @@ public abstract class Acknowledgement extends Message {
 
 	public final static String ACKNOWLEDGEMENT_PREFIX = "ACK";
 	
-	protected Acknowledgement(String id, java.time.LocalDateTime timestamp) {
+	public Acknowledgement(String id, java.time.LocalDateTime timestamp) {
 		super(id, timestamp);
 	}
 	
@@ -23,8 +23,8 @@ public abstract class Acknowledgement extends Message {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
-		sb.append(ACKNOWLEDGEMENT_PREFIX); sb.append(SEPARATOR);
+		sb.append(super.toString()); sb.append(SEPARATOR);
+		sb.append(ACKNOWLEDGEMENT_PREFIX);
 		return sb.toString();
 	}
 	

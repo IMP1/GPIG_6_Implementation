@@ -3,10 +3,8 @@ package drones.navigation;
 import java.util.Random;
 
 import com.graphhopper.PathWrapper;
-import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.util.PointList;
 
-import drones.Drone;
 import drones.MapHelper;
 import drones.sensors.SensorInterface;
 
@@ -32,11 +30,18 @@ public class NavigationThread extends Thread {
 	// Long and short range check distances (in meters)
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
+	// Constant travel speed
+	private static final double MOVE_DISTANCE = 0.5;
+	private static final int WAIT_TIME_MILLIS = 250;
 	
 	// Current location
 	private double currLat, currLng;
 	// Location to check
 	private double chkLat, chkLng;
+	// Next waypoint
+	private double nxtLat, nxtLng;
+	// Current route
+	private PointList currRoute;
 	
 	// Current target area
 	private double tgtLat, tgtLng, tgtRadius;
@@ -69,6 +74,7 @@ public class NavigationThread extends Thread {
 	 * When redirected to a new area, navigate along the defined path and then
 	 * return to exploring.
 	 */
+	@SuppressWarnings("deprecation")
 	public void run() {
 		while(true) {
 			if(!checkForRedirect()) {
@@ -109,30 +115,76 @@ public class NavigationThread extends Thread {
 					chkLng = point[1];
 
 					// If location outside search area, reset search to drone location.
-					if(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2) < tgtRadius) {
+					if(Math.pow(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2), -2) < tgtRadius) {
 						chkLat = currLat;
 						chkLng = currLng;
 					}
 					
 					// TODO: Check if point is viable for scanning
 				}
-				// TODO: Check for routing necessity based on structure intersection
+
+				// Check for routing necessity based on structure intersection
+				if (MapHelper.pathBlocked(currLat, currLng, chkLat, chkLng)) {
+					routing = NavStatus.ROUTE_TO_CHECK_LOCATION;
+					currRoute = MapHelper.route(currLat, currLng, chkLat, chkLng).getPoints();
+				} else {
+					routing = NavStatus.BUMBLING;
+					nxtLat = chkLat;
+					nxtLng = chkLng;
+				}
 			}
 				
+			// Check for redirection before continuing too far
 			if(checkForRedirect()) {
+				// TODO: Replace synchronised with a lock. Currently can get fudged if redirected in this block!
 				routing = NavStatus.ROUTE_TO_TARGET_AREA;
 				routeStepIndex = 0;
+				currRoute = newRoute;
+				tgtLat = newLat;
+				tgtLng = newLng;
+				tgtRadius = newRadius;
 				acknowledgeRedirect();
-				
-				// TODO: Accept routing for navigation (watch for race conditions!)
 			}
 
 			// Follow routing if required
 			if(routing != NavStatus.BUMBLING) {
-				// TODO: Follow set of waypoints specified by route and finally target
+				if (routeStepIndex < currRoute.getSize()) {
+					nxtLat = currRoute.getLatitude(routeStepIndex);
+					nxtLat = currRoute.getLongitude(routeStepIndex);
+					routeStepIndex += 1;
+				} else if (routing == NavStatus.ROUTE_TO_TARGET_AREA) {
+					nxtLat = tgtLat;
+					nxtLng = tgtLng;
+					routing = NavStatus.BUMBLING;
+				} else {
+					nxtLat = chkLat;
+					nxtLng = chkLng;
+					routing = NavStatus.BUMBLING;
+				}
 			}
 			
-			// TODO: Travelling abstraction. Assume constant movement speed.
+			// Travelling abstraction. Assume constant movement speed.
+			while (nxtLat - currLat < 0.01 && nxtLng - currLng < 0.01) {
+				// Move
+				if (Math.pow(Math.pow(nxtLat - currLat, 2) + Math.pow(nxtLng - currLng, 2), -2) < MOVE_DISTANCE) {
+					SensorInterface.setGPS(nxtLat, nxtLng);
+				} else {
+					double angle = Math.tanh((nxtLat - currLat) / (nxtLng - currLng));
+					SensorInterface.setGPS(Math.sin(angle) * MOVE_DISTANCE, 
+							Math.cos(angle) * MOVE_DISTANCE);
+				}
+
+				// Wait
+				try {
+					Thread.sleep(WAIT_TIME_MILLIS);
+				} catch (InterruptedException e) {
+					System.err.println(e);
+				}
+
+				// Update position
+				currLat = SensorInterface.getGPSLatitude();
+				currLng = SensorInterface.getGPSLongitude();
+			}
 		}
 	}
 
@@ -164,5 +216,16 @@ public class NavigationThread extends Thread {
 	 */
 	synchronized private void acknowledgeRedirect() {
 		redirected = false;
+	}
+	
+	/**
+	 * Get the current route that the drone is following.
+	 * @return Null if the drone is not currently following a route.
+	 * 		Otherwise return the set of points it is following to the target.
+	 */
+	synchronized public PointList getCurrentPath() {
+		if (routing == NavStatus.BUMBLING)
+			return null;
+		return currRoute;
 	}
 }

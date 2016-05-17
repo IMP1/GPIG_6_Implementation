@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 import datastore.Datastore;
+import network.Message;
 
 public class DroneServer implements Runnable {
 	
@@ -24,7 +25,7 @@ public class DroneServer implements Runnable {
 		System.out.println("Drone server starting on port "+port);
 		try {
 			serverSocket = new MulticastSocket(port);
-			serverSocket.joinGroup(InetAddress.getByName("234.0.0.6"));
+			serverSocket.joinGroup(InetAddress.getByName(Message.MESH_GROUP_ADDRESS));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -37,6 +38,7 @@ public class DroneServer implements Runnable {
 				String sentence = new String( receivePacket.getData());
 				DroneServerHandler handler = new DroneServerHandler(sentence, datastore);
 				new Thread(handler).start();
+				receiveData = new byte[1024];
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

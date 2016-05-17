@@ -1,17 +1,18 @@
 package droneserver;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.net.Socket;
-import java.util.Date;
+import java.time.LocalDateTime;
 
+import broadcast.Broadcast;
 import datastore.Datastore;
 import datastore.Drone;
 import datastore.Scan;
-import network.Command;
-import network.Message.Type;
-import network.Report;
+import network.Acknowledgement;
+import network.Message;
+import network.PathData;
+import network.ScanAcknowledgement;
 import network.ScanData;
+import network.StatusData;
 
 public class DroneServerHandler implements Runnable {
 	
@@ -26,41 +27,55 @@ public class DroneServerHandler implements Runnable {
 	@Override
 	public void run() {
 		System.out.println("Drone Request Received, handler started");
+		String id = null;
+		LocalDateTime dt = null;
 		//if type info
-		if(Command.getType(data)==Type.INFO){
-			Report report = new Report(data);
+		System.out.println(data);
+		if(Message.getType(data)==StatusData.class){
+			StatusData statusdata = new StatusData(data);
+			id = statusdata.id;
+			dt = statusdata.timestamp;
 			//if we've seen this drone before, update it
-			if(datastore.droneExists(report.id)){
-				Drone drone = datastore.getDroneById(report.id);
-				Long timestamp = Long.parseLong(report.timestamp);
-				Date messagedate = new Date(timestamp);
-				Long storedtimestamp = Long.parseLong(drone.getTimestamp());
-				Date storeddate = new Date(storedtimestamp);
-				if(messagedate.after(storeddate)){
-					System.out.println("Updating known drone "+report.id);
-					drone.setTimestamp(report.timestamp);
-					drone.setBatteryLevel(report.batteryStatus);
-					drone.setLocLat(report.latitude);
-					drone.setLocLong(report.longitude);
-					drone.setStatus(report.status);
+			if(datastore.droneExists(statusdata.id)){
+				Drone drone = datastore.getDroneById(statusdata.id);
+				LocalDateTime timestamp = statusdata.timestamp;
+				LocalDateTime storeddate= drone.getTimestamp();
+				if(timestamp.isAfter(storeddate)){
+					System.out.println("Updating known drone "+statusdata.id);
+					drone.setTimestamp(statusdata.timestamp);
+					drone.setBatteryLevel(statusdata.batteryStatus);
+					drone.setLocLat(statusdata.latitude);
+					drone.setLocLong(statusdata.longitude);
+					drone.setStatus(statusdata.status);
 				}
 				
 			}else{
 				//otherwise create it and chuck it in the datastore.
-				System.out.println("Creating new drone "+report.id);
-				Drone drone = new Drone(report.batteryStatus, report.latitude, report.longitude, report.status, report.timestamp);
-				datastore.addDrone(report.id, drone);
+				System.out.println("Creating new drone "+statusdata.id);
+				Drone drone = new Drone(statusdata.batteryStatus, statusdata.latitude, statusdata.longitude, statusdata.status, statusdata.timestamp);
+				datastore.addDrone(statusdata.id, drone);
 			}
-		} else if (Command.getType(data)== Type.SCAN_DATA){
+		} else if (Message.getType(data)== ScanData.class){
 			ScanData scandata = new ScanData(data);
-			System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
-			String id = scandata.id+scandata.timestamp;
-			if(!datastore.scanExists(id)){
+			id = scandata.id;
+			dt = scandata.timestamp;
+			String ident = scandata.id+scandata.timestamp;
+			if(!datastore.scanExists(ident)){
+				System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
 				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, scandata.distanceReadings);
-				datastore.addScan(id, scan);
+				datastore.addScan(ident, scan);
+			}
+		} else if(Message.getType(data) == PathData.class){
+			PathData pathdata = new PathData(data);
+			if(pathdata.pathCommandID == datastore.getSearchArea().id){
+				datastore.getSearchArea().addEta(pathdata.id, pathdata.eta);
 			}
 		}
-		//TODO ACK.
+		//TODO - should this be moved?
+		if( Message.getType(data)==ScanData.class){
+			Acknowledgement ack = new ScanAcknowledgement(id, dt);
+			Broadcast.broadcast(ack.toString());
+		}
 	}
 
 }

@@ -1,16 +1,14 @@
 package drones.routing;
 
-import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.graphhopper.GHRequest;
-import com.graphhopper.GHResponse;
 import com.graphhopper.PathWrapper;
 
 import drones.Drone;
+import drones.MapHelper;
 import drones.sensors.SensorInterface;
 
 /**
@@ -95,23 +93,8 @@ public class RoutingHandler {
 		 * Route using pre-defined parameters
 		 */
 		public PathWrapper call() {
-			// Construct and make routing request
-			GHRequest req = new GHRequest(SensorInterface.getGPSLatitude(),
-					SensorInterface.getGPSLongitude(), lat, lng).
-			    setWeighting("fastest").
-			    setVehicle("foot").
-			    setLocale(Locale.UK);
-			GHResponse rsp = Drone.map().route(req);
-
-			// Log errors and return null result if so
-			if(rsp.hasErrors()) {
-				for(Throwable e : rsp.getErrors())
-					System.err.println(e.getMessage());
-				return null;
-			}
-
-			// Return best route
-			return rsp.getBest();
+			return MapHelper.route(SensorInterface.getGPSLatitude(),
+					SensorInterface.getGPSLongitude(), lat, lng);
 		}
 	}
 }

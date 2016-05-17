@@ -15,7 +15,8 @@ public abstract class Message {
 	public static final int MESH_PORT = 5224;
 	public static final int PACKAGE_SIZE = 1024;
 	
-	protected final static String SEPARATOR = ";";
+	public final static String SEPARATOR = ";";
+	public final static String SUFFIX = "#";
 	
 	public static Class<? extends Message> getType(final String rawMessage) {
 		final String message = Message.strip(rawMessage);
@@ -26,7 +27,7 @@ public abstract class Message {
 			} else if (message.startsWith(PathCommand.COMMAND_PREFIX)) {
 				return PathCommand.class;
 			} else {
-				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nMust be either COMMAND or DATA.");
+				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
 			}
 		} else if (message.startsWith(Data.DATA_PREFIX)) {
 			final String dataMessage = Data.strip(rawMessage);
@@ -37,10 +38,12 @@ public abstract class Message {
 			} else if (dataMessage.startsWith(StatusData.STATUS_DATA_PREFIX)) {
 				return StatusData.class;
 			} else {
-				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nMust be either COMMAND or DATA.");
+				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
 			}
+		} else if (message.startsWith(Acknowledgement.ACKNOWLEDGEMENT_PREFIX)) {
+			return Acknowledgement.class;
 		} else {
-			throw new RuntimeException("This isn't a supported message type: " + message + ".\nMust be either COMMAND or DATA.");
+			throw new RuntimeException("This isn't a supported message type: " + message + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
 		}
 	}
 	
@@ -48,19 +51,23 @@ public abstract class Message {
 		return rawMessage.split(SEPARATOR)[0];
 	}
 	
+	public static LocalDateTime getTimestamp(final String rawMessage) {
+		return LocalDateTime.parse(rawMessage.split(SEPARATOR)[1]);
+	}
+	
 	public final String id;
 	public final LocalDateTime timestamp;
 	
 	protected Message(String id, LocalDateTime timestamp) {
 		this.id = id;
-		this.timestamp = java.time.LocalDateTime.now();
+		this.timestamp = timestamp;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(id); sb.append(SEPARATOR);
-		sb.append(timestamp); sb.append(SEPARATOR);
+		sb.append(timestamp);
 		return sb.toString();
 	}
 	
@@ -75,7 +82,7 @@ public abstract class Message {
 		int firstSeparatorIndex = message.indexOf(SEPARATOR);
 		int secondSeparatorIndex = message.indexOf(SEPARATOR, firstSeparatorIndex + 1);
 		String strippedMessage = message.substring(secondSeparatorIndex + 1);
-		return strippedMessage;
+		return strippedMessage.split(SUFFIX)[0];
 	}
 	
 }
