@@ -17,7 +17,8 @@ public final class MoveAcknowledgement extends Acknowledgement {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
+		sb.append(MOVE_ACK_PREFIX);
 		sb.append(SUFFIX);
 		return sb.toString();
 	}

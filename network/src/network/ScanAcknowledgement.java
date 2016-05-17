@@ -17,7 +17,8 @@ public final class ScanAcknowledgement extends Acknowledgement {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
+		sb.append(SCAN_ACK_PREFIX);
 		sb.append(SUFFIX);
 		return sb.toString();
 	}
