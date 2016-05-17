@@ -16,6 +16,10 @@ var searchAreaCreationEnabled = true;
 var editingSearchArea = false;
 
 //// Button Events
+document.getElementById('btn-assign-search-areas').addEventListener('click', function(e) {            
+    assignSearchAreas();
+});
+
 document.getElementById('btn-clear-all').addEventListener('click', function(e) {            
     deleteAllSearchAreas();
 });
@@ -146,6 +150,13 @@ function addNewUnitMarker(unit){
 
 function updateUnitUI(){
     
+    var searchUnitsEmpty = document.getElementById('search-units-empty');
+    if(units.length > 0){
+        searchUnitsEmpty.hidden = true;
+    }else{
+        searchUnitsEmpty.hidden = false;
+    }
+    
     units.forEach(function(unit) {
         
 	   var layerID = unit.id;
@@ -154,15 +165,38 @@ function updateUnitUI(){
         var element_name = document.getElementById(layerID+'-'+'name');
             element_name.textContent = unit.id;
         
+        // Battery
         var element_battery = document.getElementById(layerID+'-'+unit_element_ids[0]);
-            element_battery.textContent = unit.batteryLevel + '%';
-            
+            element_battery.textContent = Math.round(unit.batteryLevel*100) + '%';
+        
+        // State
         var element_state = document.getElementById(layerID+'-'+unit_element_ids[1]);
             element_state.textContent = unit.status;
-            
+        
+        // Time
         var element_lastseen = document.getElementById(layerID+'-'+unit_element_ids[2]);
-            element_lastseen.textContent = 'Last seen '+unit.timeSinceUpdate+'s ago';
+        
+        var timeUnit = 's';
+        var curTime = Date.now();
+        var timeDif = Math.round((curTime-unit.lastUpdated) / 1000);
+        
+        // Conv to mins
+        var warningMins = 3;
+        if(timeDif > 60*warningMins){
+            timeDif = Math.round(timeDif/60);
+            timeUnit = 'm';
+            element_lastseen.style.color = 'red';
+        }
+        
+        // Conv to hours
+        if(timeDif > 60){
+            timeDif = Math.round(timeDif/60);
+            timeUnit = 'h';
+        }  
             
+        element_lastseen.textContent = 'Last seen '+timeDif+timeUnit+' ago';
+        
+        // Depth
         var element_depth = document.getElementById(layerID+'-'+unit_element_ids[3]);
             element_depth.textContent = 'Depth : 20m';
        
@@ -173,6 +207,11 @@ function updateUnitUI(){
 
 function setMarkerPosition(lat, long, marker){    
     marker.geometry.coordinates = [lat, long];
+}
+
+function refreshUI(){
+    updateUnitUI();
+    redrawSearchAreasUI();
 }
 
 map.on('load', function () {
@@ -186,6 +225,8 @@ map.on('load', function () {
   
     // Backend Call
     setupAPICalls();
+    
+    setInterval(refreshUI, 250);
 
 });
 
@@ -209,6 +250,7 @@ var searchAreaArray = [];
 
 // SearchArea Class
 var searchAreaID = 0;
+
 function SearchArea(){
     this.id = searchAreaID++;
     this.center = [];
@@ -217,9 +259,9 @@ function SearchArea(){
 }
 
 function distance(ll0, ll1) {
-    var p0 = project(ll0)
-    var p1 = project(ll1)
-    var dist = Math.sqrt((p1.x - p0.x)*(p1.x - p0.x) + (p1.y - p0.y)*(p1.y-p0.y))
+    var p0 = project(ll0);
+    var p1 = project(ll1);
+    var dist = Math.sqrt((p1.x - p0.x)*(p1.x - p0.x) + (p1.y - p0.y)*(p1.y-p0.y));
     return dist;
 }
 
@@ -229,9 +271,6 @@ function arraysEqual(a, b) {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (a.length != b.length) return false;
-
-  // If you don't care about the order of the elements inside
-  // the array, you should sort both arrays here.
 
   for (var i = 0; i < a.length; ++i) {
     if (a[i] !== b[i]) return false;
@@ -372,7 +411,7 @@ function deleteSearchAreaView(searchArea){
     svg.selectAll('#SearchArea-'+searchArea.id).remove();
     svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
     svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();    
-    document.getElementById('control-searcharea-'+searchArea.id).remove();
+    document.getElementById('control-searcharea-'+searchArea.id).remove()
 }
 
 svg.on("mousemove.circle", function() {
@@ -417,8 +456,19 @@ var drag = d3.behavior.drag()
         // dragging = false;
         // },100)
     })
+    
+function redrawSearchAreasUI(){
+    var searchAreasEmpty = document.getElementById('search-areas-empty');
+    if(searchAreaArray.length > 0){
+        searchAreasEmpty.hidden = true;
+    }else{
+        searchAreasEmpty.hidden = false;
+    }
+}
 
 function redrawSearchAreas(){
+    
+    redrawSearchAreasUI();
 
     searchAreaArray.forEach(function(searchArea){
         
