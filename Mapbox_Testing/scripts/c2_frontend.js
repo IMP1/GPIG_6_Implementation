@@ -167,7 +167,7 @@ function updateUnitUI(){
        
        // Name
         var element_name = document.getElementById(layerID+'-'+'name');
-            element_name.textContent = unit.id;
+            element_name.textContent = unit.name;
         
         // Battery
         var element_battery = document.getElementById(layerID+'-'+unit_element_ids[0]);
@@ -237,33 +237,19 @@ map.on('load', function () {
 
 });
 
-// NEW CIRCLES
+// Map Projection/Unprojection
 
 function project(d) {
   return map.project(getLL(d));
 }
 
 function getLL(d) {
-  latlong = new mapboxgl.LngLat(d.lng, d.lat)
+  var latlong = new mapboxgl.LngLat(d.lng, d.lat);
   return latlong;
 }
 
 function unproject(a) {
     return map.unproject({x: a[0], y: a[1]});
-}
-
-var currentSearchArea;
-var searchAreaArray = [];
-
-// SearchArea Class
-var searchAreaID = 0;
-
-function SearchArea(){
-    this.id = searchAreaID++;
-    this.center = [];
-    this.outer  = [];
-    this.assignedDrones = 1;
-    this.complete = false;
 }
 
 function distance(ll0, ll1) {
@@ -273,40 +259,7 @@ function distance(ll0, ll1) {
     return dist;
 }
 
-function unprojectedDistance(ll0, ll1) {
-    
-    // Haversine Formulae
-    
-    var lat1 = ll0.lat;
-    var lon1 = ll0.lng;
-    var lat2 = ll1.lat;
-    var lon2 = ll1.lng;
-    
-	var radlat1 = Math.PI * lat1/180
-	var radlat2 = Math.PI * lat2/180
-	var theta = lon1-lon2
-	var radtheta = Math.PI * theta/180
-	var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-	dist = Math.acos(dist)
-	dist = dist * 180/Math.PI
-	dist = dist * 60 * 1.1515
-	dist = dist * 1.609344 * 1000 // Convert to Meters
-    
-	return dist
-}
-
 var mouseDownCoords;
-
-function arraysEqual(a, b) {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (a.length != b.length) return false;
-
-  for (var i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
 
 svg.on("mousedown", function() {
     mouseDownCoords = d3.mouse(this);
