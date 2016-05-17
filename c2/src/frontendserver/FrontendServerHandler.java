@@ -55,10 +55,11 @@ public class FrontendServerHandler implements Runnable{
 		}
 		if(request.contains("AssignSearchAreas")){
 			//TODO - Clever things.
-			Double loclat = 0.235343;
-			Double loclong = -1.234325434;
-			Integer numberRequested = 2;
-			Double searchRadius = 0.2;
+			HTTPRequest reqObj = new HTTPRequest(request);
+			Double loclat = Double.parseDouble(reqObj.params.get("latitude"));
+			Double loclong = Double.parseDouble(reqObj.params.get("longitude"));
+			Integer numberRequested = Integer.parseInt(reqObj.params.get("numberRequested"));
+			Double searchRadius = Double.parseDouble(reqObj.params.get("radius"));
 			etaRequestID++;
 			String uniqueID = UUID.randomUUID().toString();
 			SearchArea searchArea = new SearchArea(uniqueID, loclat, loclong, numberRequested, searchRadius);

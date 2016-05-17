@@ -20,18 +20,21 @@ public class SearchAreaWaiter {
 		this.datastore = datastore;
 	}
 	public String[] doWait() {
-		while(datastore.getSearchArea() != null){
-			
-		}
 		datastore.setSearchArea(this.searchArea);
 		String uniqueID = UUID.randomUUID().toString();
 		PathCommand message = new PathCommand(this.searchArea.id, LocalDateTime.now(), this.searchArea.locLat, this.searchArea.locLong);
 		Broadcast.broadcast(message.toString());
 		LocalDateTime waitingFrom = LocalDateTime.now();
 		LocalDateTime waitingUntil = waitingFrom.plusSeconds(20);
-		while(datastore.getSearchArea().etas.size() < datastore.getNumberOfDrones() && waitingUntil.isBefore(LocalDateTime.now())); //ew
-		//TODO - Process the replies which *should* have found their way into the searchArea object at this point
-		//then set the datastores search area to null to allow another thread to jump in.
+		System.out.println(waitingUntil);
+		System.out.println(waitingUntil.isAfter(LocalDateTime.now()));
+		while(datastore.getSearchArea().etas.size() < datastore.getNumberOfDrones() && waitingUntil.isAfter(LocalDateTime.now())); //ew
+		
+		//clone the hashmap. Too late now if you didn't reply
+		if(datastore.getSearchArea().etas.size() < this.searchArea.numberRequested){
+			throw new RuntimeException("Insufficient replies");
+		}
+		this.etas = (HashMap<String, Double>) datastore.getSearchArea().etas.clone();
 		String[] assigned = new String[this.searchArea.numberRequested];
 		for (int i = 0; i < this.searchArea.numberRequested-1; i++){
 			String droneID =  popClosestDrone();
