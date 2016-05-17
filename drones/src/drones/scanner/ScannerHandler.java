@@ -1,5 +1,8 @@
 package drones.scanner;
 
+import drones.Drone;
+import drones.sensors.SensorInterface;
+
 /**
  * Asynchronous scanning handler.
  * Placed in a separate thread as raw data from sensors will likely
@@ -11,6 +14,6 @@ public class ScannerHandler implements Runnable {
 	
 	@Override
 	public void run() {
-		//TODO: Asynchronous scanner handling and giving data to transmit.
+		Drone.mesh().addScan(SensorInterface.getDataForPoint(SensorInterface.getGPSLatitude(), SensorInterface.getGPSLongitude()));
 	}
 }

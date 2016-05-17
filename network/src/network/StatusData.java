@@ -8,8 +8,8 @@ public final class StatusData extends Data {
 	public enum DroneState {
 		IDLE,
 		MOVING,
-		SCANNING,
-		BATTERY_LOW
+		SCANNING,  
+		RETURNING, // For example, due to low battery.
 	}
 	
 	public final double latitude;
