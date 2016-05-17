@@ -27,7 +27,7 @@ public abstract class Message {
 			} else if (message.startsWith(PathCommand.COMMAND_PREFIX)) {
 				return PathCommand.class;
 			} else {
-				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
+				throw new RuntimeException("This isn't a supported message type: " + commandMessage + ".\nA valid command type {MOVE, PATH} needs to be supplied.");
 			}
 		} else if (message.startsWith(Data.DATA_PREFIX)) {
 			final String dataMessage = Data.strip(rawMessage);
@@ -38,10 +38,17 @@ public abstract class Message {
 			} else if (dataMessage.startsWith(StatusData.STATUS_DATA_PREFIX)) {
 				return StatusData.class;
 			} else {
-				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
+				throw new RuntimeException("This isn't a supported message type: " + dataMessage + ".\nA valid data type {SCAN, PATH, STATUS} needs to be supplied.");
 			}
 		} else if (message.startsWith(Acknowledgement.ACKNOWLEDGEMENT_PREFIX)) {
-			return Acknowledgement.class;
+			final String ackMessage = Acknowledgement.strip(rawMessage);
+			if (ackMessage.startsWith(MoveAcknowledgement.MOVE_ACK_PREFIX)) {
+				return MoveAcknowledgement.class;
+			} else if (ackMessage.startsWith(ScanAcknowledgement.SCAN_ACK_PREFIX)) {
+				return ScanAcknowledgement.class;
+			} else {
+				throw new RuntimeException("This isn't a supported message type: " + ackMessage + ".\nA valid acknowledgement type {MOVE, SCAN} needs to be supplied.");
+			}
 		} else {
 			throw new RuntimeException("This isn't a supported message type: " + message + ".\nA valid message type {COMMAND, DATA, ACK} needs to be supplied.");
 		}
