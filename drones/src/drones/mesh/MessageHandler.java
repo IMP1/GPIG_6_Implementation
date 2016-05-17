@@ -34,10 +34,6 @@ public class MessageHandler {
 			System.out.println("Duplicate. Ignoring.");	
 			return;
 		}
-		if (!Message.getId(message).equals(Drone.ID)) {
-			// We're reconnected! (In theory)
-			networkingThread.resendAllStoredMessages();  
-		}
 		final Class<? extends Message> messageClass = Message.getType(message);
 		if (PathCommand.class.isAssignableFrom(messageClass)) {
 			handleCommand(message);
@@ -60,6 +56,10 @@ public class MessageHandler {
 			// * Acks from other drones
 			networkingThread.sendMessage(message);
 			networkingThread.addDealtWithMessage(message);
+		}
+		if (!Message.getId(message).equals(Drone.ID)) {
+			// We're reconnected! (In theory)
+			networkingThread.resendAllStoredMessages();  
 		}
 	}
 	
