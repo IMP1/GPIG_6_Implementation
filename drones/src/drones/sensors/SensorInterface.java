@@ -60,6 +60,12 @@ public abstract class SensorInterface {
 		return Math.random() * (max_battery - min_battery) + min_battery;
 	}
 	
+	public static boolean isBatteryTooLow() {
+		//XXX: some function of distance from the C2? 
+		return SensorInterface.getBatteryLevel() < 0.4;
+	}
+	
+	
 	// TODO: Set GPS via 'Navigation'
 
 	// TODO: Create and read in pre-defined sonar, depth and flow data
