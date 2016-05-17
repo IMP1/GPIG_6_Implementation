@@ -31,8 +31,8 @@ public class NavigationThread extends Thread {
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
 	// Constant travel speed
-	private static final double MOVE_DISTANCE = 1.0;
-	private static final int WAIT_TIME_MILLIS = 500;
+	private static final double MOVE_DISTANCE = 0.5;
+	private static final int WAIT_TIME_MILLIS = 250;
 	
 	// Current location
 	private double currLat, currLng;
@@ -167,13 +167,12 @@ public class NavigationThread extends Thread {
 			}
 			
 			// Travelling abstraction. Assume constant movement speed.
-			while (latLongDiffInMeters(nxtLat - currLat, nxtLng - currLng) < 0.01) {
+			while (latLongDiffInMeters(nxtLat - currLat, nxtLng - currLng) > 0.01) {
 				// Move
 				if (latLongDiffInMeters(nxtLat - currLat, nxtLng - currLng) < MOVE_DISTANCE) {
 					SensorInterface.setGPS(nxtLat, nxtLng);
 				} else {
 					double angle = Math.tanh((nxtLat - currLat) / (nxtLng - currLng));
-					// FIXME: NEEDS TO BE ADDITIVE
 					SensorInterface.setGPS(currLat + (Math.sin(angle) * mToD(MOVE_DISTANCE)), 
 							currLng + (Math.cos(angle) * mToD(MOVE_DISTANCE)));
 				}
@@ -246,9 +245,10 @@ public class NavigationThread extends Thread {
 	 * @return Absolute difference in metres
 	 */
 	private static double latLongDiffInMeters(double latDiff, double longDiff) {
-		double latDiffM = Math.tan(latDiff) * EARTH_RADIUS;
-		double longDiffM = Math.tan(latDiff) * EARTH_RADIUS;
-		return Math.pow(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2), -2);
+		double latDiffM = Math.tan(Math.toRadians(latDiff)) * EARTH_RADIUS;
+		double longDiffM = Math.tan(Math.toRadians(longDiff)) * EARTH_RADIUS;
+		double dist = Math.sqrt(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2));
+		return dist;
 	}
 	
 	/**
