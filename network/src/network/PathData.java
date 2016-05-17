@@ -1,6 +1,6 @@
 package network;
 
-public class PathData extends Data {
+public final class PathData extends Data {
 	
 	public final static String PATH_DATA_PREFIX = "PATH";
 	
@@ -19,10 +19,11 @@ public class PathData extends Data {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
 		sb.append(PATH_DATA_PREFIX); sb.append(SEPARATOR);
 		sb.append(pathCommandID); sb.append(SEPARATOR);
 		sb.append(eta);
+		sb.append(SUFFIX);
 		return sb.toString();
 	}
 	

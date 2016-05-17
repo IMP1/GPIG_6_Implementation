@@ -1,6 +1,6 @@
 package network;
 
-public class Acknowledgement extends Message {
+public abstract class Acknowledgement extends Message {
 
 	public final static String ACKNOWLEDGEMENT_PREFIX = "ACK";
 	
@@ -23,8 +23,8 @@ public class Acknowledgement extends Message {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
-		sb.append(ACKNOWLEDGEMENT_PREFIX); sb.append(SEPARATOR);
+		sb.append(super.toString()); sb.append(SEPARATOR);
+		sb.append(ACKNOWLEDGEMENT_PREFIX);
 		return sb.toString();
 	}
 	

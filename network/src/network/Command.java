@@ -23,8 +23,8 @@ public abstract class Command extends Message {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
-		sb.append(COMMAND_PREFIX); sb.append(SEPARATOR);
+		sb.append(super.toString()); sb.append(SEPARATOR);
+		sb.append(COMMAND_PREFIX);
 		return sb.toString();
 	}
 	

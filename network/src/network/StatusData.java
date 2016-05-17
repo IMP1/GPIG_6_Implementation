@@ -1,6 +1,6 @@
 package network;
 
-public class StatusData extends Data {
+public final class StatusData extends Data {
 
 	public final static String STATUS_DATA_PREFIX = "STATUS";
 	public final static String POINT_SEPARATOR = ",";
@@ -31,15 +31,19 @@ public class StatusData extends Data {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
 		sb.append(STATUS_DATA_PREFIX); sb.append(SEPARATOR);
 		sb.append(latitude); sb.append(SEPARATOR);
 		sb.append(longitude); sb.append(SEPARATOR);
 		sb.append(batteryStatus); sb.append(SEPARATOR);
 		sb.append(status.name()); sb.append(SEPARATOR);
-		for (double point : currentPath) {
-			sb.append(point); sb.append(POINT_SEPARATOR);
+		if (currentPath.length > 0) {
+			for (int i = 0; i < currentPath.length - 1; i ++) {
+				sb.append(currentPath[i]); sb.append(POINT_SEPARATOR);
+			}
+			sb.append(currentPath[currentPath.length - 1]);
 		}
+		sb.append(SUFFIX);
 		return sb.toString();
 	}
 	

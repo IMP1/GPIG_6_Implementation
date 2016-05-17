@@ -1,6 +1,6 @@
 package network;
 
-public class MoveCommand extends Command {
+public final class MoveCommand extends Command {
 	
 	public final static String MOVE_COMMAND_PREFIX = "MOVE";
 	
@@ -18,11 +18,12 @@ public class MoveCommand extends Command {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
 		sb.append(MOVE_COMMAND_PREFIX); sb.append(SEPARATOR);
 		sb.append(latitude); sb.append(SEPARATOR);
 		sb.append(longitude); sb.append(SEPARATOR);
 		sb.append(radius);
+		sb.append(SUFFIX);
 		return sb.toString();
 	}
 	

@@ -15,7 +15,8 @@ public abstract class Message {
 	public static final int MESH_PORT = 5224;
 	public static final int PACKAGE_SIZE = 1024;
 	
-	protected final static String SEPARATOR = ";";
+	public final static String SEPARATOR = ";";
+	public final static String SUFFIX = "#";
 	
 	public static Class<? extends Message> getType(final String rawMessage) {
 		final String message = Message.strip(rawMessage);
@@ -66,7 +67,7 @@ public abstract class Message {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(id); sb.append(SEPARATOR);
-		sb.append(timestamp); sb.append(SEPARATOR);
+		sb.append(timestamp);
 		return sb.toString();
 	}
 	
@@ -81,7 +82,7 @@ public abstract class Message {
 		int firstSeparatorIndex = message.indexOf(SEPARATOR);
 		int secondSeparatorIndex = message.indexOf(SEPARATOR, firstSeparatorIndex + 1);
 		String strippedMessage = message.substring(secondSeparatorIndex + 1);
-		return strippedMessage;
+		return strippedMessage.split(SUFFIX)[0];
 	}
 	
 }

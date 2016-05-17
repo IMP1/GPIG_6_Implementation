@@ -1,6 +1,6 @@
 package network;
 
-public class PathCommand extends Command {
+public final class PathCommand extends Command {
 	
 	public final static String PATH_COMMAND_PREFIX = "PATH";
 	
@@ -16,10 +16,11 @@ public class PathCommand extends Command {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
 		sb.append(PATH_COMMAND_PREFIX); sb.append(SEPARATOR);
 		sb.append(latitude); sb.append(SEPARATOR);
-		sb.append(longitude); sb.append(SEPARATOR);
+		sb.append(longitude);
+		sb.append(SUFFIX);
 		return sb.toString();
 	}
 	

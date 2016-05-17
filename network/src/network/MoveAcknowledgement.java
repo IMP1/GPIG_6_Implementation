@@ -2,7 +2,7 @@ package network;
 
 import java.time.LocalDateTime;
 
-public class MoveAcknowledgement extends Acknowledgement {
+public final class MoveAcknowledgement extends Acknowledgement {
 
 	public MoveAcknowledgement(String id, LocalDateTime timestamp) {
 		super(id, timestamp);
@@ -10,6 +10,14 @@ public class MoveAcknowledgement extends Acknowledgement {
 	
 	public MoveAcknowledgement(String message) {
 		super(message);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.toString());
+		sb.append(SUFFIX);
+		return sb.toString();
 	}
 	
 }
