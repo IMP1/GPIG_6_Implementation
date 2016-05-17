@@ -9,8 +9,10 @@ var Unit = function(id, symbol, coordinates, batteryLevel, status, lastUpdated){
     if(id == 'c2'){
         this.name = 'C2';
     }else{
-        this.name = '';
+        this.name = 'Drone '+UnitCount;
     }
+    
+    UnitCount++;
     
     this.id = id;
     this.symbol = symbol;
