@@ -56,8 +56,8 @@ public class MeshInterfaceThread extends Thread {
 	 */
 	public void addScan(ScanData scan) {
 		synchronized (scanBuffer) {
+			drones.MapHelper.addScan(scan);
 			scanBuffer.add(scan);
-			drones.MapHelper.addScan(scan); //TODO: check to see if this is done elsewhere. 
 		}
 		//TODO: Check to see if the drone is full up of scan. 
 		//      If so, maybe set state to returning.
@@ -203,7 +203,6 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void requestRouteNavigation(double latitude, double longitude, double radius) {
 		router.go(latitude, longitude, radius);
-		//TODO: make sure router changes the drone's state to moving / searching when necessary
 	}
 	
 }
