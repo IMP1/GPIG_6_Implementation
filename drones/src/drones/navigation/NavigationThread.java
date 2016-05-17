@@ -115,6 +115,7 @@ public class NavigationThread extends Thread {
 					chkLng = point[1];
 
 					// If location outside search area, reset search to drone location.
+					// FIXME: RADIUS IN METERS, LAT LONG IN DEGREES
 					if(Math.pow(Math.pow(tgtLat - chkLat, 2) + Math.pow(tgtLng - chkLng, 2), -2) < tgtRadius) {
 						chkLat = currLat;
 						chkLng = currLng;
@@ -166,6 +167,7 @@ public class NavigationThread extends Thread {
 			// Travelling abstraction. Assume constant movement speed.
 			while (nxtLat - currLat < 0.01 && nxtLng - currLng < 0.01) {
 				// Move
+				// FIXME: RADIUS IN METERS, LAT LONG IN DEGREES
 				if (Math.pow(Math.pow(nxtLat - currLat, 2) + Math.pow(nxtLng - currLng, 2), -2) < MOVE_DISTANCE) {
 					SensorInterface.setGPS(nxtLat, nxtLng);
 				} else {
