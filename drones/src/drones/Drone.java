@@ -41,19 +41,22 @@ public class Drone {
 	 * 		Defaults to "../york.osm" for testing
 	 */
 	public static void main(String[] args) {
-		// Configure shared map
+		// Configure shared routing
 		map = new GraphHopper().forDesktop();
 		// File locations relative to working dir
-		if ((args.length < 1) || !(new File(args[0]).exists()))
+		if ((args.length < 1) || !(new File(args[0]).exists())) {
 			map.setOSMFile("../york.osm");
-		else
+			MapHelper.initialise("york");
+		} else {
 			map.setOSMFile(args[0]);
+			MapHelper.initialise(args[0]);
+		}
 		map.setGraphHopperLocation("graph"); // Graph data storage
 		
 		// Enable unrestricted movement and load graph
 		map.setEncodingManager(new EncodingManager("foot"));
 		map.importOrLoad();
-		System.out.println("Graph loaded.");
+		System.out.println("Map loaded.");
 		
 		// Initialise and release navigation thread
 		navThread = new NavigationThread();
