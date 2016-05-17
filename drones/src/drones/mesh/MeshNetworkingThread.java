@@ -2,13 +2,13 @@ package drones.mesh;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 import drones.Drone;
-
 import network.*;
 
 /**
@@ -75,7 +75,7 @@ public class MeshNetworkingThread extends Thread {
 	public void run() {
 		//TODO: Remove Testing:
 		// <testing>
-		String id = Drone.ID;
+		String id = UUID.randomUUID().toString();
 		LocalDateTime timestamp = LocalDateTime.now();
 		double latitude = 53.955391;
 		double longitude = -1.078967;
@@ -107,31 +107,26 @@ public class MeshNetworkingThread extends Thread {
 	}
 	
 	private void recieveMessage(String message) {
+		System.out.printf("[]<-- '%s'\n", message);
 		resendAllStoredMessages(); // We're reconnected! In theory.
 		if (isMessageDealtWith(message)) {
-			System.out.println("DUP");
-			System.out.println(message);
-			System.out.println("Ignoring.");
+			System.out.println("Duplicate. Ignoring.");
 			return;
 		}
-		System.out.println("RECV");
 		final Class<? extends Message> messageClass = Message.getType(message);
+		if (PathCommand.class.isAssignableFrom(messageClass)) {
+			handleCommand(message);
+		}
 		if (Message.getId(message).equals(Drone.ID)) {
-			System.out.println("It's for us!");
 			if (Command.class.isAssignableFrom(messageClass)) {
 				handleCommand(message);
 			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
 				handleScanAcknowledgement(message);
 			} else {
-				// This is data from this drone (being resent across the mesh through us).
-				//TODO: remove debug
-				// <debug>
-				System.out.printf("Receieved data from ourself.\n");
-				System.out.printf("(Message = '%s')\n", message);
-				// </debug>
+//				System.out.printf("Receieved data from ourself. Ignoring...\n");
 			}
 		} else {
-			System.out.println("Not for us.");
+			System.out.println("Not for us. Passing along.");
 			if (Data.class.isAssignableFrom(messageClass)) {
 				handleOtherData(message);
 			}
@@ -152,10 +147,12 @@ public class MeshNetworkingThread extends Thread {
 			MoveCommand command = new MoveCommand(message);
 			Drone.mesh().addCommand(command);
 			addDealtWithMessage(message);
+			System.out.println("Handling Move Command.");
 		} else if (PathCommand.class.isAssignableFrom(Message.getType(message))) {
 			PathCommand command = new PathCommand(message);
 			Drone.mesh().addCommand(command);
 			addDealtWithMessage(message);
+			System.out.println("Handling Path Command.");
 		}
 	}
 	
@@ -204,7 +201,8 @@ public class MeshNetworkingThread extends Thread {
 	private void sendMessage(String message) {
 		try {
 			byte[] data = message.getBytes();
-			System.out.printf("Sending %d bytes of data (out of the current maximum %d).\n", data.length, network.Message.PACKAGE_SIZE);
+//			System.out.printf("Sending %d bytes of data (out of the current maximum %d).\n", data.length, network.Message.PACKAGE_SIZE);
+			System.out.printf("[]--> '%s'\n", message);
 			if (data.length > network.Message.PACKAGE_SIZE) {
 				System.err.printf("THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d.\n", 
 								  data.length, network.Message.PACKAGE_SIZE);
