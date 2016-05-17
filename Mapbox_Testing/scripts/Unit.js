@@ -25,8 +25,8 @@ var UnitMarker = function(unit){
 function updateUnitFromJSON(unit, unitID, unitJSON){
 	unit.id             = unitID;
 	unit.batteryLevel   = unitJSON.batteryLevel;
-	unit.coordinates[0] = unitJSON.locLat;
-	unit.coordinates[1] = unitJSON.locLong;
+	unit.coordinates[1] = unitJSON.locLat;
+	unit.coordinates[0] = unitJSON.locLong;
 	unit.status         = unitJSON.status;
     
     var newTimeStamp = dateFromJSON(unitJSON.timestamp);

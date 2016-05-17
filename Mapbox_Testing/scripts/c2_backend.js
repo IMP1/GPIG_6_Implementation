@@ -1,34 +1,34 @@
 // Debug Vars
-var ONLINE = false;
+var ONLINE = true;
 
 // JS Backend handles API calls
 
 var unitExamples = {
 	"c2":
 	{"batteryLevel":100.0,
-	 "locLat":-1.08369,
-	 "locLong":53.959,
+	 "locLat":53.959,
+	 "locLong":-1.08369,
 	 "status":"Moving",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 1":
 	{"batteryLevel":100.0,
-	 "locLat":-1.09024,
-	 "locLong":53.967,
+	 "locLat":53.967,
+	 "locLong":-1.09024,
 	 "status":"Navigating",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 2":
 	{"batteryLevel":100.0,
-	 "locLat":-1.080262,
-	 "locLong":53.967,
+	 "locLat":53.967,
+	 "locLong":-1.080262,
 	 "status":"Stationary",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 3":
 	{"batteryLevel":100.0,
-	 "locLat":-1.086676,
-	 "locLong":53.963,
+	 "locLat":53.963,
+	 "locLong":-1.086676,
 	 "status":"Scanning",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
@@ -87,7 +87,7 @@ function getUnitsInfo(){
 		   updateUnitFromJSON(unit, unitKey, unitJSON);
 	   }else{
 		   // Else Create a new one
-		   var coordinates = [unitJSON.locLat, unitJSON.locLong];
+		   var coordinates = [unitJSON.locLong, unitJSON.locLat];
     	   unit = addNewUnit(unitKey, 'marker', coordinates, unitJSON.batteryLevel, unitJSON.status, unitJSON.timestamp);
 		   var marker = addNewUnitMarker(unit);
 		   unit.marker = marker;
