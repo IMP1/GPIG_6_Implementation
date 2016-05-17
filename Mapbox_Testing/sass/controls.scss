@@ -177,13 +177,14 @@
 	$searchareaheight:70px;
 	
 //	float:left;
-	font-weight: 600;
+//	font-weight: 600;
 	width: 100%;
 	height:$searcharea_area_height;
 	text-align:center;
 	border-right: 1px solid rgba(255,255,255,.2);
 	
 	.search-area{
+		font-weight: 300;
 		width:100%;
 		height:$searchareaheight;
 		overflow:hidden;
@@ -192,6 +193,7 @@
 		position:relative;
 		
 		.header{
+			font-weight: 600;
 			float:left;
 			width:15%;
 			height:100%;

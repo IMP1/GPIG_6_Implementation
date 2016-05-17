@@ -1,5 +1,5 @@
 // Debug Vars
-var ONLINE = true;
+var ONLINE = false;
 
 // JS Backend handles API calls
 
@@ -9,7 +9,7 @@ var unitExamples = {
 	 "locLat":53.959,
 	 "locLong":-1.08369,
 	 "status":"Moving",
-	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
+	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":15,"minute":18,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 1":
 	{"batteryLevel":1,
@@ -135,17 +135,23 @@ function pollFunc(){
 function assignSearchAreas(){
 	
 	searchAreaArray.forEach(function(searchArea) {
-		
-		console.log(searchArea.center);
-		
+				
 		var xmlHttpAssignSearchAreas = new XMLHttpRequest();
 		var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat+"&longitude="+searchArea.center.lng+"&numberRequested="+searchArea.assignedDrones+"&radius="+searchArea.radius;
 	    xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
 	    xmlHttpAssignSearchAreas.send( null );
-	    //var scans = JSON.parse(xmlHttpAssignSearchAreas.responseText);
-		
-		console.log(urlString);
 		
 	}, this);	
+	
+}
+
+// Recall Units
+
+function recallUnits(){
+	
+		var xmlHttpAssignSearchAreas = new XMLHttpRequest();
+		var urlString = "http://localhost:8081/RecallUnits";
+	    xmlHttpAssignSearchAreas.open( "GET", urlString, false );
+	    xmlHttpAssignSearchAreas.send( null );
 	
 }
