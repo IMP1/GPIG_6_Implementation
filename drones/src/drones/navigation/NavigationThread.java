@@ -31,7 +31,7 @@ public class NavigationThread extends Thread {
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
 	// Constant travel speed
-	private static final double MOVE_DISTANCE = 0.5;
+	private static final double MOVE_DISTANCE = 2.0;
 	private static final int WAIT_TIME_MILLIS = 250;
 	
 	// Current location
@@ -102,11 +102,11 @@ public class NavigationThread extends Thread {
 					// After a certain number of short range hops are tried, start
 					// looking at long range hops
 					if (chkCount < LOCAL_CHECK_LIMIT) {
-						chkLat += Math.sin(angle) * SHORT_DST_CHECK;
-						chkLng += Math.cos(angle) * SHORT_DST_CHECK;
+						chkLat += Math.sin(angle) * mToD(SHORT_DST_CHECK);
+						chkLng += Math.cos(angle) * mToD(SHORT_DST_CHECK);
 					} else {
-						chkLat += Math.sin(angle) * LONG_DST_CHECK;
-						chkLng += Math.cos(angle) * LONG_DST_CHECK;
+						chkLat += Math.sin(angle) * mToD(LONG_DST_CHECK);
+						chkLng += Math.cos(angle) * mToD(LONG_DST_CHECK);
 					}
 					chkCount += 1;
 
@@ -172,9 +172,10 @@ public class NavigationThread extends Thread {
 				if (latLongDiffInMeters(nxtLat - currLat, nxtLng - currLng) < MOVE_DISTANCE) {
 					SensorInterface.setGPS(nxtLat, nxtLng);
 				} else {
-					double angle = Math.tanh((nxtLat - currLat) / (nxtLng - currLng));
-					SensorInterface.setGPS(currLat + (Math.sin(angle) * mToD(MOVE_DISTANCE)), 
-							currLng + (Math.cos(angle) * mToD(MOVE_DISTANCE)));
+					double angle = Math.atan2((nxtLat - currLat), (nxtLng - currLng));
+					double latMv = Math.sin(angle) * mToD(MOVE_DISTANCE);
+					double lngMv = Math.cos(angle) * mToD(MOVE_DISTANCE);
+					SensorInterface.setGPS(currLat + latMv, currLng + lngMv);
 				}
 				System.err.println("LAT: " + SensorInterface.getGPSLatitude() 
 					+ ", LONG: " + SensorInterface.getGPSLongitude());
@@ -236,6 +237,7 @@ public class NavigationThread extends Thread {
 	}
 	
 	// Earth's radius in meters for distance calculation
+	// For reference, 1m is roughly 0.0000085 (8.5e^-6) degrees
 	private static final int EARTH_RADIUS = 6731000;
 	
 	/**
@@ -245,8 +247,8 @@ public class NavigationThread extends Thread {
 	 * @return Absolute difference in metres
 	 */
 	private static double latLongDiffInMeters(double latDiff, double longDiff) {
-		double latDiffM = Math.tan(Math.toRadians(latDiff)) * EARTH_RADIUS;
-		double longDiffM = Math.tan(Math.toRadians(longDiff)) * EARTH_RADIUS;
+		double latDiffM = Math.toRadians(latDiff) * EARTH_RADIUS;
+		double longDiffM = Math.toRadians(longDiff) * EARTH_RADIUS;
 		double dist = Math.sqrt(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2));
 		return dist;
 	}
@@ -257,6 +259,7 @@ public class NavigationThread extends Thread {
 	 * @return Degrees (ignoring curvature of earth
 	 */
 	private static double mToD(double m) {
-		return m / EARTH_RADIUS;
+		double deg = Math.toDegrees(m / EARTH_RADIUS);
+		return deg;
 	}
 }
