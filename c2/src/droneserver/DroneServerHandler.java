@@ -26,11 +26,11 @@ public class DroneServerHandler implements Runnable {
 	
 	@Override
 	public void run() {
-		System.out.println("Drone Request Received, handler started");
+//		System.out.println("Drone Request Received, handler started");
 		String id = null;
 		LocalDateTime dt = null;
 		//if type info
-		System.out.println(data);
+//		System.out.println(data);
 		if(Message.getType(data)==StatusData.class){
 			StatusData statusdata = new StatusData(data);
 			id = statusdata.id;
@@ -41,7 +41,7 @@ public class DroneServerHandler implements Runnable {
 				LocalDateTime timestamp = statusdata.timestamp;
 				LocalDateTime storeddate= drone.getTimestamp();
 				if(timestamp.isAfter(storeddate)){
-					System.out.println("Updating known drone "+statusdata.id);
+//					System.out.println("Updating known drone "+statusdata.id);
 					drone.setTimestamp(statusdata.timestamp);
 					drone.setBatteryLevel(statusdata.batteryStatus);
 					drone.setLocLat(statusdata.latitude);
@@ -60,6 +60,7 @@ public class DroneServerHandler implements Runnable {
 			id = scandata.id;
 			dt = scandata.timestamp;
 			String ident = scandata.id+scandata.timestamp;
+			System.out.println("Receiving scandata"+id);
 			if(!datastore.scanExists(ident)){
 				System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
 				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, scandata.distanceReadings);
@@ -67,13 +68,19 @@ public class DroneServerHandler implements Runnable {
 			}
 		} else if(Message.getType(data) == PathData.class){
 			PathData pathdata = new PathData(data);
-			if(pathdata.pathCommandID == datastore.getSearchArea().id){
+			System.out.println("Got eta of "+pathdata.eta+" from drone "+pathdata.id);
+			System.out.println(pathdata.pathCommandID);
+			System.out.println(datastore .getSearchArea().id);
+			if(pathdata.pathCommandID.equals(datastore.getSearchArea().id)){
+				System.out.println("Adding eta");
 				datastore.getSearchArea().addEta(pathdata.id, pathdata.eta);
 			}
 		}
 		//TODO - should this be moved?
 		if( Message.getType(data)==ScanData.class){
+			System.out.println("Acking scan data");
 			Acknowledgement ack = new ScanAcknowledgement(id, dt);
+			System.out.println(ack.toString());
 			Broadcast.broadcast(ack.toString());
 		}
 	}

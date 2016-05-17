@@ -23,7 +23,9 @@ public class Datastore {
 	}
 	
 	
-	
+	public synchronized HashMap<String, Drone> getDrones(){
+		return drones;
+	}
 	public synchronized boolean droneExists(String id){
 		return drones.containsKey(id);
 	}
@@ -56,7 +58,7 @@ public class Datastore {
 	}
 	
 	public synchronized Integer getNumberOfDrones(){
-		return drones.size();
+		return drones.size()-1; //bcos of C2
 	}
 	
 	public synchronized String getScansAsJSON(String[] known_scans){

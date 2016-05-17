@@ -6,10 +6,13 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.UUID;
 
 import broadcast.Broadcast;
 import datastore.Datastore;
+import datastore.Drone;
+import network.MoveCommand;
 import network.PathCommand;
 
 public class FrontendServerHandler implements Runnable{
@@ -54,7 +57,6 @@ public class FrontendServerHandler implements Runnable{
 			reply(data);
 		}
 		if(request.contains("AssignSearchAreas")){
-			//TODO - Clever things.
 			HTTPRequest reqObj = new HTTPRequest(request);
 			Double loclat = Double.parseDouble(reqObj.params.get("latitude"));
 			Double loclong = Double.parseDouble(reqObj.params.get("longitude"));
@@ -71,7 +73,17 @@ public class FrontendServerHandler implements Runnable{
 			//TODO - More clever things.
 		}
 		if(request.contains("RecallUnits")){
-			//TODO - GET TO THE CHOPPA.
+			HashMap<String,Drone> drones= datastore.getDrones();
+			Double locLat = drones.get("c2").getLocLat();
+			Double locLong = drones.get("c2").getLocLong();
+			for (String key : drones.keySet()){
+				System.out.println(key);
+				if(key != "c2"){
+					MoveCommand command = new MoveCommand(key,LocalDateTime.now(), locLat, locLong, 0);
+					Broadcast.broadcast(command.toString());
+				}
+
+			}
 		}
 		if(request.contains("GetScanInfo")){
 			System.out.println(request);
