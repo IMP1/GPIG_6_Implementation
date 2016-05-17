@@ -10,6 +10,7 @@ import datastore.Scan;
 import network.Acknowledgement;
 import network.Message;
 import network.PathData;
+import network.ScanAcknowledgement;
 import network.ScanData;
 import network.StatusData;
 
@@ -72,7 +73,7 @@ public class DroneServerHandler implements Runnable {
 		}
 		//TODO - should this be moved?
 		if( Message.getType(data)==ScanData.class){
-			Acknowledgement ack = new Acknowledgement(id, dt);
+			Acknowledgement ack = new ScanAcknowledgement(id, dt);
 			Broadcast.broadcast(ack.toString());
 		}
 	}
