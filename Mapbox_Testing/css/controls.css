@@ -40,7 +40,8 @@
       font-weight: 600;
       margin: 0; }
     #messages .message p {
-      margin: 0; }
+      margin: 0;
+      font-weight: 300; }
   #messages .high {
     background-image: linear-gradient(#e20000, #f30000); }
   #messages .medium {
