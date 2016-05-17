@@ -30,7 +30,7 @@ public class FrontendServerHandler implements Runnable{
 
 	@Override
 	public void run() {
-		System.out.println("Frontend Server Request Received, handler started");
+//		System.out.println("Frontend Server Request Received, handler started");
 		try {
 			String message = reader.readLine();
 			process_request(message);
