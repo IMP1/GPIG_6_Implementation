@@ -55,8 +55,8 @@ public class MessageHandler {
 			// Messages are just rebroadcast across the mesh.
 			// * Commands for other drones
 			// * Acks from other drones
-			networkingThread.sendMessage(message);
 			networkingThread.addDealtWithMessage(message);
+			networkingThread.sendMessage(message);
 		}
 		if (!Message.getId(message).equals(Drone.ID)) {
 			// We're reconnected! (In theory)
