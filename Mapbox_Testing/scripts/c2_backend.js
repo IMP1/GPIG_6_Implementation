@@ -5,28 +5,28 @@ var ONLINE = true;
 
 var unitExamples = {
 	"c2":
-	{"batteryLevel":100.0,
+	{"batteryLevel":1,
 	 "locLat":53.959,
 	 "locLong":-1.08369,
 	 "status":"Moving",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 1":
-	{"batteryLevel":100.0,
+	{"batteryLevel":1,
 	 "locLat":53.967,
 	 "locLong":-1.09024,
 	 "status":"Navigating",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 2":
-	{"batteryLevel":100.0,
+	{"batteryLevel":1,
 	 "locLat":53.967,
 	 "locLong":-1.080262,
 	 "status":"Stationary",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 3":
-	{"batteryLevel":100.0,
+	{"batteryLevel":1,
 	 "locLat":53.963,
 	 "locLong":-1.086676,
 	 "status":"Scanning",
@@ -128,4 +128,20 @@ function pollFunc(){
     xmlHttpScan.send( null );
     var scans = JSON.parse(xmlHttpScan.responseText);
     // console.log(scans);
+}
+
+// Search Area Asssignment
+
+function assignSearchAreas(){
+	
+//	searchAreaArray.forEach(function(searchArea) {
+//		
+//	}, this);
+//	
+//	var known_scans_string = known_scans.join(",")
+//	var xmlHttpScan = new XMLHttpRequest();
+//    xmlHttpScan.open( "GET", "http://localhost:8081/GetScanInfo?known_scans="+known_scans_string, false ); // false for synchronous request
+//    xmlHttpScan.send( null );
+//    var scans = JSON.parse(xmlHttpScan.responseText);
+	
 }

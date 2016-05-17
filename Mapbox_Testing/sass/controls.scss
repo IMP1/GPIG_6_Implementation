@@ -30,7 +30,15 @@
 		
 		position:relative;
 		border-bottom: 1px solid $border_color;
-		overflow:scroll;	
+		overflow:scroll;
+		
+		.empty{
+			text-align:center;
+			font-weight: 300;
+			position: relative;
+			top: 50%;
+			transform: translateY(-50%);
+		}	
 		
 	}
 	
@@ -165,16 +173,6 @@
 // Search Areas
 
 #search-areas{
-	
-	display:block;
-	
-	#search-areas-empty{
-		text-align:center;
-		font-weight: 300;
-		position: relative;
-		top: 50%;
-		transform: translateY(-50%);
-	}
 	
 	$searchareaheight:70px;
 	
