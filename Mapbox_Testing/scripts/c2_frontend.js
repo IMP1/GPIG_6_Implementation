@@ -273,6 +273,28 @@ function distance(ll0, ll1) {
     return dist;
 }
 
+function unprojectedDistance(ll0, ll1) {
+    
+    // Haversine Formulae
+    
+    var lat1 = ll0.lat;
+    var lon1 = ll0.lng;
+    var lat2 = ll1.lat;
+    var lon2 = ll1.lng;
+    
+	var radlat1 = Math.PI * lat1/180
+	var radlat2 = Math.PI * lat2/180
+	var theta = lon1-lon2
+	var radtheta = Math.PI * theta/180
+	var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+	dist = Math.acos(dist)
+	dist = dist * 180/Math.PI
+	dist = dist * 60 * 1.1515
+	dist = dist * 1.609344 * 1000 // Convert to Meters
+    
+	return dist
+}
+
 var mouseDownCoords;
 
 function arraysEqual(a, b) {
@@ -478,7 +500,7 @@ function redrawSearchAreasUI(){
             document.getElementById(htmlString).textContent = 'Assigned '+searchArea.assignedDrones+ ' Drones';
             
             var htmlString = 'control-searcharea-'+searchArea.id+'-radius';  
-            document.getElementById(htmlString).textContent = 'Radius: '+Math.round(searchArea.radius)+ 'm';
+            document.getElementById(htmlString).textContent = 'Radius: '+Math.round(searchArea.realRadius)+ 'm';
         }    
     }, this);
     
@@ -496,6 +518,7 @@ function redrawSearchAreas(){
         
         var dist = distance(searchArea.center, searchArea.outer);
         searchArea.radius = dist;
+        searchArea.realRadius = unprojectedDistance(searchArea.center, searchArea.outer)
         
         // Remove First
         svg.selectAll('#SearchArea-'+searchArea.id).remove();
