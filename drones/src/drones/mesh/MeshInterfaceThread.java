@@ -102,7 +102,7 @@ public class MeshInterfaceThread extends Thread {
 		while (true) {
 			tick();
 			try {
-				if (isBatteryTooLow()) {
+				if (SensorInterface.isBatteryTooLow()) {
 					Thread.sleep(MILLISECOND_TICK_DELAY_LOW_BATTERY);
 				} else {
 					Thread.sleep(MILLISECOND_TICK_DELAY);
@@ -149,14 +149,9 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void handleBatteryLevel() {
-		if (isBatteryTooLow()) {
+		if (SensorInterface.isBatteryTooLow()) {
 			Drone.setState(DroneState.RETURNING);
 		}
-	}
-	
-	private boolean isBatteryTooLow() {
-		//XXX: some function of distance? 
-		return SensorInterface.getBatteryLevel() < 0.4;
 	}
 	
 	private void sendCurrentState() {

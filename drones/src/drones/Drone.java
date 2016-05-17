@@ -10,6 +10,7 @@ import com.graphhopper.routing.util.EncodingManager;
 
 import drones.mesh.MeshInterfaceThread;
 import drones.navigation.NavigationThread;
+import drones.sensors.SensorInterface;
 
 /**
  * Main startup sequence and singleton handler.
@@ -44,7 +45,7 @@ public class Drone {
 	
 	public static void setState(DroneState state) {
 		//TODO: unlimit this?
-		if (Drone.state != DroneState.BATTERY_LOW) {
+		if (!SensorInterface.isBatteryTooLow()) {
 			Drone.state = state;
 		}
 	}
