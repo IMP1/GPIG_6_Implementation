@@ -57,6 +57,10 @@ public class Drone {
 
 	/**
 	 * Entry point. Initialises singletons and control threads.
+	 * 
+	 * ***WARNING*** --- The order of threads starting is important and can
+	 * lead to race conditions as they refer to each other.
+	 * 
 	 * @param args Relative path to OSM map. 
 	 * 		Defaults to "../york.osm" for testing
 	 */
@@ -77,16 +81,17 @@ public class Drone {
 		map.setEncodingManager(new EncodingManager("foot"));
 		map.importOrLoad();
 		System.out.println("Map loaded.");
+
+		// Initialise and begin mesh interface thread
+		meshThread = new MeshInterfaceThread();
+		meshThread.start();
+		System.out.println("Mesh Interface created.");
 		
 		// Initialise and release navigation thread
 		navThread = new NavigationThread();
 		navThread.start();
 		System.out.println("Navigation Thread started.");
 		
-		// Initialise and begin mesh interface thread
-		meshThread = new MeshInterfaceThread();
-		meshThread.start();
-		System.out.println("Mesh Interface created.");
 		
 		// CHEAP AND DIRTY TEST MOVE COMMAND
 		LocalDateTime time = LocalDateTime.now();
