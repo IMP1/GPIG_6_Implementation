@@ -41,8 +41,8 @@
             	<div id="title">Sonar Mapping Assistant</div>
             </div>
             <div id='right-section'>
-                	<button>
-                    Assign Search Areas
+                	<button id="btn-assign-search-areas">
+                        Assign Search Areas
                     </button>
                     <button id="btn-clear-all">
                         Clear Search Areas
@@ -53,6 +53,9 @@
                     <button>
                         Hide Controls
                     </button>
+                    <button>
+                        See All Units
+                    </button>
             </div>
         </div>
         
@@ -60,7 +63,7 @@
         <div id='controls'>
             
             <!--Environmental Factors-->
-            <h1>Environment</h2>
+<!--            <h1>Environment</h2>
             <div id="environmental-factors" class='panel'>
                 <div class="weather-overview">
                 
@@ -68,18 +71,24 @@
                 <div class="weather-overview">
                     
                 </div>                             
-            </div>
+            </div>-->
             
             <!--Search Unit Controls-->
             <h1>Search Units</h2>
             <div id='filter-group' class='panel'>
-                
+                <div id='search-units-empty' class='empty'>
+                    Actively Scanning for Search Units<br>
+                    <b>No Search Units Detected on Network</b>
+                </div>
             </div>
             
             <!--Search Area Controls-->
             <h1>Search Areas</h2>
             <div id='search-areas' class='panel'>
-                
+                <div id='search-areas-empty' class='empty'>
+                    No Search Areas Created<br>
+                    <b>Tap on the map to create Search Areas</b>
+                </div>
             </div>
             
             <!--Notifications-->
@@ -102,12 +111,20 @@
         </div>        
         
         <!--Debug-->
-        <!--<pre id='info'></pre>-->
+<!--        <pre id='info'></pre>-->
         
         <!--Local Scripts-->
-        <script src="scripts/c2_frontend.js"></script>
-        <script src="scripts/c2_poll.js"></script>
-        <!--<script src="scripts/c2_debug.js"></script>-->
+        
+            <!--Classes-->
+            <script src="scripts/Unit.js"></script>
+            
+            <!--Functionality-->
+            <script src="scripts/c2_frontend.js"></script>
+            <script src="scripts/c2_backend.js"></script>
+            <script src="scripts/c2_messages.js"></script>
+                
+            <!--Dev-->
+<!--            <script src="scripts/c2_debug.js"></script>-->
     
     </body>
 </html>

@@ -5,7 +5,7 @@
   width: 500px;
   height: calc(100% - $top_nav_height);
   color: #c0c8d2;
-  background-image: linear-gradient(rgba(65, 72, 82, 0.85), rgba(54, 62, 72, 0.85)); }
+  background-image: linear-gradient(rgba(65, 72, 82, 0.9), rgba(54, 62, 72, 0.9)); }
   #controls h1 {
     background: rgba(54, 62, 72, 0.12);
     height: 50px;
@@ -20,12 +20,18 @@
     position: relative;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     overflow: scroll; }
+    #controls .panel .empty {
+      text-align: center;
+      font-weight: 300;
+      position: relative;
+      top: 50%;
+      transform: translateY(-50%); }
 
 #messages {
   height: 200px;
   width: 100%; }
   #messages .message {
-    border-radius: 15px;
+    border-radius: 20px;
     padding: 8px;
     margin: 8px;
     color: white; }
