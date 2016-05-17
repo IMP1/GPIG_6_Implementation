@@ -7,8 +7,6 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-import drones.Drone;
-
 import network.*;
 
 /**
@@ -100,89 +98,6 @@ public class MeshNetworkingThread extends Thread {
 		}
 	}
 	
-
-	private void recieveMessage(String message) {
-		//System.out.printf("[]<-- '%s'\n", message);
-		resendAllStoredMessages(); // We're reconnected! In theory.
-		if (isMessageDealtWith(message)) {
-			System.out.println("Duplicate. Ignoring.");
-			return;
-		}
-		final Class<? extends Message> messageClass = Message.getType(message);
-		if (PathCommand.class.isAssignableFrom(messageClass)) {
-			handleCommand(message);
-		}
-		if (Message.getId(message).equals(Drone.ID)) {
-			if (Command.class.isAssignableFrom(messageClass)) {
-				handleCommand(message);
-			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
-				handleScanAcknowledgement(message);
-			} else {
-//				System.out.printf("Receieved data from ourself. Ignoring.\n");
-			}
-		} else {
-			System.out.println("Not for us. Passing along.");
-			if (Data.class.isAssignableFrom(messageClass)) {
-				handleOtherData(message);
-			}
-			// Messages are just rebroadcast across the mesh.
-			// * Commands for other drones
-			// * Acks from other drones
-			sendMessage(message);
-			addDealtWithMessage(message);
-		}
-	}
-	
-	/**
-	 * Handles commands for this drone.
-	 * Creates the relevant command class, and adds it to the Mesh Interface's buffer.
-	 * @param message
-	 */
-	private void handleCommand(String message) {
-		if (MoveCommand.class.isAssignableFrom(Message.getType(message))) {
-			MoveCommand command = new MoveCommand(message);
-			Drone.mesh().addCommand(command);
-			addDealtWithMessage(message);
-			System.out.println("Handling Move Command.");
-		} else if (PathCommand.class.isAssignableFrom(Message.getType(message))) {
-			PathCommand command = new PathCommand(message);
-			Drone.mesh().addCommand(command);
-			addDealtWithMessage(message);
-			System.out.println("Handling Path Command.");
-		}
-	}
-	
-	/**
-	 * Handles acknowledgements for this drone. 
-	 * Removes the message from the list of unacknowledged messages.  
-	 * @param ack
-	 */
-	private void handleScanAcknowledgement(String message) {
-		ScanAcknowledgement ack = new ScanAcknowledgement(message); 
-		synchronized (unacknowledgedMessages) {
-			for (int i = unacknowledgedMessages.size() - 1; i >= 0; i --) {
-				if (unacknowledgedMessages.get(i).timestamp.equals(ack.timestamp)) {
-					unacknowledgedMessages.remove(i);
-				}
-			}
-		}
-		addDealtWithMessage(message);
-	}
-	
-	/**
-	 * Handles data being sent from other drones.
-	 * Uses it to update local information and retransmits the message along the mesh. 
-	 * @param message
-	 */
-	private void handleOtherData(String message) {
-		System.out.printf("Receieved data from Drone %s.\n", Message.getId(message));
-		if (ScanData.class.isAssignableFrom(Message.getType(message))) {
-			ScanData data = new ScanData(message);
-			Drone.mesh().addExternalScanData(data);
-		}
-		addDealtWithMessage(message);
-	}
-	
 	/**
 	 * Sends the string representation of this Message object across the mesh network.
 	 * @param message the message object to be sent.
@@ -211,6 +126,7 @@ public class MeshNetworkingThread extends Thread {
 
 	protected void acknowledgeMessage(LocalDateTime timestamp) {
 		synchronized (unacknowledgedMessages) {
+			System.out.println("Acknowledging Message...");
 			for (int i = unacknowledgedMessages.size() - 1; i >= 0; i --) {
 				if (unacknowledgedMessages.get(i).timestamp.equals(timestamp)) {
 					unacknowledgedMessages.remove(i);
