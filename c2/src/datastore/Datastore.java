@@ -1,9 +1,11 @@
 package datastore;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import com.google.gson.*;
 
 import frontendserver.SearchArea;
+import network.StatusData.DroneState;
 
 public class Datastore {
 	private HashMap<String, Drone> drones;
@@ -16,6 +18,8 @@ public class Datastore {
 		drones = new HashMap<String,Drone>();
 		scans = new HashMap<String, Scan>();
 		gson = new GsonBuilder().disableHtmlEscaping().create();
+		Drone c2 = new Drone(1.0,53.9461765, -1.0306976, DroneState.IDLE, LocalDateTime.now());
+		drones.put("c2", c2);
 	}
 	
 	
@@ -49,6 +53,10 @@ public class Datastore {
 	public synchronized String getDronesAsJSON(){
 		
 		return gson.toJson(drones);
+	}
+	
+	public synchronized Integer getNumberOfDrones(){
+		return drones.size();
 	}
 	
 	public synchronized String getScansAsJSON(String[] known_scans){

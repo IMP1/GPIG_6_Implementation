@@ -106,7 +106,7 @@ function getUnitsInfo(){
 }
 
 function setupAPICalls(){
-	setInterval(getUnitsInfo, 2000);
+	setInterval(getUnitsInfo, 500);
 }
 
 function pollFunc(){
