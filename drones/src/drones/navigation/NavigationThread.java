@@ -122,6 +122,7 @@ public class NavigationThread extends Thread {
 					}
 					
 					// TODO: Check if point is viable for scanning
+					waypointFound = true;
 				}
 
 				// Check for routing necessity based on structure intersection
