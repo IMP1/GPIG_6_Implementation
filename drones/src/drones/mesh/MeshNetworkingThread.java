@@ -73,15 +73,6 @@ public class MeshNetworkingThread extends Thread {
 	 */
 	@Override
 	public void run() {
-		//TODO: Remove Testing:
-		// <testing>
-		String id = UUID.randomUUID().toString();
-		LocalDateTime timestamp = LocalDateTime.now();
-		double latitude = 53.955391;
-		double longitude = -1.078967;
-		PathCommand p = new PathCommand(id, timestamp, latitude, longitude);
-		sendMessage(p.toString());
-		// </testing>
 		while (true) {
 			try {
 				byte[] receiveData = new byte[network.Message.PACKAGE_SIZE];
@@ -123,7 +114,7 @@ public class MeshNetworkingThread extends Thread {
 			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
 				handleScanAcknowledgement(message);
 			} else {
-//				System.out.printf("Receieved data from ourself. Ignoring...\n");
+//				System.out.printf("Receieved data from ourself. Ignoring.\n");
 			}
 		} else {
 			System.out.println("Not for us. Passing along.");
@@ -134,6 +125,7 @@ public class MeshNetworkingThread extends Thread {
 			// * Commands for other drones
 			// * Acks from other drones
 			sendMessage(message);
+			addDealtWithMessage(message);
 		}
 	}
 	
@@ -201,7 +193,6 @@ public class MeshNetworkingThread extends Thread {
 	private void sendMessage(String message) {
 		try {
 			byte[] data = message.getBytes();
-//			System.out.printf("Sending %d bytes of data (out of the current maximum %d).\n", data.length, network.Message.PACKAGE_SIZE);
 			System.out.printf("[]--> '%s'\n", message);
 			if (data.length > network.Message.PACKAGE_SIZE) {
 				System.err.printf("THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d.\n", 
