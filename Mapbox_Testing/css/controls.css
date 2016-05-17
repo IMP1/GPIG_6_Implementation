@@ -41,9 +41,9 @@
       margin: 0; }
     #messages .message p {
       margin: 0; }
-  #messages .high-level {
+  #messages .high {
     background-image: linear-gradient(#e20000, #f30000); }
-  #messages .med-level {
+  #messages .medium {
     background-image: linear-gradient(#e29000, #e28500); }
   #messages .standard {
     background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)); }
@@ -149,17 +149,16 @@
     #search-areas .search-area .info {
       float: left;
       width: 65%;
-      height: 20px;
       text-transform: capitalize;
-      color: 596074; }
-      #search-areas .search-area .info .icon {
-        float: left;
-        width: 10%;
-        height: 100%;
-        line-height: 20px; }
+      color: 596074;
+      height: auto;
+      position: relative;
+      top: 50%;
+      transform: translateY(-50%); }
       #search-areas .search-area .info .text {
         float: left;
         height: 100%;
+        width: 100%;
         text-align: left;
         line-height: 20px; }
     #search-areas .search-area .controls {

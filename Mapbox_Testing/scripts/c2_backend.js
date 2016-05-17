@@ -36,6 +36,18 @@ function arraysEqual(a, b) {
   return true;
 }
 
+var removeByAttr = function(arr, attr, value){
+    var i = arr.length;
+    while(i--){
+       if( arr[i] 
+           && arr[i].hasOwnProperty(attr) 
+           && (arguments.length > 2 && arr[i][attr] === value ) ){ 
+           arr.splice(i,1);
+       }
+    }
+    return arr;
+}
+
 /////////////////////////
 // FRONTEND COMMS CODE //
 /////////////////////////
@@ -55,7 +67,7 @@ var unitExamples = {
 	 "locLat":53.959,
 	 "locLong":-1.08369,
 	 "status":"Moving",
-	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":15,"minute":18,"second":13,"nano":269000000}}}
+	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 1":
 	{"batteryLevel":1,
@@ -169,6 +181,22 @@ function recallUnits(){
 var currentSearchArea;
 var searchAreaArray = [];
 
+function changeDroneAssignmentForSearchArea(inc, searchArea){
+    
+	
+	if(searchArea.assignedDrones == 1 && inc == -1){
+		ShowNewMessage('Drone Assignment Error', 'Cannot assign less than one drone', 'medium');
+		return;
+	}else if(searchArea.assignedDrones == units.length && inc == 1){
+		ShowNewMessage('Drone Assignment Error', 'Cannot assign more Drones than exist', 'medium');
+		return;
+	}
+	
+	searchArea.assignedDrones += inc;
+    
+    console.log('//TODO : Error if > numDrones or < 0');
+}
+
 // Search Area Asssignment
 
 function assignSearchAreas(){
@@ -182,4 +210,16 @@ function assignSearchAreas(){
 		
 	}, this);	
 	
+}
+
+// Delete all Search Areas
+
+function deleteAllSearchAreas(){
+    
+    console.log('//TODO : Prompt Are you sure message.');
+    
+    searchAreaArray.forEach(function(searchArea){
+        deleteSearchAreaView(searchArea);
+    });
+    searchAreaArray = [];
 }
