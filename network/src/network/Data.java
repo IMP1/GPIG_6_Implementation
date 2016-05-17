@@ -23,8 +23,8 @@ public abstract class Data extends Message {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
-		sb.append(DATA_PREFIX); sb.append(SEPARATOR);
+		sb.append(super.toString()); sb.append(SEPARATOR);
+		sb.append(DATA_PREFIX);
 		return sb.toString();
 	}
 	

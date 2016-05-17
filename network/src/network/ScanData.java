@@ -1,6 +1,6 @@
 package network;
 
-public class ScanData extends Data {
+public final class ScanData extends Data {
 
 	public final static String SCAN_DATA_PREFIX = "SCAN";
 	public final static String DISTANCE_SEPARATOR = ",";
@@ -23,15 +23,19 @@ public class ScanData extends Data {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
 		sb.append(SCAN_DATA_PREFIX); sb.append(SEPARATOR);
 		sb.append(latitude); sb.append(SEPARATOR);
 		sb.append(longitude); sb.append(SEPARATOR);
 		sb.append(depth); sb.append(SEPARATOR);
 		sb.append(flowRate); sb.append(SEPARATOR);
-		for (double distance : distanceReadings) {
-			sb.append(distance); sb.append(DISTANCE_SEPARATOR);
+		if (distanceReadings.length > 0) {
+			for (int i = 0; i < distanceReadings.length - 1; i ++) {
+				sb.append(distanceReadings[i]); sb.append(DISTANCE_SEPARATOR);
+			}
+			sb.append(distanceReadings[distanceReadings.length - 1]);
 		}
+		sb.append(SUFFIX);
 		return sb.toString();
 	}
 	
@@ -41,7 +45,7 @@ public class ScanData extends Data {
 		if (!message.startsWith(SCAN_DATA_PREFIX)) throw new RuntimeException("A Data Type {SCAN, STATUS, PATH} needs to be supplied.");
 		final String scanMessage = message.substring(SCAN_DATA_PREFIX.length() + 1);
 		String data[] = scanMessage.split(SEPARATOR);
-		if (data.length != 5) {
+		if (data.length < 5) {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A SCAN Data Message must have 5 arguments: latitude, longitude, depth reading, flow rate, distance readings.");
 		}

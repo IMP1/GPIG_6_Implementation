@@ -31,7 +31,7 @@ import drones.sensors.SensorInterface;
  */
 public class MeshInterfaceThread extends Thread {
 	
-	public final static int NANOSECOND_TICK_DELAY = 10000;
+	public final static int MILLISECOND_TICK_DELAY = 1000;
 
 	private MeshNetworkingThread networkingThread = null;
 	private RoutingHandler router = null;
@@ -56,7 +56,10 @@ public class MeshInterfaceThread extends Thread {
 	public void addScan(ScanData scan) {
 		synchronized (scanBuffer) {
 			scanBuffer.add(scan);
+			drones.MapHelper.addScan(scan); //TODO: check to see if this is done elsewhere. 
 		}
+		//TODO: Check to see if the drone is full up of scan. 
+		//      If so, maybe set state to returning.
 	}
 	
 	/**
@@ -98,12 +101,14 @@ public class MeshInterfaceThread extends Thread {
 		while (true) {
 			tick();
 			try {
-				Thread.sleep(NANOSECOND_TICK_DELAY);
-			} catch (InterruptedException e) { /* oh no(!) */ }
+				Thread.sleep(MILLISECOND_TICK_DELAY);
+			} catch (InterruptedException e) { e.printStackTrace(); /* oh no(!) */ }
 		}
 	}
 	
 	private void tick() {
+		System.out.println("tick.");
+		
 		for (String commandID : paths.keySet()) {
 			if (paths.get(commandID).isDone()) {
 				try {
@@ -118,7 +123,11 @@ public class MeshInterfaceThread extends Thread {
 		for (Command command : getCommands()) {
 			if (command instanceof PathCommand) {
 				PathCommand pathCommand = (PathCommand)command;
-				requestRouteCalculation(pathCommand.id, pathCommand.latitude, pathCommand.longitude, 0);
+				if (Drone.state() != DroneState.IDLE) {
+					broadcastUndoableRoute(pathCommand.id);
+				} else {
+					requestRouteCalculation(pathCommand.id, pathCommand.latitude, pathCommand.longitude, 0);
+				}
 			} else if (command instanceof MoveCommand) {
 				MoveCommand moveCommand = (MoveCommand)command;
 				requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
@@ -128,7 +137,7 @@ public class MeshInterfaceThread extends Thread {
 		for (ScanData scan : getScans()) {
 			LocalDateTime timestamp = java.time.LocalDateTime.now();
 			network.ScanData scanData = new network.ScanData(Drone.ID, timestamp, scan.latitude, scan.longitude, scan.depth, scan.flowRate, scan.distanceReadings);
-			networkingThread.sendMessage(scanData); 
+			networkingThread.sendMessage(scanData, true); 
 		}
 		
 		handleBatteryLevel();
@@ -137,9 +146,14 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void handleBatteryLevel() {
-		// TODO handle battery stuff
-		//      if it's too low, oh no!
-		// TODO make sure drone.sensors has some way of giving battery level (random number)
+		if (isBatteryTooLow()) {
+			Drone.setState(DroneState.BATTERY_LOW);
+		}
+	}
+	
+	private boolean isBatteryTooLow() {
+		//XXX: some function of distance? 
+		return SensorInterface.getBatteryLevel() < 0.4;
 	}
 	
 	private void sendCurrentState() {
@@ -148,9 +162,9 @@ public class MeshInterfaceThread extends Thread {
 		final double lat = SensorInterface.getGPSLatitude();
 		final double lon = SensorInterface.getGPSLongitude();
 		final double batteryLevel = SensorInterface.getBatteryLevel();
-		final DroneState state = DroneState.IDLE;
+		final DroneState state = Drone.state();
 		final PointList currentPath = Drone.nav().getCurrentPath();
-		double[] path;
+		final double[] path;
 		if (currentPath != null) {
 			final int n = Drone.nav().getCurrentPath().getSize();
 			path = new double[n * 2];
@@ -162,13 +176,19 @@ public class MeshInterfaceThread extends Thread {
 			path = new double[0];
 		}
 		StatusData currentState = new StatusData(id, time, lat, lon, batteryLevel, state, path);
-		networkingThread.sendMessage(currentState);
+		networkingThread.sendMessage(currentState, false);
 	}
 	
-	private void broadcastRouteData(String commandID, PathWrapper currentPath) {
+	private void broadcastRouteData(String commandID, PathWrapper calculatedPath) {
 		LocalDateTime timestamp = java.time.LocalDateTime.now();
-		PathData pathMessage = new PathData(Drone.ID, timestamp, commandID, currentPath.getDistance());
-		networkingThread.sendMessage(pathMessage);
+		PathData pathMessage = new PathData(Drone.ID, timestamp, commandID, calculatedPath.getDistance());
+		networkingThread.sendMessage(pathMessage, false);
+	}
+	
+	private void broadcastUndoableRoute(String commandID) {
+		LocalDateTime timestamp = java.time.LocalDateTime.now();
+		PathData pathMessage = new PathData(Drone.ID, timestamp, commandID, Double.MAX_VALUE);
+		networkingThread.sendMessage(pathMessage, false);
 	}
 	
 	/**
@@ -185,6 +205,7 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void requestRouteNavigation(double latitude, double longitude, double radius) {
 		router.go(latitude, longitude, radius);
+		//TODO: make sure router changes the drone's state to moving / searching when necessary
 	}
 	
 }
