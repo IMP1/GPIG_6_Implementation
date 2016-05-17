@@ -34,6 +34,7 @@ public class MessageHandler {
 			System.out.println("Duplicate. Ignoring.");	
 			return;
 		}
+		System.out.println("Not a duplicate...");
 		final Class<? extends Message> messageClass = Message.getType(message);
 		if (PathCommand.class.isAssignableFrom(messageClass)) {
 			handleCommand(message);
@@ -44,7 +45,7 @@ public class MessageHandler {
 			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
 				handleScanAcknowledgement(message);
 			} else {
-//				System.out.printf("Receieved data from ourself. Ignoring.\n");
+				System.out.printf("Receieved data from ourself. Ignoring.\n");
 			}
 		} else {
 			System.out.println("Not for us. Passing along.");
@@ -59,7 +60,8 @@ public class MessageHandler {
 		}
 		if (!Message.getId(message).equals(Drone.ID)) {
 			// We're reconnected! (In theory)
-			networkingThread.resendAllStoredMessages();  
+			System.out.println("Recieved a message from someone else. Resending stored messages...");
+			networkingThread.resendAllStoredMessages();
 		}
 	}
 	
