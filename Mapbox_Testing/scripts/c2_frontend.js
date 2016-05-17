@@ -24,6 +24,10 @@ document.getElementById('btn-clear-all').addEventListener('click', function(e) {
     deleteAllSearchAreas();
 });
 
+document.getElementById('btn-recall-all').addEventListener('click', function(e) {            
+    recallUnits();
+});
+
 function updateMap(){
     if(editingSearchArea){
         map['doubleClickZoom'].disable();
@@ -163,7 +167,7 @@ function updateUnitUI(){
        
        // Name
         var element_name = document.getElementById(layerID+'-'+'name');
-            element_name.textContent = unit.id;
+            element_name.textContent = unit.name;
         
         // Battery
         var element_battery = document.getElementById(layerID+'-'+unit_element_ids[0]);
@@ -180,19 +184,22 @@ function updateUnitUI(){
         var curTime = Date.now();
         var timeDif = Math.round((curTime-unit.lastUpdated) / 1000);
         
+        element_lastseen.style.color = '';
+        
         // Conv to mins
         var warningMins = 3;
         if(timeDif > 60*warningMins){
             timeDif = Math.round(timeDif/60);
             timeUnit = 'm';
             element_lastseen.style.color = 'red';
+            
+            // Conv to hours
+            if(timeDif > 60){
+                timeDif = Math.round(timeDif/60);
+                timeUnit = 'h';
+            }  
         }
         
-        // Conv to hours
-        if(timeDif > 60){
-            timeDif = Math.round(timeDif/60);
-            timeUnit = 'h';
-        }  
             
         element_lastseen.textContent = 'Last seen '+timeDif+timeUnit+' ago';
         
@@ -230,32 +237,19 @@ map.on('load', function () {
 
 });
 
-// NEW CIRCLES
+// Map Projection/Unprojection
 
 function project(d) {
   return map.project(getLL(d));
 }
 
 function getLL(d) {
-  latlong = new mapboxgl.LngLat(d.lng, d.lat)
+  var latlong = new mapboxgl.LngLat(d.lng, d.lat);
   return latlong;
 }
 
 function unproject(a) {
     return map.unproject({x: a[0], y: a[1]});
-}
-
-var currentSearchArea;
-var searchAreaArray = [];
-
-// SearchArea Class
-var searchAreaID = 0;
-
-function SearchArea(){
-    this.id = searchAreaID++;
-    this.center = [];
-    this.outer  = [];
-    this.assignedDrones = 1;
 }
 
 function distance(ll0, ll1) {
@@ -267,20 +261,11 @@ function distance(ll0, ll1) {
 
 var mouseDownCoords;
 
-function arraysEqual(a, b) {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (a.length != b.length) return false;
-
-  for (var i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
 svg.on("mousedown", function() {
     mouseDownCoords = d3.mouse(this);
 })
+
+var maxRadius = 500;//metres
 
 svg.on("mouseup", function() {
     
@@ -301,11 +286,20 @@ svg.on("mouseup", function() {
         editingSearchArea = true;
         updateMap();
     }else{
-        currentSearchArea.outer = ll;        
-        addNewSearchArea(currentSearchArea); 
-        currentSearchArea = null;
-        editingSearchArea = false;
-        updateMap();
+        currentSearchArea.outer  = ll;   
+        currentSearchArea.radius = unprojectedDistance(currentSearchArea.center, currentSearchArea.outer)
+        
+        // Check Radius < MaxRadius
+        
+        if(currentSearchArea.radius < maxRadius){
+            currentSearchArea.complete = true;     
+            addNewSearchArea(currentSearchArea); 
+            currentSearchArea = null;
+            editingSearchArea = false;
+            updateMap();
+        }else{
+            ShowNewMessage('Search Area Creation Error', 'Search Area exceeds maximum radius of '+maxRadius+'m ('+Math.round(currentSearchArea.radius)+'m)', 'medium');
+        }
     }
     
     redrawSearchAreas();
@@ -342,20 +336,19 @@ function addNewSearchArea(searchArea){
                 changeDroneAssignmentForSearchArea(-1, searchArea);
             });
         
-        var unit_id    = ['assigned', '', '', '']
-        var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
-        var unit_text  = ['Assigned '+searchArea.assignedDrones+ ' Drones', 'Coordinates : [100, 200]', 'Radius : 250m'];
+        var search_stat_id    = ['assigned', 'radius',]
+        var search_stat_text  = ['Assigned '+searchArea.assignedDrones+ ' Drones', 'Radius : 250m'];
         
-        for(var i = 0; i<3; i++){
-        
-            var search_area_stats = document.createElement('div');
+        var search_area_stats = document.createElement('div');
             search_area_stats.className = 'info';
             search_area.appendChild(search_area_stats);
+        
+        for(var i = 0; i<search_stat_id.length; i++){            
                 
                 var unit_element_stats_stat_text = document.createElement('div');
                 unit_element_stats_stat_text.className = 'text';
-                unit_element_stats_stat_text.id = 'control-searcharea-'+searchArea.id+'-'+unit_id[i];
-                unit_element_stats_stat_text.textContent = unit_text[i];
+                unit_element_stats_stat_text.id = 'control-searcharea-'+searchArea.id+'-'+search_stat_id[i];
+                unit_element_stats_stat_text.textContent = search_stat_text[i];
                 search_area_stats.appendChild(unit_element_stats_stat_text);
                 
         }
@@ -371,40 +364,6 @@ function addNewSearchArea(searchArea){
                     deleteSearchArea(searchArea);
                 });
 
-}
-
-function changeDroneAssignmentForSearchArea(inc, searchArea){
-    searchArea.assignedDrones += inc;
-    var htmlString = 'control-searcharea-'+searchArea.id+'-assigned';   
-    document.getElementById(htmlString).textContent = 'Assigned '+searchArea.assignedDrones+ ' Drones';
-}
-
-var removeByAttr = function(arr, attr, value){
-    var i = arr.length;
-    while(i--){
-       if( arr[i] 
-           && arr[i].hasOwnProperty(attr) 
-           && (arguments.length > 2 && arr[i][attr] === value ) ){ 
-           arr.splice(i,1);
-       }
-    }
-    return arr;
-}
-
-function deleteAllSearchAreas(){
-    
-    console.log('//TODO : Prompt Are you sure message.');
-    
-    searchAreaArray.forEach(function(searchArea){
-        deleteSearchAreaView(searchArea);
-    });
-    searchAreaArray = [];
-}
-
-function deleteSearchArea(searchArea){    
-    console.log('Removing Search Area '+searchArea.id);        
-    deleteSearchAreaView(searchArea);    
-    removeByAttr(searchAreaArray, 'id', searchArea.id);
 }
 
 function deleteSearchAreaView(searchArea){    
@@ -458,12 +417,24 @@ var drag = d3.behavior.drag()
     })
     
 function redrawSearchAreasUI(){
+    
     var searchAreasEmpty = document.getElementById('search-areas-empty');
     if(searchAreaArray.length > 0){
         searchAreasEmpty.hidden = true;
     }else{
         searchAreasEmpty.hidden = false;
     }
+    
+    searchAreaArray.forEach(function(searchArea){
+        if(searchArea.complete){
+            var htmlString = 'control-searcharea-'+searchArea.id+'-assigned';  
+            document.getElementById(htmlString).textContent = 'Assigned '+searchArea.assignedDrones+ ' Drones';
+            
+            var htmlString = 'control-searcharea-'+searchArea.id+'-radius';  
+            document.getElementById(htmlString).textContent = 'Radius: '+Math.round(searchArea.radius)+ 'm';
+        }    
+    }, this);
+    
 }
 
 function redrawSearchAreas(){
@@ -472,12 +443,8 @@ function redrawSearchAreas(){
 
     searchAreaArray.forEach(function(searchArea){
         
-        if(!searchArea.center){
-           return; 
-        } 
-        
-        var dist = distance(searchArea.center, searchArea.outer);
-        searchArea.radius = dist;
+        searchArea.drawRadius = distance(searchArea.center, searchArea.outer);
+        searchArea.radius    = unprojectedDistance(searchArea.center, searchArea.outer)
         
         // Remove First
         svg.selectAll('#SearchArea-'+searchArea.id).remove();
@@ -486,14 +453,14 @@ function redrawSearchAreas(){
         
         // Redraw
         var circleLasso = svg.selectAll('#SearchArea-'+searchArea.id)
-            .data([dist])
+            .data([searchArea.drawRadius])
             .enter()
             .append("circle")     
             
         .attr({
           cx: project(searchArea.center).x,
           cy: project(searchArea.center).y,
-          r: dist,
+          r: searchArea.drawRadius,
           id:'SearchArea-'+searchArea.id
         })
         
