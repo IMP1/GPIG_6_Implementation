@@ -87,7 +87,7 @@ public abstract class SensorInterface {
 					}
 					System.out.println();
 					
-					for (int i = 0 ; i < line.length; i++){
+					for (int i = 0 ; i < line.length - 4; i++){
 						output[i] = Double.parseDouble(line[i + 4]);
 					}
 					outputs = new ScanData("SCAN", java.time.LocalDateTime.now(), lat, lon, Double.parseDouble(line[2]), Double.parseDouble(line[3]), output);
