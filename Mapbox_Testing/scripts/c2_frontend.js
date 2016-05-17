@@ -477,6 +477,7 @@ function redrawSearchAreas(){
         } 
         
         var dist = distance(searchArea.center, searchArea.outer);
+        searchArea.radius = dist;
         
         // Remove First
         svg.selectAll('#SearchArea-'+searchArea.id).remove();
