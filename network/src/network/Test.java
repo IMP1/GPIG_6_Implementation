@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import network.StatusData.DroneState;
 
-@SuppressWarnings("unused")
 public class Test {
 
 	public static void main(String[] args) {

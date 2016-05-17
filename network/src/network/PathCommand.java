@@ -1,6 +1,6 @@
 package network;
 
-public class PathCommand extends Command {
+public final class PathCommand extends Command {
 	
 	public final static String PATH_COMMAND_PREFIX = "PATH";
 	
@@ -16,10 +16,11 @@ public class PathCommand extends Command {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
 		sb.append(PATH_COMMAND_PREFIX); sb.append(SEPARATOR);
 		sb.append(latitude); sb.append(SEPARATOR);
-		sb.append(longitude); sb.append(SEPARATOR);
+		sb.append(longitude);
+		sb.append(SUFFIX);
 		return sb.toString();
 	}
 	
@@ -29,9 +30,9 @@ public class PathCommand extends Command {
 		if (!commandMessage.startsWith(PATH_COMMAND_PREFIX)) throw new RuntimeException("A Command Type {PATH, MOVE} needs to be supplied.");
 		final String moveMessage = commandMessage.substring(PATH_COMMAND_PREFIX.length() + 1);
 		String data[] = moveMessage.split(SEPARATOR);
-		if (data.length != 2) {
+		if (data.length < 2) {
 			System.err.println(rawMessage);
-			throw new RuntimeException("A MOVE Command Message must have 3 arguments: latitude, longitude, radius.");
+			throw new RuntimeException("A MOVE Command Message must have 2 arguments: latitude, longitude.");
 		}
 		latitude  = Double.parseDouble(data[0]);
 		longitude = Double.parseDouble(data[1]);

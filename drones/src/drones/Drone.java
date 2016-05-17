@@ -7,6 +7,8 @@ import java.net.MulticastSocket;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import network.StatusData.DroneState;
+
 import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.util.EncodingManager;
 
@@ -27,6 +29,7 @@ public class Drone {
 	private static GraphHopper map = null;
 	private static NavigationThread navThread = null;
 	private static MeshInterfaceThread meshThread = null;
+	private static DroneState state = DroneState.IDLE;
 	
 	// Singleton accessors
 	// TODO: Handle synchronous read / write access to map (move to MapHelper and make protected?)
@@ -38,6 +41,17 @@ public class Drone {
 	}
 	public static MeshInterfaceThread mesh() {
 		return meshThread;
+	}
+	
+	public static DroneState state() {
+		return Drone.state;
+	}
+	
+	public static void setState(DroneState state) {
+		//TODO: unlimit this?
+		if (Drone.state != DroneState.BATTERY_LOW) {
+			Drone.state = state;
+		}
 	}
 
 	/**
