@@ -56,6 +56,8 @@ var markers = {
     "features": []
 };
 
+var unit_element_ids   = ['battery', 'state', 'lastseen', 'depth'];
+
 function addNewUnitMarker(unit){
     
     // Adds a new Unit Map Marker    
@@ -96,6 +98,7 @@ function addNewUnitMarker(unit){
             var unit_element_text = document.createElement('div');
             unit_element_text.className = 'unit-name';
             unit_element_text.textContent = name;
+            unit_element_text.id = layerID+'-'+'name';
             unit_element_info.appendChild(unit_element_text);
             
         var unit_element_stats = document.createElement('div');
@@ -103,7 +106,7 @@ function addNewUnitMarker(unit){
         unit_element.appendChild(unit_element_stats);
         
         var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
-        var unit_text  = ['Battery : 100%', 'State : Scanning', 'Connection : Strong', 'Depth : 10m'];
+        var unit_text  = ['Battery : 100%', 'State : Scanning', 'Last Seen : 1s Ago', 'Depth : 10m'];
         
         for(var i = 0; i<4; i++){
         
@@ -117,6 +120,7 @@ function addNewUnitMarker(unit){
                 
                 var unit_element_stats_stat_text = document.createElement('div');
                 unit_element_stats_stat_text.className = 'text';
+                unit_element_stats_stat_text.id = layerID+'-'+unit_element_ids[i];
                 unit_element_stats_stat_text.textContent = unit_text[i];
                 unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
                 
@@ -138,6 +142,33 @@ function addNewUnitMarker(unit){
     
     return unit_marker;
     
+}
+
+function updateUnitUI(){
+    
+    units.forEach(function(unit) {
+        
+	   var layerID = unit.id;
+       
+       // Name
+        var element_name = document.getElementById(layerID+'-'+'name');
+            element_name.textContent = unit.id;
+        
+        var element_battery = document.getElementById(layerID+'-'+unit_element_ids[0]);
+            element_battery.textContent = unit.batteryLevel + '%';
+            
+        var element_state = document.getElementById(layerID+'-'+unit_element_ids[1]);
+            element_state.textContent = unit.status;
+            
+        var element_lastseen = document.getElementById(layerID+'-'+unit_element_ids[2]);
+            element_lastseen.textContent = 'Last seen '+unit.timeSinceUpdate+'s ago';
+            
+        var element_depth = document.getElementById(layerID+'-'+unit_element_ids[3]);
+            element_depth.textContent = 'Depth : 20m';
+       
+       
+   }, this);
+   
 }
 
 function setMarkerPosition(lat, long, marker){    
