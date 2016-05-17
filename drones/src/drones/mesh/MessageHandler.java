@@ -30,13 +30,13 @@ public class MessageHandler {
 	 * @param message
 	 */
 	protected void handleMessage(String message) {
-		if (!Message.getId(message).equals(Drone.ID)) {
-			// We're reconnected! (In theory)
-			networkingThread.resendAllStoredMessages(); 
-		}
 		if (networkingThread.isMessageDealtWith(message)) {
 			System.out.println("Duplicate. Ignoring.");	
 			return;
+		}
+		if (!Message.getId(message).equals(Drone.ID)) {
+			// We're reconnected! (In theory)
+			networkingThread.resendAllStoredMessages();  
 		}
 		final Class<? extends Message> messageClass = Message.getType(message);
 		if (PathCommand.class.isAssignableFrom(messageClass)) {
