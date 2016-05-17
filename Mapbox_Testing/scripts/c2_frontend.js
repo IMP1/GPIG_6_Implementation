@@ -51,27 +51,20 @@ var map_overlays = document.getElementById('map_overlays');
 // Add zoom controls
 map.addControl(new mapboxgl.Navigation());
 
-//// Units
-var Unit = function(name, symbol, coordinates){
-    this.type = "Feature";
-    this.properties = {
-        "name" : name,
-        "marker-symbol": symbol
-    }
-    this.geometry = {
-        "type": "Point",
-        "coordinates": coordinates
-    }
-}
+var markers = {
+    "type": "FeatureCollection",
+    "features": []
+};
 
-function addNewUnit(name, symbol, coordinates){
+var unit_element_ids   = ['battery', 'state', 'lastseen', 'depth'];
+
+function addNewUnitMarker(unit){
     
-    // Adds a new Unit (drone/c2) with name, icon and coordinates
+    // Adds a new Unit Map Marker    
+    var unit_marker = new UnitMarker(unit);
+    markers.features.push(unit_marker);
     
-    var unit = new Unit(name, symbol, coordinates);
-    markers.features.push(unit);
-    
-    var layerID = name; 
+    var layerID = unit.id; 
 
     // Add a layer for this symbol type if it hasn't been added already.
     if (!map.getLayer(layerID)) {
@@ -81,10 +74,10 @@ function addNewUnit(name, symbol, coordinates){
             "type": "symbol",
             "source": "markers",
             "layout": {
-                "icon-image": symbol + "-15",
+                "icon-image": unit.symbol + "-15",
                 "icon-allow-overlap": true
             },
-            "filter": ["==", "marker-symbol", symbol]
+            "filter": ["==", "marker-symbol", unit.symbol]
         });
 
         // Add HTML elements for each Unit
@@ -99,12 +92,13 @@ function addNewUnit(name, symbol, coordinates){
         unit_element.appendChild(unit_element_info);
 
             var unit_element_icon = document.createElement('i');
-            unit_element_icon.className = 'unit-icon maki  maki-'+symbol;
+            unit_element_icon.className = 'unit-icon maki  maki-'+unit.symbol;
             unit_element_info.appendChild(unit_element_icon);
             
             var unit_element_text = document.createElement('div');
             unit_element_text.className = 'unit-name';
             unit_element_text.textContent = name;
+            unit_element_text.id = layerID+'-'+'name';
             unit_element_info.appendChild(unit_element_text);
             
         var unit_element_stats = document.createElement('div');
@@ -112,7 +106,7 @@ function addNewUnit(name, symbol, coordinates){
         unit_element.appendChild(unit_element_stats);
         
         var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
-        var unit_text  = ['Battery : 100%', 'State : Scanning', 'Connection : Strong', 'Depth : 10m'];
+        var unit_text  = ['Battery : 100%', 'State : Scanning', 'Last Seen : 1s Ago', 'Depth : 10m'];
         
         for(var i = 0; i<4; i++){
         
@@ -126,6 +120,7 @@ function addNewUnit(name, symbol, coordinates){
                 
                 var unit_element_stats_stat_text = document.createElement('div');
                 unit_element_stats_stat_text.className = 'text';
+                unit_element_stats_stat_text.id = layerID+'-'+unit_element_ids[i];
                 unit_element_stats_stat_text.textContent = unit_text[i];
                 unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
                 
@@ -134,7 +129,7 @@ function addNewUnit(name, symbol, coordinates){
         // On click go to unit coordinates
         unit_element.addEventListener('click', function(e) {            
             map.flyTo({
-                center: offsetCoordinates(unit.geometry.coordinates),
+                center: offsetCoordinates(unit_marker.geometry.coordinates),
                 zoom: defaultZoom,        
                 speed: 0.6, 
                 curve: 1,         
@@ -145,16 +140,40 @@ function addNewUnit(name, symbol, coordinates){
         });
     }
     
+    return unit_marker;
+    
+}
+
+function updateUnitUI(){
+    
+    units.forEach(function(unit) {
+        
+	   var layerID = unit.id;
+       
+       // Name
+        var element_name = document.getElementById(layerID+'-'+'name');
+            element_name.textContent = unit.id;
+        
+        var element_battery = document.getElementById(layerID+'-'+unit_element_ids[0]);
+            element_battery.textContent = unit.batteryLevel + '%';
+            
+        var element_state = document.getElementById(layerID+'-'+unit_element_ids[1]);
+            element_state.textContent = unit.status;
+            
+        var element_lastseen = document.getElementById(layerID+'-'+unit_element_ids[2]);
+            element_lastseen.textContent = 'Last seen '+unit.timeSinceUpdate+'s ago';
+            
+        var element_depth = document.getElementById(layerID+'-'+unit_element_ids[3]);
+            element_depth.textContent = 'Depth : 20m';
+       
+       
+   }, this);
+   
 }
 
 function setMarkerPosition(lat, long, marker){    
     marker.geometry.coordinates = [lat, long];
 }
-
-var markers = {
-    "type": "FeatureCollection",
-    "features": []
-};
 
 map.on('load', function () {
     
@@ -162,15 +181,11 @@ map.on('load', function () {
         "type": "geojson",
         "data": markers
     });
-    
-    // Add C2 and 3 Drones. Will be handled by C2 backend
-    addNewUnit('c2', 'harbor', [-1.0873, 53.9600]);
-    addNewUnit('drone1', 'marker', [-1.083877, 53.9619]);
-    addNewUnit('drone2', 'marker', [-1.08525, 53.957266]);
-    addNewUnit('drone3', 'marker', [-1.0925, 53.95989]);
    
     updateMap();
   
+    // Backend Call
+    setupAPICalls();
 
 });
 
@@ -235,8 +250,6 @@ svg.on("mouseup", function() {
     
     var p  = d3.mouse(this);
     
-    console.log(p, mouseDownCoords)
-    
     if(!arraysEqual(p, mouseDownCoords)) return;
     
     var ll = unproject([p[0],p[1]])
@@ -244,6 +257,7 @@ svg.on("mouseup", function() {
     if(!currentSearchArea){        
         currentSearchArea = new SearchArea();
         currentSearchArea.center = ll;   
+        currentSearchArea.outer  = ll;
         searchAreaArray.push(currentSearchArea); 
         editingSearchArea = true;
         updateMap();
@@ -492,48 +506,3 @@ function redrawSearchAreas(){
 map.on("render", function() {
     redrawSearchAreas()
 })
-
-
-// CIRCLES
-
-
-
-// var active = true;
-
-// var circleControl = new circleSelector(svg)
-//     .projection(project)
-//     .inverseProjection(function(a) {
-//         return map.unproject({x: a[0], y: a[1]});
-//     })
-//     .activate(active);
-
-// function project(d) {
-//   return map.project(getLL(d));
-// }
-
-// function getLL(d) {
-//   return new mapboxgl.LngLat(+d.lng, +d.lat)
-// }
-
-// d3.select("#circle").on("click", function() {
-//   active = !active;
-//   circleControl.activate(active)
-//   if(active) {
-//     map.dragPan.disable();
-//   } else {
-//     map.dragPan.enable();
-//   }
-//   d3.select(this).classed("active", active)
-// })
-
-// function render() {
-//     circleControl.update(svg)
-// }
-
-// // re-render our visualization whenever the view changes
-// map.on("viewreset", function() {
-// render()
-// })
-// map.on("move", function() {
-// render()
-// })

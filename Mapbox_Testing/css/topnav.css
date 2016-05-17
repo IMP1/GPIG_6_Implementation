@@ -2,7 +2,7 @@
   position: absolute;
   width: 100%;
   height: 60px;
-  background: white; }
+  background: #414852; }
   #top-nav #left-section {
     position: relative;
     float: left;
@@ -33,7 +33,7 @@
       background: #79dcde;
       color: white;
       border: none;
-      border-radius: 15px;
+      border-radius: 20px;
       padding: 10px;
       margin: 0 5px 0 5px;
       outline: none;
