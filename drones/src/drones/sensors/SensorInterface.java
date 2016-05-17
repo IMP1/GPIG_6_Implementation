@@ -1,5 +1,14 @@
 package drones.sensors;
 
+import network.ScanData;
+
+import java.io.FileReader;
+import java.io.IOException;
+
+import au.com.bytecode.opencsv.*;
+import drones.Drone;
+
+
 /**
  * Sensor interface.
  * All static methods as these will eventually be piped out to hardware.
@@ -61,4 +70,47 @@ public abstract class SensorInterface {
 	// TODO: Set GPS via 'Navigation'
 
 	// TODO: Create and read in pre-defined sonar, depth and flow data
+	public static ScanData getDataForPoint(double lat, double lon){
+		CSVReader reader = null;
+		double[] output = new double[360];
+		ScanData outputs = null;
+		
+		try{
+			reader = new CSVReader(new FileReader("../sonar.csv"));
+		}
+		catch (Exception e){
+			// ohnoes
+			System.out.println(e.getMessage());
+		}
+		String [] line;
+		try {
+			while ((line = reader.readNext()) != null){
+				if(Double.parseDouble(line[0]) == lat && Double.parseDouble(line[1]) == lon){
+					System.out.println("Hurray");
+					System.out.println("Depth: " + line[2] + " Flow: " + line [3]);
+					for (int i = 4; i < line.length; i++){
+						
+						System.out.print(line[i] + ",");
+					}
+					System.out.println();
+					
+					for (int i = 0 ; i < line.length - 4; i++){
+						output[i] = Double.parseDouble(line[i + 4]);
+					}
+					outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, Double.parseDouble(line[2]), Double.parseDouble(line[3]), output);
+					break;
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (outputs == null){
+			outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, 5.0, 2.5, output);
+		}
+
+
+		
+		return outputs;
+	}
 }

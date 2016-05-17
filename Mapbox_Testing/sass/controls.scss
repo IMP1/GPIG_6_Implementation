@@ -11,7 +11,7 @@
 	width:$controls_width;
 	height:calc(100% - $top_nav_height);	
 	color:#c0c8d2;
-	$background_opacity:.85;
+	$background_opacity:.9;
 	background-image: linear-gradient(rgba($background_light_color,$background_opacity), rgba($background_dark_color,$background_opacity));
 	
 	h1{
@@ -30,7 +30,15 @@
 		
 		position:relative;
 		border-bottom: 1px solid $border_color;
-		overflow:scroll;	
+		overflow:scroll;
+		
+		.empty{
+			text-align:center;
+			font-weight: 300;
+			position: relative;
+			top: 50%;
+			transform: translateY(-50%);
+		}	
 		
 	}
 	
