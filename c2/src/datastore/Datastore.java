@@ -12,7 +12,7 @@ public class Datastore {
 	private HashMap<String, Scan> scans;
 	private SearchArea currentSearchArea;
 	
-	Gson gson;
+	public Gson gson;
 	
 	public Datastore(){
 		drones = new HashMap<String,Drone>();

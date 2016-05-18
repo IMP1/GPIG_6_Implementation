@@ -8,6 +8,7 @@ import broadcast.Broadcast;
 import datastore.Datastore;
 import network.MoveCommand;
 import network.PathCommand;
+import network.StatusData.DroneState;
 
 public class SearchAreaWaiter {
 
@@ -44,6 +45,8 @@ public class SearchAreaWaiter {
 			MoveCommand command = new MoveCommand(droneID,LocalDateTime.now(), this.searchArea.locLat, this.searchArea.locLong, this.searchArea.radius);
 			System.out.println(command.toString());
 			Broadcast.broadcast(command.toString());
+			datastore.getDroneById(droneID).setStatus(DroneState.MOVING);
+			datastore.getDroneById(droneID).setLock();
 			assigned[i] = droneID;
 		}
 		return assigned;
@@ -54,12 +57,23 @@ public class SearchAreaWaiter {
 		Double minValue = Double.MAX_VALUE;
 		for (String key : etas.keySet()) {
 	        Double value = etas.get(key);
-	        if (value < minValue) {
+	        System.err.println(datastore.getDroneById(key).getStatus());
+	        System.err.println(datastore.getDroneById(key).isLocked());
+	        if (value < minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.MOVING) && !datastore.getDroneById(key).isLocked()) {
 	            minValue = value;
 	            minKey = key;
 	        }
 	    }
-		
+		if(minValue == Double.MAX_VALUE){
+			for (String key : etas.keySet()) {
+		        Double value = etas.get(key);
+		        if (value < minValue ) {
+		            minValue = value;
+		            minKey = key;
+		        }
+		    }
+		}
+		etas.remove(minKey);
 	    return minKey;
 	}
 }
