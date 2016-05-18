@@ -2,11 +2,24 @@ package drones.sensors;
 
 import network.ScanData;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 
 import au.com.bytecode.opencsv.*;
 import drones.Drone;
+import drones.util.MapObjectDeserialiser;
+import drones.util.MapObject;
 
 
 /**
@@ -74,6 +87,23 @@ public abstract class SensorInterface {
 		CSVReader reader = null;
 		double[] output = new double[360];
 		ScanData outputs = null;
+		Collection<MapObject> edgeList = null;
+		
+
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(MapObject.class, new MapObjectDeserialiser());
+		Gson gson = gsonBuilder.create();
+		JsonParser parser = new JsonParser();
+		JsonArray json = null;
+		BufferedReader file = null;
+		
+		try {
+			file = new BufferedReader(new FileReader("../sensor_edge.geojson"));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		json = parser.parse(file).getAsJsonObject().getAsJsonArray("features");
 		
 		try{
 			reader = new CSVReader(new FileReader("../sonar.csv"));
@@ -82,6 +112,13 @@ public abstract class SensorInterface {
 			// ohnoes
 			System.out.println(e.getMessage());
 		}
+		
+		for(int i = 0; i < json.size(); i++) {
+			edgeList.add(gson.fromJson(json.get(i), MapObject.class));
+		}
+		Collections.sort((List<MapObject>) edgeList);
+		
+		
 		String [] line;
 		try {
 			while ((line = reader.readNext()) != null){
