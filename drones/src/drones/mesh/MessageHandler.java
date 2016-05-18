@@ -31,10 +31,10 @@ public class MessageHandler {
 	 */
 	protected void handleMessage(String message) {
 		if (networkingThread.isMessageDealtWith(message)) {
-			System.out.println("Duplicate. Ignoring.");	
+			System.out.println("[Mesh Network] Duplicate. Ignoring.");	
 			return;
 		}
-		System.out.println("Not a duplicate...");
+		System.out.println("[Mesh Network] Not a duplicate...");
 		final Class<? extends Message> messageClass = Message.getType(message);
 		if (PathCommand.class.isAssignableFrom(messageClass)) {
 			handleCommand(message);
@@ -45,10 +45,10 @@ public class MessageHandler {
 			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
 				handleScanAcknowledgement(message);
 			} else {
-				System.out.printf("Receieved data from ourself. Ignoring.\n");
+				System.out.printf("[Mesh Network] Receieved data from ourself. Ignoring.\n");
 			}
 		} else {
-			System.out.println("Not for us. Passing along.");
+			System.out.println("[Mesh Network] Not for us. Passing along.");
 			if (Data.class.isAssignableFrom(messageClass)) {
 				handleOtherData(message);
 			}
@@ -60,7 +60,7 @@ public class MessageHandler {
 		}
 		if (!Message.getId(message).equals(Drone.ID)) {
 			// We're reconnected! (In theory)
-			System.out.println("Recieved a message from someone else. Resending stored messages...");
+			System.out.println("[Mesh Network] Recieved a message from someone else. Resending stored messages...");
 			networkingThread.resendAllStoredMessages();
 		}
 	}
@@ -75,12 +75,12 @@ public class MessageHandler {
 			MoveCommand command = new MoveCommand(message);
 			Drone.mesh().addCommand(command);
 			networkingThread.addDealtWithMessage(message);
-			System.out.println("Handling Move Command.");
+			System.out.println("[Mesh Network] Handling Move Command.");
 		} else if (PathCommand.class.isAssignableFrom(Message.getType(message))) {
 			PathCommand command = new PathCommand(message);
 			Drone.mesh().addCommand(command);
 			networkingThread.addDealtWithMessage(message);
-			System.out.println("Handling Path Command.");
+			System.out.println("[Mesh Network] Handling Path Command.");
 		}
 	}
 	
@@ -101,7 +101,7 @@ public class MessageHandler {
 	 * @param message
 	 */
 	private void handleOtherData(String message) {
-		System.out.printf("Receieved data from Drone %s.\n", Message.getId(message));
+		System.out.printf("[Mesh Network] Receieved data from Drone %s.\n", Message.getId(message));
 		if (ScanData.class.isAssignableFrom(Message.getType(message))) {
 			ScanData data = new ScanData(message);
 			Drone.mesh().addExternalScanData(data);
