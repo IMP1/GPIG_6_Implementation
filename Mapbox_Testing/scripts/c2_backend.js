@@ -1,5 +1,5 @@
 // Debug Vars
-var ONLINE = true;
+var ONLINE = false;
 
 // Utility Functions
 
@@ -200,6 +200,16 @@ function changeDroneAssignmentForSearchArea(inc, searchArea){
 // Search Area Asssignment
 
 function assignSearchAreas(){
+	
+	if(units.length == 0){
+		ShowNewMessage('Search Area Assignment Error', 'No Search Units in network to assign search areas.', 'high');
+		return;
+	}
+	
+	if(searchAreaArray.length == 0){
+		ShowNewMessage('Search Area Assignment Error', 'No Search Areas created, cannot assign to units.', 'high');
+		return;
+	}	
 	
 	searchAreaArray.forEach(function(searchArea) {
 				
