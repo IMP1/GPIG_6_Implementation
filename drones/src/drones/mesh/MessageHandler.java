@@ -9,6 +9,8 @@ import network.ScanAcknowledgement;
 import network.ScanData;
 import drones.Drone;
 
+import static drones.mesh.MeshNetworkingThread.DEBUG_MESSAGES;
+
 public class MessageHandler {
 	
 	private final MeshNetworkingThread networkingThread;
@@ -31,10 +33,10 @@ public class MessageHandler {
 	 */
 	protected void handleMessage(String message) {
 		if (networkingThread.isMessageDealtWith(message)) {
-			System.out.println("[Mesh Network] Duplicate. Ignoring.");	
+			if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Duplicate. Ignoring.");	
 			return;
 		}
-		System.out.println("[Mesh Network] Not a duplicate...");
+		if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Not a duplicate...");
 		final Class<? extends Message> messageClass = Message.getType(message);
 		if (PathCommand.class.isAssignableFrom(messageClass)) {
 			handleCommand(message);
@@ -45,10 +47,10 @@ public class MessageHandler {
 			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
 				handleScanAcknowledgement(message);
 			} else {
-				System.out.printf("[Mesh Network] Receieved data from ourself. Ignoring.\n");
+				if (DEBUG_MESSAGES) System.out.printf("[Mesh Network] Receieved data from ourself. Ignoring.\n");
 			}
 		} else {
-			System.out.println("[Mesh Network] Not for us. Passing along.");
+			if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Not for us. Passing along.");
 			if (Data.class.isAssignableFrom(messageClass)) {
 				handleOtherData(message);
 			}
@@ -60,7 +62,7 @@ public class MessageHandler {
 		}
 		if (!Message.getId(message).equals(Drone.ID)) {
 			// We're reconnected! (In theory)
-			System.out.println("[Mesh Network] Recieved a message from someone else. Resending stored messages...");
+			if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Recieved a message from someone else. Resending stored messages...");
 			networkingThread.resendAllStoredMessages();
 		}
 	}
@@ -75,12 +77,12 @@ public class MessageHandler {
 			MoveCommand command = new MoveCommand(message);
 			Drone.mesh().addCommand(command);
 			networkingThread.addDealtWithMessage(message);
-			System.out.println("[Mesh Network] Handling Move Command.");
+			if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Handling Move Command.");
 		} else if (PathCommand.class.isAssignableFrom(Message.getType(message))) {
 			PathCommand command = new PathCommand(message);
 			Drone.mesh().addCommand(command);
 			networkingThread.addDealtWithMessage(message);
-			System.out.println("[Mesh Network] Handling Path Command.");
+			if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Handling Path Command.");
 		}
 	}
 	
@@ -101,7 +103,7 @@ public class MessageHandler {
 	 * @param message
 	 */
 	private void handleOtherData(String message) {
-		System.out.printf("[Mesh Network] Receieved data from Drone %s.\n", Message.getId(message));
+		if (DEBUG_MESSAGES) System.out.printf("[Mesh Network] Receieved data from Drone %s.\n", Message.getId(message));
 		if (ScanData.class.isAssignableFrom(Message.getType(message))) {
 			ScanData data = new ScanData(message);
 			Drone.mesh().addExternalScanData(data);
