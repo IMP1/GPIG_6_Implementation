@@ -67,7 +67,7 @@ public class FrontendServerHandler implements Runnable{
 			SearchArea searchArea = new SearchArea(uniqueID, loclat, loclong, numberRequested, searchRadius);
 			SearchAreaWaiter waiter = new SearchAreaWaiter(searchArea, datastore);
 			String[] result = waiter.doWait();
-			reply(result.toString());//maybe?
+			reply(datastore.gson.toJson(result));
 		}
 		if(request.contains("ClearSearchAreas")){
 			//TODO - More clever things.
