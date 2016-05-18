@@ -259,7 +259,7 @@ public class NavigationThread extends Thread {
 	 * @param longDiff Longitude difference in degrees
 	 * @return Absolute difference in metres
 	 */
-	private static double latLongDiffInMeters(double latDiff, double longDiff) {
+	public static double latLongDiffInMeters(double latDiff, double longDiff) {
 		double latDiffM = Math.toRadians(latDiff) * EARTH_RADIUS;
 		double longDiffM = Math.toRadians(longDiff) * EARTH_RADIUS;
 		double dist = Math.sqrt(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2));
@@ -271,7 +271,7 @@ public class NavigationThread extends Thread {
 	 * @param m Meters distance
 	 * @return Degrees (ignoring curvature of earth
 	 */
-	private static double mToD(double m) {
+	public static double mToD(double m) {
 		double deg = Math.toDegrees(m / EARTH_RADIUS);
 		return deg;
 	}

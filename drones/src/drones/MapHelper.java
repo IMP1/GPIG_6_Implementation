@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -18,6 +19,7 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.PathWrapper;
 
+import drones.navigation.NavigationThread;
 import drones.util.*;
 
 import network.ScanData;
@@ -104,9 +106,48 @@ public abstract class MapHelper {
 	 */
 	public static double[] getExternalPoint(double lat, double lng) {
 		double[] result = {lat, lng};
+		boolean internal = false;
 		
-		// TODO: Check if point is inside the building nodes
-		// http://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon
+		// Loop until an external point is found
+		do {
+			internal = false;
+			for (MapObject b : buildingList) {
+				// Break out of sorted list early
+				if (b.minLat >= lat)
+					break;
+				// Otherwise run the check if inside the bounding box
+				else if (b.minLng < lng && b.maxLat > lat && b.maxLng > lng) {
+					// Check if point is inside the building nodes
+					// http://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon
+					int j = 1;
+			    	for (int i = 0; i < b.lat.size(); i++) {
+			    		j = (i + 1) % b.lat.size();
+			    		if ((b.lat.get(i) > lat) != (b.lat.get(j) > lat) &&
+			    				(lng < (b.lng.get(j) - b.lng.get(i)) * (lat - b.lat.get(i)) 
+			    						/ (b.lat.get(j) - b.lat.get(i)) + b.lng.get(i))) {
+			    			internal = !internal;
+			    		}
+			    	}
+			    	
+			    	if (internal) {
+			    		// Move to a building edge and check for overlap with other buildings
+			    		Random rnd = new Random();
+
+			    		// Pick a random edge
+			    		int p = rnd.nextInt(b.lat.size());
+			    		double latDiff = b.lat.get(p) - b.lat.get((p + 1) % b.lat.size());
+			    		double lngDiff = b.lng.get(p) - b.lng.get((p + 1) % b.lng.size());
+
+			    		// Pick a random amount along that edge
+			    		float portion = rnd.nextFloat();
+			    		lat = b.lat.get(p) + (portion * latDiff);
+			    		lng = b.lng.get(p) + (portion * lngDiff);
+			    		
+			    		break;
+			    	}
+				}
+			}
+		} while (internal);
 
 		return result;
 	}
@@ -115,6 +156,26 @@ public abstract class MapHelper {
 		synchronized (scanDataList) {
 			scanDataList.add(scanData);
 		}
+	}
+	
+	// Scan separation distance in meters
+	public static double SCAN_SEPARATION = 2.0;
+	
+	/**
+	 * Check if a scan has been performed near the requested location
+	 * @param lat Latitude requested in degrees
+	 * @param lng Longitude requested in degrees
+	 * @return True if within SCAN_SEPARATION of a previous scan. False otherwise.
+	 */
+	public static boolean isScanned(double lat, double lng) {
+		synchronized (scanDataList) {
+			for (ScanData scan : scanDataList) {
+				if (NavigationThread.latLongDiffInMeters
+						(scan.latitude - lat, scan.longitude - lng) < SCAN_SEPARATION)
+					return true;
+			}
+		}
+		return false;
 	}
 	
 	//TODO: functions used by navigation and routing regarding querying the list of scan data.
