@@ -56,11 +56,18 @@ public class MeshInterfaceThread extends Thread {
 	 */
 	public void addScan(ScanData scan) {
 		synchronized (scanBuffer) {
-			drones.MapHelper.addScan(scan);
-			scanBuffer.add(scan);
+			if (isFullOfScans()) {
+				returnToBase();
+			} else {
+				drones.MapHelper.addScan(scan);
+				scanBuffer.add(scan);
+			}
 		}
-		//TODO: Check to see if the drone is full up of scan. 
-		//      If so, maybe set state to returning.
+	}
+	
+	private boolean isFullOfScans() {
+		return false;
+		//TODO: have some upper limit
 	}
 	
 	/**
@@ -150,8 +157,15 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void handleBatteryLevel() {
 		if (SensorInterface.isBatteryTooLow()) {
-			Drone.setState(DroneState.RETURNING);
+			returnToBase();
 		}
+	}
+	
+	private void returnToBase() {
+		Drone.setState(DroneState.RETURNING);
+		double latitude = 0; // ???
+		double longitude = 0; // ???
+		router.go(latitude, longitude, 0);
 	}
 	
 	private void sendCurrentState() {
