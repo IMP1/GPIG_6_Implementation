@@ -48,6 +48,18 @@ var removeByAttr = function(arr, attr, value){
     return arr;
 }
 
+var getByAttr = function(arr, attr, value){
+    var i = arr.length;
+    while(i--){
+       if( arr[i] 
+           && arr[i].hasOwnProperty(attr) 
+           && (arguments.length > 2 && arr[i][attr] === value ) ){ 
+           return arr[i];
+       }
+    }
+	return false;
+}
+
 /////////////////////////
 // FRONTEND COMMS CODE //
 /////////////////////////
@@ -181,23 +193,22 @@ function recallUnits(){
 var currentSearchArea;
 var searchAreaArray = [];
 
-function changeDroneAssignmentForSearchArea(inc, searchArea){
-    
+function changeDroneAssignmentForSearchArea(inc, searchArea){    
 	
-	if(searchArea.assignedDrones == 1 && inc == -1){
+	if(searchArea.requestedDrones == 1 && inc == -1){
 		ShowNewMessage('Drone Assignment Error', 'Cannot assign less than one drone', 'medium');
 		return;
-	}else if(searchArea.assignedDrones == units.length && inc == 1){
+	}else if(searchArea.requestedDrones == units.length && inc == 1){
 		ShowNewMessage('Drone Assignment Error', 'Cannot assign more Drones than exist', 'medium');
 		return;
 	}
-	
-	searchArea.assignedDrones += inc;
-    
-    console.log('//TODO : Error if > numDrones or < 0');
+		
+	searchArea.requestedDrones += inc;
 }
 
 // Search Area Asssignment
+
+var currentlyAssigningSearchAreas;
 
 function assignSearchAreas(){
 	
@@ -211,14 +222,58 @@ function assignSearchAreas(){
 		return;
 	}	
 	
-	searchAreaArray.forEach(function(searchArea) {
+	if(currentlyAssigningSearchAreas){
+		ShowNewMessage('Search Area Assignment Error', 'Already in the process of assigning search areas.', 'high');
+		return;
+	}
+	
+	currentlyAssigningSearchAreas = true;
+	
+	searchAreaArray.forEach(function(searchArea) {	
+		
+		if(ONLINE){		
 				
-		var xmlHttpAssignSearchAreas = new XMLHttpRequest();
-		var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat+"&longitude="+searchArea.center.lng+"&numberRequested="+searchArea.assignedDrones+"&radius="+searchArea.radius;
-	    xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
-	    xmlHttpAssignSearchAreas.send( null );
+			var xmlHttpAssignSearchAreas = new XMLHttpRequest();
+			var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat
+							+"&longitude="+searchArea.center.lng
+							+"&numberRequested="+searchArea.requestedDrones
+							+"&radius="+searchArea.radius;
+			xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
+			xmlHttpAssignSearchAreas.send( null );
+			
+			ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
+			
+			// Responds with the drone uids assigned to this search area 
+			var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
+			
+			if (searchAreaResponse.length > 0){
+				// Succesfully assigned > 1 drone
+				// Get Drones by UID
+				
+				searchAreaResponse.forEach(function(droneID) {
+					
+					var unit = getByAttr(units, 'id', droneID);
+					if(!unit){
+						ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
+					}else{
+						searchArea.assignedDrones.push(unit);
+					}					
+					
+				}, this);
+				
+			}
+		
+		}else{
+			
+			var searchUnit = units[1];
+			searchArea.assignedDrones = [searchUnit];
+			
+		}
+		
 		
 	}, this);	
+	
+	currentlyAssigningSearchAreas = false;
 	
 }
 

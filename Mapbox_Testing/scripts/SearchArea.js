@@ -7,8 +7,11 @@ function SearchArea(){
     this.outer  = [];
     this.radius = 0;
     this.drawRadius = 0;
-    this.assignedDrones = 1;
-    this.complete = false;
+    this.requestedDrones = 1;
+    this.complete = false; // Drawn Circle Completed
+    
+    // Assignment
+    this.assignedDrones = [];
 }
 
 function deleteSearchArea(searchArea){        

@@ -336,8 +336,7 @@ function addNewSearchArea(searchArea){
                 changeDroneAssignmentForSearchArea(-1, searchArea);
             });
         
-        var search_stat_id    = ['assigned', 'radius',]
-        var search_stat_text  = ['Assigned '+searchArea.assignedDrones+ ' Drones', 'Radius : 250m'];
+        var search_stat_id    = ['assigned', 'radius', 'status']
         
         var search_area_stats = document.createElement('div');
             search_area_stats.className = 'info';
@@ -348,7 +347,7 @@ function addNewSearchArea(searchArea){
                 var unit_element_stats_stat_text = document.createElement('div');
                 unit_element_stats_stat_text.className = 'text';
                 unit_element_stats_stat_text.id = 'control-searcharea-'+searchArea.id+'-'+search_stat_id[i];
-                unit_element_stats_stat_text.textContent = search_stat_text[i];
+                //unit_element_stats_stat_text.textContent = search_stat_text[i];
                 search_area_stats.appendChild(unit_element_stats_stat_text);
                 
         }
@@ -363,6 +362,8 @@ function addNewSearchArea(searchArea){
                 search_area_controls.addEventListener('click', function(e) {            
                     deleteSearchArea(searchArea);
                 });
+                
+    redrawSearchAreasUI();
 
 }
 
@@ -428,11 +429,28 @@ function redrawSearchAreasUI(){
     searchAreaArray.forEach(function(searchArea){
         if(searchArea.complete){
             var htmlString = 'control-searcharea-'+searchArea.id+'-assigned';  
-            document.getElementById(htmlString).textContent = 'Assigned '+searchArea.assignedDrones+ ' Drones';
+            document.getElementById(htmlString).textContent = 'Requesting '+searchArea.requestedDrones+ ' Search Units';
             
-            var htmlString = 'control-searcharea-'+searchArea.id+'-radius';  
+            htmlString = 'control-searcharea-'+searchArea.id+'-radius';  
             document.getElementById(htmlString).textContent = 'Radius: '+Math.round(searchArea.radius)+ 'm';
-        }    
+            
+            htmlString = 'control-searcharea-'+searchArea.id+'-status';  
+            
+            if(searchArea.assignedDrones.length > 0){
+                 var unitsString = '';
+                searchArea.assignedDrones.forEach(function(unit) {
+                    unitsString += ' '+unit.name;
+                    unitsString += ',';
+                }, this);
+                unitsString = unitsString.substring(0, unitsString.length - 1);
+                
+                document.getElementById(htmlString).textContent = 'Assigned: '+unitsString;
+            }else{
+                document.getElementById(htmlString).textContent = 'Assigned: 0 Search Units'
+            }           
+           
+        } 
+          
     }, this);
     
 }
@@ -462,13 +480,24 @@ function redrawSearchAreas(){
           cy: project(searchArea.center).y,
           r: searchArea.drawRadius,
           id:'SearchArea-'+searchArea.id
-        })
+        });
         
-        .style({
-          stroke: "#414852",
-          fill: "#010",
-          "fill-opacity": 0.1
-        })       
+        if(searchArea.assignedDrones.length > 0){
+            // Drones have been assigned to the search area
+            circleLasso.style({           
+                stroke: "#414852",
+                fill: "#009900",
+                "fill-opacity": 0.2
+            })    
+        }else{
+            circleLasso.style({           
+                stroke: "#414852",
+                fill: "#010",
+                "fill-opacity": 0.1
+            })    
+        }
+        
+           
         
         // Draw Line
         
