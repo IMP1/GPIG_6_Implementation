@@ -163,8 +163,8 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void returnToBase() {
 		Drone.setState(DroneState.RETURNING);
-		double latitude = 0; // ???
-		double longitude = 0; // ???
+		double latitude = 53.957184; //TODO: what should this be?
+		double longitude = -1.078302; //TODO: what should this be?
 		router.go(latitude, longitude, 0);
 	}
 	
