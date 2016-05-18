@@ -3,6 +3,8 @@ package network;
 import java.time.LocalDateTime;
 
 public final class ScanAcknowledgement extends Acknowledgement {
+	
+	public final static String SCAN_ACK_PREFIX = "SCAN";
 
 	public ScanAcknowledgement(String id, LocalDateTime timestamp) {
 		super(id, timestamp);
@@ -15,7 +17,8 @@ public final class ScanAcknowledgement extends Acknowledgement {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
+		sb.append(super.toString()); sb.append(SEPARATOR);
+		sb.append(SCAN_ACK_PREFIX);
 		sb.append(SUFFIX);
 		return sb.toString();
 	}

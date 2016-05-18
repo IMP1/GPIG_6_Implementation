@@ -8,8 +8,8 @@ public final class StatusData extends Data {
 	public enum DroneState {
 		IDLE,
 		MOVING,
-		SCANNING,
-		BATTERY_LOW
+		SCANNING,  
+		RETURNING, // For example, due to low battery.
 	}
 	
 	public final double latitude;
@@ -53,7 +53,7 @@ public final class StatusData extends Data {
 		if (!message.startsWith(STATUS_DATA_PREFIX)) throw new RuntimeException("A Data Type {SCAN, STATUS, PATH} needs to be supplied.");
 		final String statusMessage = message.substring(STATUS_DATA_PREFIX.length() + 1);
 		String data[] = statusMessage.split(SEPARATOR);
-		if (data.length < 5) {
+		if (data.length < 4) {
 			System.err.println(rawMessage);
 			throw new RuntimeException("A STATUS Data Message must have 5 arguments: latitude, longitude, battery status, drone state, current path.");
 		}
@@ -61,10 +61,14 @@ public final class StatusData extends Data {
 		longitude     = Double.parseDouble(data[1]);
 		batteryStatus = Double.parseDouble(data[2]);
 		status        = DroneState.valueOf(data[3]);
-		String[] pathData = data[4].split(POINT_SEPARATOR);
-		currentPath = new double[pathData.length];
-		for (int i = 0; i < currentPath.length; i ++) {
-			currentPath[i] = Double.parseDouble(pathData[i]);
+		if (data.length < 5) {
+			currentPath = new double[0];
+		} else {
+			String[] pathData = data[4].split(POINT_SEPARATOR);
+			currentPath = new double[pathData.length];
+			for (int i = 0; i < currentPath.length; i ++) {
+				currentPath[i] = Double.parseDouble(pathData[i]);
+			}
 		}
 	}
 

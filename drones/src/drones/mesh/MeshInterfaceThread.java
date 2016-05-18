@@ -31,7 +31,8 @@ import drones.sensors.SensorInterface;
  */
 public class MeshInterfaceThread extends Thread {
 	
-	public final static int MILLISECOND_TICK_DELAY = 1000;
+	public final static int MILLISECOND_TICK_DELAY = 250;
+	public final static int MILLISECOND_TICK_DELAY_LOW_BATTERY = 1000;
 
 	private MeshNetworkingThread networkingThread = null;
 	private RoutingHandler router = null;
@@ -101,14 +102,16 @@ public class MeshInterfaceThread extends Thread {
 		while (true) {
 			tick();
 			try {
-				Thread.sleep(MILLISECOND_TICK_DELAY);
+				if (SensorInterface.isBatteryTooLow()) {
+					Thread.sleep(MILLISECOND_TICK_DELAY_LOW_BATTERY);
+				} else {
+					Thread.sleep(MILLISECOND_TICK_DELAY);
+				}
 			} catch (InterruptedException e) { e.printStackTrace(); /* oh no(!) */ }
 		}
 	}
 	
 	private void tick() {
-		System.out.println("tick.");
-		
 		for (String commandID : paths.keySet()) {
 			if (paths.get(commandID).isDone()) {
 				try {
@@ -146,14 +149,9 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void handleBatteryLevel() {
-		if (isBatteryTooLow()) {
-			Drone.setState(DroneState.BATTERY_LOW);
+		if (SensorInterface.isBatteryTooLow()) {
+			Drone.setState(DroneState.RETURNING);
 		}
-	}
-	
-	private boolean isBatteryTooLow() {
-		//XXX: some function of distance? 
-		return SensorInterface.getBatteryLevel() < 0.4;
 	}
 	
 	private void sendCurrentState() {

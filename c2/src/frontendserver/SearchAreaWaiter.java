@@ -31,14 +31,18 @@ public class SearchAreaWaiter {
 		while(datastore.getSearchArea().etas.size() < datastore.getNumberOfDrones() && waitingUntil.isAfter(LocalDateTime.now())); //ew
 		
 		//clone the hashmap. Too late now if you didn't reply
+		System.out.println(datastore.getSearchArea().etas.size());
 		if(datastore.getSearchArea().etas.size() < this.searchArea.numberRequested){
-			throw new RuntimeException("Insufficient replies");
+			String[] error = new String[1];
+			error[0] = "Error : Insufficient Drones";
+			return error;
 		}
 		this.etas = (HashMap<String, Double>) datastore.getSearchArea().etas.clone();
 		String[] assigned = new String[this.searchArea.numberRequested];
-		for (int i = 0; i < this.searchArea.numberRequested-1; i++){
+		for (int i = 0; i < this.searchArea.numberRequested; i++){
 			String droneID =  popClosestDrone();
 			MoveCommand command = new MoveCommand(droneID,LocalDateTime.now(), this.searchArea.locLat, this.searchArea.locLong, this.searchArea.radius);
+			System.out.println(command.toString());
 			Broadcast.broadcast(command.toString());
 			assigned[i] = droneID;
 		}
