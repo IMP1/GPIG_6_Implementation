@@ -72,8 +72,12 @@ public class DroneServerHandler implements Runnable {
 			System.out.println(pathdata.pathCommandID);
 			System.out.println(datastore .getSearchArea().id);
 			if(pathdata.pathCommandID.equals(datastore.getSearchArea().id)){
-				System.out.println("Adding eta");
-				datastore.getSearchArea().addEta(pathdata.id, pathdata.eta);
+				System.out.println("Got eta");
+				if(!datastore.getSearchArea().etas.containsKey(pathdata.id)){
+					System.out.println("New ETA! Adding.");
+					datastore.getSearchArea().addEta(pathdata.id, pathdata.eta);
+				}
+				
 			}
 		}
 		//TODO - should this be moved?
