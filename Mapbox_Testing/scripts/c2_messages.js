@@ -1,7 +1,7 @@
 var MessageSeverity = Object.freeze({"high":1, "medium":2, "normal":3, "success":4})
 
 MessageID = 0;
-MaxMessags = 10;
+MaxMessages = 10;
 
 var Message = function(header, body, style){
 	this.id = MessageID++;
@@ -38,6 +38,11 @@ function showMessage(message){
 
 function clearOldMessages(){
 	
+	var messagesElement = document.getElementById('messages');
 	
+	if(messagesElement.childNodes.length > MaxMessages){
+		var messageToRemove = messagesElement.childNodes[MaxMessages];
+		messageToRemove.remove();
+	}
 	
 }

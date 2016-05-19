@@ -370,7 +370,8 @@ function addNewSearchArea(searchArea){
 function deleteSearchAreaView(searchArea){    
     svg.selectAll('#SearchArea-'+searchArea.id).remove();
     svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
-    svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();    
+    svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();
+    svg.selectAll('#SearchArea-Text-'+searchArea.id).remove();    
     document.getElementById('control-searcharea-'+searchArea.id).remove()
 }
 
@@ -468,6 +469,7 @@ function redrawSearchAreas(){
         svg.selectAll('#SearchArea-'+searchArea.id).remove();
         svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
         svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();
+        svg.selectAll('#SearchArea-Text-'+searchArea.id).remove();
         
         // Redraw
         var circleLasso = svg.selectAll('#SearchArea-'+searchArea.id)
@@ -495,9 +497,7 @@ function redrawSearchAreas(){
                 fill: "#010",
                 "fill-opacity": 0.1
             })    
-        }
-        
-           
+        }          
         
         // Draw Line
         
@@ -521,6 +521,8 @@ function redrawSearchAreas(){
         
         // Markers
         
+        var markerRadius = 15;
+        
         var markers = svg.selectAll('SearchArea-Marker-'+searchArea.id)
             .data([searchArea.center, searchArea.outer])
             .enter()
@@ -529,8 +531,7 @@ function redrawSearchAreas(){
         .attr({
           cx: function(d) { return project(d).x},
           cy: function(d) { return project(d).y},
-          r: 8,
-          stroke: "#414852",
+          r: markerRadius,
           fill: "#414852",
           "fill-opacity":0.9,
           id:'SearchArea-Marker-'+searchArea.id
@@ -540,7 +541,33 @@ function redrawSearchAreas(){
           "cursor": "move"
         })
         
-        .call(drag)
+        .call(drag)  
+        
+        // ID
+        
+        var searcharea_id_text = svg.selectAll('SearchArea-Text-'+searchArea.id)
+            .data([searchArea.center])
+            .enter()
+            .append("text")
+            
+        .attr({
+          x: project(searchArea.center).x,
+          y: project(searchArea.center).y,
+          fill: "#fff",
+          id:'SearchArea-Text-'+searchArea.id
+        })
+        .attr("font-size", "20px")
+        .attr("text-anchor", "middle")
+        .attr("dy", ".35em")
+        
+        .text(searchArea.id);
+        
+        if(searchArea.assignedDrones.length > 0){
+            // Drones have been assigned to the search area
+            svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
+            svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();    
+          
+        }
         
         // Redraw
         dispatch.redrawSearchAreas();

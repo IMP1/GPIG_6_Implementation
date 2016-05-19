@@ -231,39 +231,45 @@ function assignSearchAreas(){
 	
 	searchAreaArray.forEach(function(searchArea) {	
 		
-		if(ONLINE){		
+		if(ONLINE){	
+			
+			if(searchArea.assignedDrones.length == 0){	
 				
-			var xmlHttpAssignSearchAreas = new XMLHttpRequest();
-			var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat
-							+"&longitude="+searchArea.center.lng
-							+"&numberRequested="+searchArea.requestedDrones
-							+"&radius="+searchArea.radius;
-			xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
-			xmlHttpAssignSearchAreas.send( null );
-			
-			ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
-			
-			// Responds with the drone uids assigned to this search area 
-			var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
-			
-			if (searchAreaResponse.length > 0){
-				// Succesfully assigned > 1 drone
-				// Get Drones by UID
+				var xmlHttpAssignSearchAreas = new XMLHttpRequest();
+				var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat
+								+"&longitude="+searchArea.center.lng
+								+"&numberRequested="+searchArea.requestedDrones
+								+"&radius="+searchArea.radius;
+				xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
+				xmlHttpAssignSearchAreas.send( null );
 				
-				searchAreaResponse.forEach(function(droneID) {
+				ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
+				
+				// Responds with the drone uids assigned to this search area 
+				var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
+				
+				if (searchAreaResponse.length > 0){
+					// Succesfully assigned > 1 drone
+					// Get Drones by UID
 					
-					var unit = getByAttr(units, 'id', droneID);
-					if(!unit){
-						ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
-					}else{
-						searchArea.assignedDrones.push(unit);
-					}					
+					searchAreaResponse.forEach(function(droneID) {
+						
+						var unit = getByAttr(units, 'id', droneID);
+						if(!unit){
+							ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
+						}else{
+							searchArea.assignedDrones.push(unit);
+						}					
+						
+					}, this);
 					
-				}, this);
+				}
 				
 			}
 		
 		}else{
+			
+			ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request (OFFLINE)', '', 'success');
 			
 			var searchUnit = units[1];
 			searchArea.assignedDrones = [searchUnit];
