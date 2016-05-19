@@ -65,8 +65,12 @@ var getByAttr = function(arr, attr, value){
 /////////////////////////
 
 function setupAPICalls(){
+	var refreshInterval = 1000;
 	getUnitsInfo();
-	setInterval(getUnitsInfo, 2000);
+	getScanInfo();
+	setInterval(getUnitsInfo, refreshInterval);
+	setInterval(getScanInfo, refreshInterval);
+	
 }
 
 //////////////////////
@@ -299,15 +303,118 @@ function deleteAllSearchAreas(){
 // SCAN CODE //
 ///////////////
 
-// lat, long, depth, flowrate, 360 points of distance
+var scanAreas = [];
 
-var unitExamples = {
+var scanExamples = {
 	"scan1":
 	{"lat":53.959,
-	 "long":-1.08369,
+	 "lng":-1.08369,
 	 "depth":10,
 	 "flowrate":10,
-	 "points":[[102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]],
+	 // Latlong are reversed
+	 "points":[ [ -1.080062204934591, 53.955374658400174 ], 
+	 			[ -1.079072578584086, 53.955751100286385 ], 
+				[ -1.079302491776628, 53.956027547632175 ], 
+				[ -1.079492420066118, 53.956198120612022 ], 
+				[ -1.080082197386116, 53.95626870233059 ], 
+				[ -1.08047205019086, 53.95626870233059 ], 
+				[ -1.080641986028826, 53.956151066066589 ], 
+				[ -1.080791929415266, 53.956004020269859 ], 
+				[ -1.080232140772556, 53.955645226349397 ], 
+				[ -1.080252133224082, 53.955504060681911 ], 
+				[ -1.080072201160353, 53.955374658400174 ]],
 	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
 	 
+}
+
+function getScanInfo(){
+	
+	var scanAreasJSON = scanExamples;
+	
+	Object.keys(scanAreasJSON).forEach(function (scanKey) {
+		   
+		   var scanJSON = scanAreasJSON[scanKey];
+		   
+		   var scan;
+		   scanAreas.forEach(function(existingScan) {
+			   if(existingScan.id == scanKey){
+				   scan = existingScan;
+			   }
+		   }, this);
+		   
+		   if(scan){
+			   
+		   }else{
+			   // Else Create a new one
+			   
+			   var scanArea = new ScanArea();
+			   	   scanArea.id = scanKey;
+				   scanArea.center = [scanJSON.lat, scanJSON.lng];
+				   scanArea.depth = scanJSON.depth;
+				   scanArea.flowrate = scanJSON.flowrate;
+				   scanArea.timestamp = scanJSON.timestamp;
+				   scanArea.gpsPoints = scanJSON.points;
+				   // scanArea.polyData is generated dynamically for redrawing
+			   
+			   scanAreas.push(scanArea);
+		   }		   
+		});	
+}
+
+///////////////
+// PATH CODE //
+///////////////
+
+var pathExamples = {
+	"path1":
+	{"points":[ [ 53.965099,-1.083076 ], 
+	 			[53.964935,-1.082089 ],
+				[53.964594,-1.081188 ], 
+				[53.964026,-1.080201 ], 
+				[53.963408,-1.079063 ], 
+				[53.962827,-1.07784],
+				[53.962209,-1.076639],
+				[53.961552,-1.075523],
+				[53.961401,-1.074536],
+				[53.961211,-1.073678],
+				[53.960795,-1.073184],
+				[53.960378,-1.07269],
+				[53.959961,-1.072197],
+				[53.959482,-1.071811],
+				[53.959002,-1.071424]],
+	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
+	 
+}
+
+var unitPaths = [];
+
+function newPath(){
+	
+	var pathsJSON = pathExamples;
+	
+	Object.keys(pathsJSON).forEach(function (pathKey) {
+		   
+	   var pathJSON = pathsJSON[pathKey];
+	   
+	   var unitPath;
+	   unitPaths.forEach(function(existingPath) {
+		   if(existingPath.id == pathKey){
+			   unitPath = existingPath;
+		   }
+	   }, this);
+	   
+	   if(unitPath){
+		   
+	   }else{
+		   // Else Create a new one
+		   
+		   var unitPath = new UnitPath();
+		   	   unitPath.id = pathKey;
+			   unitPath.gpsPoints = pathJSON.points;
+			   // unitPath.polyData is generated dynamically for redrawing
+		   
+		   unitPaths.push(unitPath);
+	   }		   
+	});	
+	
 }

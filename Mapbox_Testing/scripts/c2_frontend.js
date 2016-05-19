@@ -49,6 +49,24 @@ var map = new mapboxgl.Map({
     zoom: defaultZoom
 });
 
+map.on('load', function () {
+    
+    map.addSource("markers", {
+        "type": "geojson",
+        "data": markers
+    });
+   
+    updateMap();
+  
+    // Backend Call
+    setupAPICalls();
+    
+    setInterval(refreshUI, 250);
+    
+    newPath();
+
+});
+
 //// HTML Elements
 var filterGroup = document.getElementById('filter-group');
 var container = map.getCanvasContainer();
@@ -220,22 +238,6 @@ function refreshUI(){
     updateUnitUI();
     redrawSearchAreasUI();
 }
-
-map.on('load', function () {
-    
-    map.addSource("markers", {
-        "type": "geojson",
-        "data": markers
-    });
-   
-    updateMap();
-  
-    // Backend Call
-    setupAPICalls();
-    
-    setInterval(refreshUI, 250);
-
-});
 
 // Map Projection/Unprojection
 
@@ -579,4 +581,62 @@ function redrawSearchAreas(){
 
 map.on("render", function() {
     redrawSearchAreas()
+    redrawScanAreas();
+    redrawUnitPaths();
 })
+
+////////////////
+// SCAN AREAS //
+////////////////
+
+ var lineFunction = d3.svg.line()
+                          .x(function(d) { return d.x; })
+                          .y(function(d) { return d.y; })
+                         .interpolate("linear");
+                            
+function redrawScanAreas(){
+
+    scanAreas.forEach(function(scanArea){
+        
+        // Remove First
+        svg.selectAll('#ScanArea-'+scanArea.id).remove();
+        
+        svg.append("path")
+            .attr("d", lineFunction(scanArea.polyData()))
+            .attr("stroke-width", 2)
+			.attr("opacity", .2)
+            .attr("fill", "blue")
+            .attr({id:'ScanArea-'+scanArea.id});
+
+        
+    });
+    
+}     
+
+////////////////
+// SCAN AREAS //
+////////////////
+                            
+function redrawUnitPaths(){
+    
+    console.log(unitPaths);
+
+    unitPaths.forEach(function(unitPath){
+        
+        console.log(unitPath.polyData())
+        
+        // Remove First
+        svg.selectAll('#UnitPath-'+unitPath.id).remove();
+        
+        svg.append("path")
+            .attr("d", lineFunction(unitPath.polyData()))
+            .attr("stroke-width", 2)
+			.attr("opacity", 1)
+            .attr("stroke", "blue")
+            .attr("fill", "none")
+            .attr({id:'UnitPath-'+unitPath.id});
+
+        
+    });
+    
+}                                                   
