@@ -1,7 +1,7 @@
 var MessageSeverity = Object.freeze({"high":1, "medium":2, "normal":3, "success":4})
 
 MessageID = 0;
-MaxMessages = 10;
+MaxMessages = 20;
 
 var Message = function(header, body, style){
 	this.id = MessageID++;
