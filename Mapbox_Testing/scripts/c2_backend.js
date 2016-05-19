@@ -1,5 +1,5 @@
 // Debug Vars
-var ONLINE = true;
+var ONLINE = false;
 
 // Utility Functions
 
@@ -293,4 +293,21 @@ function deleteAllSearchAreas(){
         deleteSearchAreaView(searchArea);
     });
     searchAreaArray = [];
+}
+
+///////////////
+// SCAN CODE //
+///////////////
+
+// lat, long, depth, flowrate, 360 points of distance
+
+var unitExamples = {
+	"scan1":
+	{"lat":53.959,
+	 "long":-1.08369,
+	 "depth":10,
+	 "flowrate":10,
+	 "points":[[102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]],
+	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
+	 
 }
