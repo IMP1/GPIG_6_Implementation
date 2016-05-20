@@ -106,7 +106,6 @@ public abstract class MapHelper {
 	 * @return Double array: [latitude, longitude]
 	 */
 	public static double[] getExternalPoint(double lat, double lng) {
-		double[] result = {lat, lng};
 		boolean internal = false;
 		
 		// Loop until an external point is found
@@ -118,18 +117,21 @@ public abstract class MapHelper {
 					break;
 				// Otherwise run the check if inside the bounding box
 				else if (b.minLng < lng && b.maxLat > lat && b.maxLng > lng) {
-					// Check if point is inside the building nodes
-					// http://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon
+					// Draw line from outside bouding box to point
+					double outLat = b.minLat - ((b.maxLat - b.minLat) / 100);
+					double outLng = lng;
+					
+					// Count number of walls crossed to get to point
 					int j = 1;
 			    	for (int i = 0; i < b.lat.size(); i++) {
 			    		j = (i + 1) % b.lat.size();
-			    		if ((b.lat.get(i) > lat) != (b.lat.get(j) > lat) &&
-			    				(lng < (b.lng.get(j) - b.lng.get(i)) * (lat - b.lat.get(i)) 
-			    						/ (b.lat.get(j) - b.lat.get(i)) + b.lng.get(i))) {
+			    		if (Line2D.linesIntersect(outLat, outLng, lat, lng,
+		   						b.lat.get(i), b.lng.get(i), b.lat.get(j), b.lng.get(j))) {
 			    			internal = !internal;
 			    		}
 			    	}
 			    	
+			    	// If uneven number of walls crossed, the point is inside the building
 			    	if (internal) {
 			    		// Move to a building edge and check for overlap with other buildings
 			    		Random rnd = new Random();
@@ -150,6 +152,7 @@ public abstract class MapHelper {
 			}
 		} while (internal);
 
+		double[] result = {lat, lng};
 		return result;
 	}
 
