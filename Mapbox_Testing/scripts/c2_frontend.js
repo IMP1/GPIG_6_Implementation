@@ -49,6 +49,24 @@ var map = new mapboxgl.Map({
     zoom: defaultZoom
 });
 
+map.on('load', function () {
+    
+    map.addSource("markers", {
+        "type": "geojson",
+        "data": markers
+    });
+   
+    updateMap();
+  
+    // Backend Call
+    setupAPICalls();
+    
+    setInterval(refreshUI, 250);
+    
+    newPath();
+
+});
+
 //// HTML Elements
 var filterGroup = document.getElementById('filter-group');
 var container = map.getCanvasContainer();
@@ -221,22 +239,6 @@ function refreshUI(){
     redrawSearchAreasUI();
 }
 
-map.on('load', function () {
-    
-    map.addSource("markers", {
-        "type": "geojson",
-        "data": markers
-    });
-   
-    updateMap();
-  
-    // Backend Call
-    setupAPICalls();
-    
-    setInterval(refreshUI, 250);
-
-});
-
 // Map Projection/Unprojection
 
 function project(d) {
@@ -336,8 +338,7 @@ function addNewSearchArea(searchArea){
                 changeDroneAssignmentForSearchArea(-1, searchArea);
             });
         
-        var search_stat_id    = ['assigned', 'radius',]
-        var search_stat_text  = ['Assigned '+searchArea.assignedDrones+ ' Drones', 'Radius : 250m'];
+        var search_stat_id    = ['assigned', 'radius', 'status']
         
         var search_area_stats = document.createElement('div');
             search_area_stats.className = 'info';
@@ -348,7 +349,7 @@ function addNewSearchArea(searchArea){
                 var unit_element_stats_stat_text = document.createElement('div');
                 unit_element_stats_stat_text.className = 'text';
                 unit_element_stats_stat_text.id = 'control-searcharea-'+searchArea.id+'-'+search_stat_id[i];
-                unit_element_stats_stat_text.textContent = search_stat_text[i];
+                //unit_element_stats_stat_text.textContent = search_stat_text[i];
                 search_area_stats.appendChild(unit_element_stats_stat_text);
                 
         }
@@ -363,13 +364,16 @@ function addNewSearchArea(searchArea){
                 search_area_controls.addEventListener('click', function(e) {            
                     deleteSearchArea(searchArea);
                 });
+                
+    redrawSearchAreasUI();
 
 }
 
 function deleteSearchAreaView(searchArea){    
     svg.selectAll('#SearchArea-'+searchArea.id).remove();
     svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
-    svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();    
+    svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();
+    svg.selectAll('#SearchArea-Text-'+searchArea.id).remove();    
     document.getElementById('control-searcharea-'+searchArea.id).remove()
 }
 
@@ -428,11 +432,28 @@ function redrawSearchAreasUI(){
     searchAreaArray.forEach(function(searchArea){
         if(searchArea.complete){
             var htmlString = 'control-searcharea-'+searchArea.id+'-assigned';  
-            document.getElementById(htmlString).textContent = 'Assigned '+searchArea.assignedDrones+ ' Drones';
+            document.getElementById(htmlString).textContent = 'Requesting '+searchArea.requestedDrones+ ' Search Units';
             
-            var htmlString = 'control-searcharea-'+searchArea.id+'-radius';  
+            htmlString = 'control-searcharea-'+searchArea.id+'-radius';  
             document.getElementById(htmlString).textContent = 'Radius: '+Math.round(searchArea.radius)+ 'm';
-        }    
+            
+            htmlString = 'control-searcharea-'+searchArea.id+'-status';  
+            
+            if(searchArea.assignedDrones.length > 0){
+                 var unitsString = '';
+                searchArea.assignedDrones.forEach(function(unit) {
+                    unitsString += ' '+unit.name;
+                    unitsString += ',';
+                }, this);
+                unitsString = unitsString.substring(0, unitsString.length - 1);
+                
+                document.getElementById(htmlString).textContent = 'Assigned: '+unitsString;
+            }else{
+                document.getElementById(htmlString).textContent = 'Assigned: 0 Search Units'
+            }           
+           
+        } 
+          
     }, this);
     
 }
@@ -450,6 +471,7 @@ function redrawSearchAreas(){
         svg.selectAll('#SearchArea-'+searchArea.id).remove();
         svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
         svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();
+        svg.selectAll('#SearchArea-Text-'+searchArea.id).remove();
         
         // Redraw
         var circleLasso = svg.selectAll('#SearchArea-'+searchArea.id)
@@ -462,13 +484,22 @@ function redrawSearchAreas(){
           cy: project(searchArea.center).y,
           r: searchArea.drawRadius,
           id:'SearchArea-'+searchArea.id
-        })
+        });
         
-        .style({
-          stroke: "#414852",
-          fill: "#010",
-          "fill-opacity": 0.1
-        })       
+        if(searchArea.assignedDrones.length > 0){
+            // Drones have been assigned to the search area
+            circleLasso.style({           
+                stroke: "#414852",
+                fill: "#009900",
+                "fill-opacity": 0.2
+            })    
+        }else{
+            circleLasso.style({           
+                stroke: "#414852",
+                fill: "#010",
+                "fill-opacity": 0.1
+            })    
+        }          
         
         // Draw Line
         
@@ -492,6 +523,8 @@ function redrawSearchAreas(){
         
         // Markers
         
+        var markerRadius = 15;
+        
         var markers = svg.selectAll('SearchArea-Marker-'+searchArea.id)
             .data([searchArea.center, searchArea.outer])
             .enter()
@@ -500,8 +533,7 @@ function redrawSearchAreas(){
         .attr({
           cx: function(d) { return project(d).x},
           cy: function(d) { return project(d).y},
-          r: 8,
-          stroke: "#414852",
+          r: markerRadius,
           fill: "#414852",
           "fill-opacity":0.9,
           id:'SearchArea-Marker-'+searchArea.id
@@ -511,7 +543,33 @@ function redrawSearchAreas(){
           "cursor": "move"
         })
         
-        .call(drag)
+        .call(drag)  
+        
+        // ID
+        
+        var searcharea_id_text = svg.selectAll('SearchArea-Text-'+searchArea.id)
+            .data([searchArea.center])
+            .enter()
+            .append("text")
+            
+        .attr({
+          x: project(searchArea.center).x,
+          y: project(searchArea.center).y,
+          fill: "#fff",
+          id:'SearchArea-Text-'+searchArea.id
+        })
+        .attr("font-size", "20px")
+        .attr("text-anchor", "middle")
+        .attr("dy", ".35em")
+        
+        .text(searchArea.id);
+        
+        if(searchArea.assignedDrones.length > 0){
+            // Drones have been assigned to the search area
+            svg.selectAll('#SearchArea-Line-'+searchArea.id).remove();
+            svg.selectAll('#SearchArea-Marker-'+searchArea.id).remove();    
+          
+        }
         
         // Redraw
         dispatch.redrawSearchAreas();
@@ -523,4 +581,64 @@ function redrawSearchAreas(){
 
 map.on("render", function() {
     redrawSearchAreas()
+    redrawScanAreas();
+    redrawUnitPaths();
 })
+
+////////////////
+// SCAN AREAS //
+////////////////
+
+
+
+ var lineFunction = d3.svg.line()
+                          .x(function(d) { return d.x; })
+                          .y(function(d) { return d.y; })
+                         .interpolate("linear");
+                            
+function redrawScanAreas(){
+
+    scanAreas.forEach(function(scanArea){
+        
+        // Remove First
+        svg.selectAll('#ScanArea-'+scanArea.id).remove();
+        
+        svg.append("path")
+            .attr("d", lineFunction(scanArea.polyData()))
+            .attr("stroke-width", 2)
+			.attr("opacity", .2)
+            .attr("fill", "blue")
+            .attr({id:'ScanArea-'+scanArea.id});
+
+        
+    });
+    
+}     
+
+////////////////
+// SCAN AREAS //
+////////////////
+                            
+function redrawUnitPaths(){
+    
+//    console.log(unitPaths);
+
+    unitPaths.forEach(function(unitPath){
+        
+        console.log(unitPath.polyData())
+        
+        // Remove First
+        svg.selectAll('#UnitPath-'+unitPath.id).remove();
+        
+        svg.append("path")
+            .attr("d", lineFunction(unitPath.polyData()))
+            .attr("stroke-width", 2)
+			.attr("opacity", 1)
+            .attr("stroke", "blue")
+            .attr("fill", "none")
+            .attr({id:'UnitPath-'+unitPath.id});
+
+        
+    });
+    
+}                                                   

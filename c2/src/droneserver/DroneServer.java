@@ -30,7 +30,7 @@ public class DroneServer implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		byte[] receiveData = new byte[1024];
+		byte[] receiveData = new byte[Message.PACKAGE_SIZE];
 		while(true){
 			try {
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);  
@@ -38,7 +38,7 @@ public class DroneServer implements Runnable {
 				String sentence = new String( receivePacket.getData());
 				DroneServerHandler handler = new DroneServerHandler(sentence, datastore);
 				new Thread(handler).start();
-				receiveData = new byte[1024];
+				receiveData = new byte[Message.PACKAGE_SIZE];
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

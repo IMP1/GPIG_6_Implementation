@@ -1,6 +1,7 @@
 package drones;
 
 
+import java.awt.geom.Line2D;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -198,7 +199,7 @@ public abstract class MapHelper {
 	
 	
 	// Scan separation distance in meters
-	public static double SCAN_SEPARATION = 2.0;
+	public static double SCAN_SEPARATION = 5.0;
 	
 	/**
 	 * Check if a scan has been performed near the requested location
@@ -229,7 +230,44 @@ public abstract class MapHelper {
 	 * 		requires routing. False otherwise.
 	 */
 	public static boolean pathBlocked(double srcLat, double srcLng, double dstLat, double dstLng) {
-		// TODO: Check vector intersection
+		// Perform min / max calculations
+		double minLat = srcLat < dstLat ? srcLat : dstLat;
+		double minLng = srcLng < dstLng ? srcLng : dstLng;
+		double maxLat = srcLat > dstLat ? srcLat : dstLat;
+		double maxLng = srcLng > dstLng ? srcLng : dstLng;
+
+		// Check for barrier intersection
+		for (MapObject b : barrierList) {
+			// Break out of sorted list early
+			if (b.minLat >= maxLat)
+				break;
+			// Otherwise run the check if inside the bounding box
+			else if (!(b.minLat >= maxLat || b.minLng >= maxLng
+					|| b.maxLat <= minLat || b.maxLng <= minLng)) {
+		   		for (int i = 0; i < (b.lat.size() - 1); i++) {
+		   			if (Line2D.linesIntersect(minLat, minLng, maxLat, maxLng,
+		   					b.lat.get(i), b.lng.get(i), b.lat.get(i+1), b.lng.get(i+1)))
+		   				return true;
+		   		}
+			}
+		}
+		
+		// Check for building intersection
+		for (MapObject b : buildingList) {
+			// Break out of sorted list early
+			if (b.minLat >= maxLat)
+				break;
+			// Otherwise run the check if inside the bounding box
+			else if (!(b.minLat >= maxLat || b.minLng >= maxLng
+					|| b.maxLat <= minLat || b.maxLng <= minLng)) {
+		   		for (int i = 0; i < b.lat.size(); i++) {
+		   			int j = (i + 1) % b.lat.size();
+		   			if (Line2D.linesIntersect(minLat, minLng, maxLat, maxLng,
+		   					b.lat.get(i), b.lng.get(i), b.lat.get(j), b.lng.get(j)))
+		   				return true;
+		   		}
+			}	
+		}
 		return false;
 	}
 	

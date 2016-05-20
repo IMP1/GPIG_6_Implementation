@@ -64,7 +64,7 @@ public class Datastore {
 	public synchronized String getScansAsJSON(String[] known_scans){
 		HashMap<String, Scan> temp = (HashMap<String, Scan>) scans.clone();
 		for (final String id : known_scans) {
-			System.out.println(id);
+//			System.out.println(id);
 			temp.remove(id);
 		}
 		return gson.toJson(temp);
