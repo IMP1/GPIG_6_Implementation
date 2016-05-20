@@ -621,7 +621,7 @@ function redrawScanAreas(){
                             
 function redrawUnitPaths(){
     
-    console.log(unitPaths);
+//    console.log(unitPaths);
 
     unitPaths.forEach(function(unitPath){
         
