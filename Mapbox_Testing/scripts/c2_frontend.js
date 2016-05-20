@@ -589,6 +589,8 @@ map.on("render", function() {
 // SCAN AREAS //
 ////////////////
 
+
+
  var lineFunction = d3.svg.line()
                           .x(function(d) { return d.x; })
                           .y(function(d) { return d.y; })

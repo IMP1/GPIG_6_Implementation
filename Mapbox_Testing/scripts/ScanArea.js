@@ -14,8 +14,8 @@ var ScanArea = function(){
 		var data = [];
 		this.gpsPoints.forEach(function(gpsPoint) {
 		   
-		   var lat  = gpsPoint[1];
-		   var lng  = gpsPoint[0];
+		   var lat  = gpsPoint[0];
+		   var lng  = gpsPoint[1];
 		   
 		   var latlong = new mapboxgl.LngLat(lng, lat);				   
 		   var xy      = project(latlong);			   
