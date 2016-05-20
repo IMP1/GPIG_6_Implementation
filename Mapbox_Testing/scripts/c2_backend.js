@@ -305,14 +305,16 @@ function deleteAllSearchAreas(){
 
 var scanAreas = [];
 
+//{"e9b7d680-8704-4c37-88e6-3243a9c4ae0c2016-05-20T11:22:36.506":{"locLat":53.957184,"locLong":-1.078302,"depth":1.0,"flowRate":5.0,"distanceReadings":
+
 var scanExamples = {
 	"scan1":
-	{"lat":53.959,
-	 "lng":-1.08369,
+	{"locLat":53.959,
+	 "locLong":-1.08369,
 	 "depth":10,
-	 "flowrate":10,
+	 "flowRate":10,
 	 // Latlong are reversed
-	 "points":[ [ -1.080062204934591, 53.955374658400174 ], 
+	 "distanceReadings":[ [ -1.080062204934591, 53.955374658400174 ], 
 	 			[ -1.079072578584086, 53.955751100286385 ], 
 				[ -1.079302491776628, 53.956027547632175 ], 
 				[ -1.079492420066118, 53.956198120612022 ], 
@@ -329,7 +331,24 @@ var scanExamples = {
 
 function getScanInfo(){
 	
-	var scanAreasJSON = scanExamples;
+	var scanAreasJSON;
+	
+	if(ONLINE){
+		
+		var knownScans = '';
+		scanAreas.forEach(function(scanArea) {
+			knownScans += scanArea.id+', ';
+		}, this);
+		
+		var xmlHttpScans = new XMLHttpRequest();
+	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?known_scans="+knownScans, false ); // false for synchronous request
+	    	xmlHttpScans.send( null );
+	    
+		// Parse JSON
+		scanAreasJSON = JSON.parse(xmlHttpScans.responseText);
+	}else{
+		scanAreasJSON = scanExamples;
+	}
 	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		   
@@ -349,11 +368,11 @@ function getScanInfo(){
 			   
 			   var scanArea = new ScanArea();
 			   	   scanArea.id = scanKey;
-				   scanArea.center = [scanJSON.lat, scanJSON.lng];
+				   scanArea.center = [scanJSON.locLat, scanJSON.locLng];
 				   scanArea.depth = scanJSON.depth;
-				   scanArea.flowrate = scanJSON.flowrate;
-				   scanArea.timestamp = scanJSON.timestamp;
-				   scanArea.gpsPoints = scanJSON.points;
+				   scanArea.flowrate = scanJSON.flowRate;
+//				   scanArea.timestamp = scanJSON.timestamp;
+				   scanArea.gpsPoints = scanJSON.distanceReadings;
 				   // scanArea.polyData is generated dynamically for redrawing
 			   
 			   scanAreas.push(scanArea);
