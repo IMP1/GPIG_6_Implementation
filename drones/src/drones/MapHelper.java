@@ -160,7 +160,7 @@ public abstract class MapHelper {
 	}
 	
 	// Scan separation distance in meters
-	public static double SCAN_SEPARATION = 2.0;
+	public static double SCAN_SEPARATION = 5.0;
 	
 	/**
 	 * Check if a scan has been performed near the requested location
