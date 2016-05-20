@@ -20,8 +20,10 @@
       padding-left: 10px;
       margin-top: 16px;
       font-size: 20px;
-      color: #79dcde;
+      color: #ff7400;
       font-weight: 700; }
+    #top-nav #left-section #title-center {
+      margin: 0 auto 0 auto; }
   #top-nav #right-section {
     position: relative;
     float: left;
@@ -30,7 +32,7 @@
     height: 60px;
     line-height: 60px; }
     #top-nav #right-section button {
-      background: #79dcde;
+      background: #ff7400;
       color: white;
       border: none;
       border-radius: 20px;
@@ -38,9 +40,7 @@
       margin: 0 5px 0 5px;
       outline: none;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       min-width: 200px; }
       #top-nav #right-section button :hover {
-        background: rgba(121, 220, 222, 0.5); }
-
-/*# sourceMappingURL=topnav.css.map */
+        background: rgba(255, 116, 0, 0.5); }

@@ -67,9 +67,9 @@ var getByAttr = function(arr, attr, value){
 function setupAPICalls(){
 	var refreshInterval = 1000;
 	getUnitsInfo();
-	getScanInfo();
+	//getScanInfo();
 	setInterval(getUnitsInfo, refreshInterval);
-	setInterval(getScanInfo, 5000);
+	//setInterval(getScanInfo, 5000);
 	
 }
 
