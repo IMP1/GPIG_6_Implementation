@@ -220,6 +220,24 @@ public abstract class MapHelper {
 		}
 		return false;
 	}
+
+	/**
+	 * Check if another drone is near the requested scan location
+	 * @param lat Latitude requested in degrees
+	 * @param lng Longitude requested in degrees
+	 * @return True if within DRONE_SEPARATION of another drone. False otherwise.
+	 */
+	public static boolean isNearDrone(double lat, double lng) {
+		synchronized (dronePositions) {
+			for (String droneId : dronePositions.keySet()) {
+				DronePosition drone = dronePositions.get(droneId);
+				if (NavigationThread.latLongDiffInMeters
+						(drone.latitude - lat, drone.longitude - lng) < DRONE_SEPARATION)
+					return true;
+			}
+		}
+		return false;
+	}
 	
 	//TODO: functions used by navigation and routing regarding querying the list of scan data.
 

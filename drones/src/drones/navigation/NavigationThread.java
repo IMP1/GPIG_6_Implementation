@@ -128,7 +128,7 @@ public class NavigationThread extends Thread {
 					}
 					
 					// Check if point is viable for scanning
-					if (!MapHelper.isScanned(chkLat, chkLng))
+					if (!MapHelper.isScanned(chkLat, chkLng) && !MapHelper.isNearDrone(chkLat, chkLng))
 						waypointFound = true;
 				}
 
