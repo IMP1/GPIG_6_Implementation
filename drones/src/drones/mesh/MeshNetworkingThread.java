@@ -20,6 +20,8 @@ import network.*;
  */
 public class MeshNetworkingThread extends Thread {
 	
+	public final static boolean DEBUG_MESSAGES = false; 
+	
 	private ArrayList<Message> unacknowledgedMessages = new ArrayList<Message>();
 	private ArrayList<String> dealtWithMessages = new ArrayList<String>();
 	
@@ -79,7 +81,7 @@ public class MeshNetworkingThread extends Thread {
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 				socket.receive(receivePacket);
 				String message = new String(receivePacket.getData());
-				System.out.printf("[Mesh Network] []<-- '%s'\n", message);
+				if (DEBUG_MESSAGES) System.out.printf("[Mesh Network] []<-- '%s'\n", message);
 				messageHandler.handleMessage(message);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -112,7 +114,7 @@ public class MeshNetworkingThread extends Thread {
 	protected void sendMessage(String message) {
 		try {
 			byte[] data = message.getBytes();
-			System.out.printf("[Mesh Network] []--> '%s'\n", message);
+			if (DEBUG_MESSAGES) System.out.printf("[Mesh Network] []--> '%s'\n", message);
 			if (data.length > network.Message.PACKAGE_SIZE) {
 				System.err.printf("[Mesh Network] THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d.\n", 
 								  data.length, network.Message.PACKAGE_SIZE);
@@ -126,7 +128,7 @@ public class MeshNetworkingThread extends Thread {
 
 	protected void acknowledgeMessage(LocalDateTime timestamp) {
 		synchronized (unacknowledgedMessages) {
-			System.out.println("[Mesh Network] Acknowledging Message...");
+			if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Acknowledging Message...");
 			for (int i = unacknowledgedMessages.size() - 1; i >= 0; i --) {
 				if (unacknowledgedMessages.get(i).timestamp.equals(timestamp)) {
 					unacknowledgedMessages.remove(i);

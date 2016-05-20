@@ -5,9 +5,11 @@ import java.awt.geom.Line2D;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -22,7 +24,6 @@ import com.graphhopper.PathWrapper;
 
 import drones.navigation.NavigationThread;
 import drones.util.*;
-
 import network.ScanData;
 
 /**
@@ -32,7 +33,19 @@ import network.ScanData;
  */
 public abstract class MapHelper {
 	
+	private static class DronePosition {
+		public final double latitude;
+		public final double longitude;
+		public final LocalDateTime time;
+		private DronePosition(LocalDateTime time, double lat, double lng) {
+			this.time = time;
+			this.latitude = lat;
+			this.longitude = lng;
+		}
+	}
+	
 	private static ArrayList<ScanData> scanDataList = new ArrayList<ScanData>();
+	private static HashMap<String, DronePosition> dronePositions = new HashMap<String, DronePosition>();
 	
 	// Impassable object lists
 	private static Collection<MapObject> barrierList = null;
@@ -158,6 +171,32 @@ public abstract class MapHelper {
 			scanDataList.add(scanData);
 		}
 	}
+	
+	public static void updateDronePosition(String id, LocalDateTime time, double lat, double lng) {
+		synchronized (dronePositions) {
+			if (!dronePositions.containsKey(id) || dronePositions.get(id).time.isBefore(time)) {
+				DronePosition newPosition = new DronePosition(time, lat, lng);
+				dronePositions.put(id, newPosition);
+			}
+		}
+	}
+	
+	public static double[][] getDronePositions() {
+		synchronized (dronePositions) {
+			String[] droneIDs = dronePositions.keySet().toArray(new String[dronePositions.size()]);
+			double[][] positions = new double[dronePositions.size()][2];
+			for (int i = 0; i < droneIDs.length; i ++) {
+				String id = droneIDs[i];
+				positions[i][0] = dronePositions.get(id).latitude;
+				positions[i][1] = dronePositions.get(id).longitude;
+			}
+			return positions;
+		}
+	}
+	
+	// Drone separation distance in meteres
+	public static double DRONE_SEPARATION = 50.0;
+	
 	
 	// Scan separation distance in meters
 	public static double SCAN_SEPARATION = 5.0;
