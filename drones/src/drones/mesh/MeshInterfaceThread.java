@@ -180,9 +180,9 @@ public class MeshInterfaceThread extends Thread {
 		if (currentPath != null) {
 			final int n = Drone.nav().getCurrentPath().getSize();
 			path = new double[n * 2];
-			for (int i = 0; i < n; i += 2) {
-				path[i/2] = currentPath.getLatitude(i/2);
-				path[i/2 + 1] = currentPath.getLongitude(i/2);
+			for (int i = 0; i < n; i ++) {
+				path[i*2] = currentPath.getLatitude(i);
+				path[i*2 + 1] = currentPath.getLongitude(i);
 			}
 		} else {
 			path = new double[0];
