@@ -69,7 +69,7 @@ function setupAPICalls(){
 	getUnitsInfo();
 	getScanInfo();
 	setInterval(getUnitsInfo, refreshInterval);
-	setInterval(getScanInfo, refreshInterval);
+	setInterval(getScanInfo, 5000);
 	
 }
 
@@ -305,30 +305,6 @@ function deleteAllSearchAreas(){
 
 var scanAreas = [];
 
-//{"e9b7d680-8704-4c37-88e6-3243a9c4ae0c2016-05-20T11:22:36.506":{"locLat":53.957184,"locLong":-1.078302,"depth":1.0,"flowRate":5.0,"distanceReadings":
-
-var scanExamples = {
-	"scan1":
-	{"locLat":53.959,
-	 "locLong":-1.08369,
-	 "depth":10,
-	 "flowRate":10,
-	 // Latlong are reversed
-	 "distanceReadings":[-1.080062204934591, 53.955374658400174 , 
-	 			 -1.079072578584086, 53.955751100286385 , 
-				 -1.079302491776628, 53.956027547632175 , 
-				 -1.079492420066118, 53.956198120612022 , 
-				 -1.080082197386116, 53.95626870233059 , 
-				 -1.08047205019086, 53.95626870233059 , 
-				 -1.080641986028826, 53.956151066066589 , 
-				 -1.080791929415266, 53.956004020269859 , 
-				 -1.080232140772556, 53.955645226349397 , 
-				 -1.080252133224082, 53.955504060681911 , 
-				 -1.080072201160353, 53.955374658400174 ],
-	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
-	 
-}
-
 function getScanInfo(){
 	
 	var scanAreasJSON;
@@ -347,7 +323,7 @@ function getScanInfo(){
 		// Parse JSON
 		scanAreasJSON = JSON.parse(xmlHttpScans.responseText);
 	}else{
-		scanAreasJSON = scanExamples;
+		scanAreasJSON = scanTestData;
 	}
 	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {

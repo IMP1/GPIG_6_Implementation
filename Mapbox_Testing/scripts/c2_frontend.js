@@ -606,8 +606,9 @@ function redrawScanAreas(){
         svg.append("path")
             .attr("d", lineFunction(scanArea.polyData()))
             .attr("stroke-width", 2)
-			.attr("opacity", .2)
+			.attr("opacity", .05)
             .attr("fill", "blue")
+            .attr("stroke", "red")
             .attr({id:'ScanArea-'+scanArea.id});
 
         
