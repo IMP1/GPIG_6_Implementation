@@ -1,5 +1,5 @@
 // Debug Vars
-var ONLINE = true;
+var ONLINE = false;
 
 // Utility Functions
 
@@ -81,14 +81,14 @@ var unitExamples = {
 	"c2":
 	{"batteryLevel":1,
 	 "locLat":53.959,
-	 "locLong":-1.08369,
+	 "locLong":-1.09369,
 	 "status":"Moving",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 1":
 	{"batteryLevel":1,
-	 "locLat":53.967,
-	 "locLong":-1.09024,
+	 "locLat":53.95566264825,
+	 "locLong":-1.07909046359,
 	 "status":"Navigating",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
