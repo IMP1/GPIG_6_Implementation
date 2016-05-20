@@ -7,6 +7,7 @@ import network.MoveCommand;
 import network.PathCommand;
 import network.ScanAcknowledgement;
 import network.ScanData;
+import network.StatusData;
 import drones.Drone;
 
 import static drones.mesh.MeshNetworkingThread.DEBUG_MESSAGES;
@@ -107,6 +108,10 @@ public class MessageHandler {
 		if (ScanData.class.isAssignableFrom(Message.getType(message))) {
 			ScanData data = new ScanData(message);
 			Drone.mesh().addExternalScanData(data);
+		}
+		if (StatusData.class.isAssignableFrom(Message.getType(message))) {
+			StatusData data = new StatusData(message);
+			Drone.mesh().addExternalPosition(data);
 		}
 		networkingThread.addDealtWithMessage(message);
 	}

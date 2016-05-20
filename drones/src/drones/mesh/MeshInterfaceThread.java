@@ -205,10 +205,20 @@ public class MeshInterfaceThread extends Thread {
 	
 	/**
 	 * Adds scan data from another drone's broadcast to this drone's local map.
-	 * @param scanData another drone's scan data
+	 * @param scanData another drone's scan data.
 	 */
 	protected void addExternalScanData(ScanData scan) {
 		drones.MapHelper.addScan(scan);
+	}
+	
+	/**
+	 * Adds positional data from another drone's broadcast to this drone's local map.
+	 * @param status another drone's status data from which its position will be extracted.
+	 */
+	protected void addExternalPosition(StatusData status) {
+		if (status.status == StatusData.DroneState.SCANNING) {
+			drones.MapHelper.updateDronePosition(status.id, status.timestamp, status.latitude, status.longitude);
+		}
 	}
 	
 	private void requestRouteCalculation(String commandID, double latitude, double longitude, double radius) {
