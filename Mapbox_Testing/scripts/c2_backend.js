@@ -361,6 +361,8 @@ function getScanInfo(){
 			   }
 		   }, this);
 		   
+		   console.log(scanJSON);
+		   
 		   if(scan){
 			   
 		   }else{
@@ -368,7 +370,7 @@ function getScanInfo(){
 			   
 			   var scanArea = new ScanArea();
 			   	   scanArea.id = scanKey;
-				   scanArea.center = [scanJSON.locLat, scanJSON.locLng];
+				   scanArea.center = [scanJSON.locLat, scanJSON.locLong];
 				   scanArea.depth = scanJSON.depth;
 				   scanArea.flowrate = scanJSON.flowRate;
 //				   scanArea.timestamp = scanJSON.timestamp;
