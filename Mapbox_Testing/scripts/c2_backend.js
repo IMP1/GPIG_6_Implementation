@@ -337,7 +337,7 @@ function getScanInfo(){
 		
 		var knownScans = '';
 		scanAreas.forEach(function(scanArea) {
-			knownScans += scanArea.id+', ';
+			knownScans += scanArea.id+',';
 		}, this);
 		
 		var xmlHttpScans = new XMLHttpRequest();
