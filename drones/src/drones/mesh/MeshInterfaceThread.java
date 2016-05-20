@@ -182,7 +182,7 @@ public class MeshInterfaceThread extends Thread {
 			path = new double[n * 2];
 			for (int i = 0; i < n; i += 2) {
 				path[i/2] = currentPath.getLatitude(i/2);
-				path[i/2 + 1] = currentPath.getLatitude(i/2);
+				path[i/2 + 1] = currentPath.getLongitude(i/2);
 			}
 		} else {
 			path = new double[0];
