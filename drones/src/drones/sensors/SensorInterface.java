@@ -32,8 +32,8 @@ import drones.util.MapObject;
 public abstract class SensorInterface {
 	
 	// Default location on startup
-	private static final double DEFAULT_GPS_LAT = 53.957184;
-	private static final double DEFAULT_GPS_LONG = -1.078302;
+	private static final double DEFAULT_GPS_LAT = 53.955849;
+	private static final double DEFAULT_GPS_LONG = -1.0800562;
 	
 	// Static demo variables for modification
 	private static double gpsLat = DEFAULT_GPS_LAT;
@@ -153,7 +153,7 @@ public abstract class SensorInterface {
 			// Then, calculate x2,y2 by adding dx and dy to lat and lon respectively.
 			double hyp = mToD(10);
 			
-			for(int i = 0; i < 365; i++){
+			for(int i = 0; i < 360; i++){
 				double rad = Math.toRadians(i);
 				double dx = Math.cos(rad) * hyp;
 				double dy = Math.sin(rad) * hyp;
@@ -167,7 +167,7 @@ public abstract class SensorInterface {
 				// x3,y3 shall be the points at the counter. 
 				// x4,y4 shall be the points at the counter + 1. Remember this may not be a polygon, so 
 				// 		 for this reason we can't wrap around!
-				
+				double maxdist = Double.MAX_VALUE;
 				for(int j = 0; j < edge.lat.size() - 1; j++){
 					double x3 = edge.lat.get(j);
 					double y3 = edge.lng.get(j);
@@ -175,9 +175,40 @@ public abstract class SensorInterface {
 					double y4 = edge.lng.get(j+1);
 					
 					// We have our two lines, now we can calculate the intersection between them (if any)
+					// From Wikipedia...
+					double px = ((((x1 * y2) - (y1 * x2)) * (x3 - x4)) - ((x1 - x2) * ((x3 * y4) - (y3 * x4)))) 
+							  / ( ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4)) );
+					double py = ((((x1 * y2) - (y1 * x2)) * (y3 - y4)) - ((y1 - y2) * ((x3 * y4) - (y3 * x4)))) 
+							  / ( ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4)) );
 					
-					// TO BE CONTINUED...
+					//System.out.println("Intersection :" + px + "," + py);
+					
+					// We have our intersection point, now to calculate the distance back to x1,x2
+					dx = x1 - px;
+					dy = y1 - py;
+					double dist = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+					//System.out.println("Drone is at : "+ x1 + "," + y1 + "deg " + i);
+					//System.out.println("Distance is : " + dx + "," + dy);
+					//System.out.println("Intersection :" + px + "," + py + " Dist : " + dist);
+					
+					// Because this assumes that the lines may be infinite, we need to bound the result.
+					// First, it may be 180 degrees behind the direction we are 'looking' in.
+					// We'll bodge around this by saying the drone has sensors on the front and the back.
+					// But we'll still return 360 points because 'redundancy'.
+					// TODO: This currently means the returned sensor data is "mirrored". Needs fixing in 
+					// 		 order to get more realistic scan data returns.
+					
+					// Convert back to metres
+					double distm = latLongDiffInMeters(dx, dy);
+					//System.out.println("Distance in metres is:" + distm);
+					if( distm < maxdist){
+						maxdist = distm;
+					}
+
+					
 				}
+				//System.out.println("At degrees " + i + " distance is " + maxdist);
+				output[i] = maxdist;
 			}
 				
 				
@@ -185,14 +216,14 @@ public abstract class SensorInterface {
 			
 
 		}
-		
+		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, 1.0, 1.0, output);
 		// So, we are point lat, lon. For 360 degrees from this point, find the nearest edge.
 		
 		
 		
 		
 		String [] line;
-		try {
+		/*try {
 			while ((line = reader.readNext()) != null){
 				if(Double.parseDouble(line[0]) == lat && Double.parseDouble(line[1]) == lon){
 					System.out.println("Hurray");
@@ -216,7 +247,7 @@ public abstract class SensorInterface {
 		}
 		if (outputs == null){
 			outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, 5.0, 2.5, output);
-		}
+		}*/
 
 
 		
@@ -236,4 +267,18 @@ public abstract class SensorInterface {
 		double deg = Math.toDegrees(m / EARTH_RADIUS);
 		return deg;
 	}
+	
+	/**
+	 * Private helper for naively calculating distance in metres, ignores curvature of earth.
+	 * @param latDiff Latitude difference in degrees
+	 * @param longDiff Longitude difference in degrees
+	 * @return Absolute difference in metres
+	 */
+	public static double latLongDiffInMeters(double latDiff, double longDiff) {
+		double latDiffM = Math.toRadians(latDiff) * EARTH_RADIUS;
+		double longDiffM = Math.toRadians(longDiff) * EARTH_RADIUS;
+		double dist = Math.sqrt(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2));
+		return dist;
+	}
+	
 }
