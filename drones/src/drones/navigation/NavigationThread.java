@@ -33,7 +33,7 @@ public class NavigationThread extends Thread {
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
 	// Constant travel speed
-	private static final double MOVE_DISTANCE = 2.0;
+	private static final double MOVE_DISTANCE = 9000.0;
 	private static final int WAIT_TIME_MILLIS = 250;
 	
 	// Current location
@@ -90,7 +90,6 @@ public class NavigationThread extends Thread {
 				
 				// Check if area already scanned and request scan if not
 				try {
-					// TODO: Check map and make request
 					sensori.run();
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -128,8 +127,9 @@ public class NavigationThread extends Thread {
 						chkLng = currLng;
 					}
 					
-					// TODO: Check if point is viable for scanning
-					waypointFound = true;
+					// Check if point is viable for scanning
+					if (!MapHelper.isScanned(chkLat, chkLng))
+						waypointFound = true;
 				}
 
 				// Check for routing necessity based on structure intersection
