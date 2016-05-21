@@ -5,7 +5,7 @@
   width: 500px;
   height: calc(100% - $top_nav_height);
   color: #c0c8d2;
-  background-image: linear-gradient(rgba(65, 72, 82, 0.9), rgba(54, 62, 72, 0.9)); }
+  background-image: linear-gradient(rgba(65, 72, 82, 0.95), rgba(54, 62, 72, 0.95)); }
   #controls h1 {
     background: rgba(54, 62, 72, 0.12);
     height: 50px;
@@ -15,7 +15,8 @@
     color: white;
     line-height: 50px;
     font-size: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 500; }
   #controls .panel {
     position: relative;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -56,13 +57,13 @@
       margin: 0;
       font-weight: 300; }
   #messages .high {
-    background-image: linear-gradient(rgba(226, 0, 0, 0.8), rgba(243, 0, 0, 0.8)); }
+    background-image: linear-gradient(rgba(255, 47, 25, 0.8), rgba(255, 47, 25, 0.8)); }
   #messages .medium {
-    background-image: linear-gradient(rgba(226, 144, 0, 0.8), rgba(226, 133, 0, 0.8)); }
+    background-image: linear-gradient(rgba(255, 184, 25, 0.8), rgba(255, 184, 25, 0.8)); }
   #messages .standard {
     background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)); }
   #messages .success {
-    background-image: linear-gradient(rgba(133, 226, 0, 0.8), rgba(122, 207, 2, 0.8)); }
+    background-image: linear-gradient(rgba(27, 198, 226, 0.8), rgba(27, 198, 226, 0.8)); }
 
 #environmental-factors {
   height: 120px; }

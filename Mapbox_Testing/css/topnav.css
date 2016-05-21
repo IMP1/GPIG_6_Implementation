@@ -2,7 +2,13 @@
   position: absolute;
   width: 100%;
   height: 60px;
-  background: #414852; }
+  background: #1bc6e2; }
+  #top-nav #bottom-line {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.2);
+    top: 57px; }
   #top-nav #left-section {
     position: relative;
     float: left;
@@ -20,13 +26,13 @@
       padding-left: 10px;
       margin-top: 16px;
       font-size: 20px;
-      color: #1bc6e2;
-      font-weight: 700; }
+      color: white;
+      font-weight: 300; }
     #top-nav #left-section #title-center {
       margin: 0 auto 0 auto; }
     #top-nav #left-section #demo {
-      background: rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.6);
       font-size: 12px;
       padding: 2px 4px 2px 4px;
       margin-left: 10px;
@@ -43,10 +49,10 @@
     height: 60px;
     line-height: 60px; }
     #top-nav #right-section button {
-      background: #1bc6e2;
+      background: rgba(0, 0, 0, 0.15);
       color: white;
       border: none;
-      border-radius: 20px;
+      border-radius: 10px;
       padding: 10px;
       margin: 0 5px 0 5px;
       outline: none;

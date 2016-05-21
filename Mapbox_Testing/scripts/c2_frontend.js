@@ -209,7 +209,7 @@ function updateUnitUI(){
         if(timeDif > 60*warningMins){
             timeDif = Math.round(timeDif/60);
             timeUnit = 'm';
-            element_lastseen.style.color = 'red';
+            // element_lastseen.style.color = 'red';
             
             // Conv to hours
             if(timeDif > 60){
