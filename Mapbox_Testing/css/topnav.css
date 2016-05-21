@@ -20,10 +20,21 @@
       padding-left: 10px;
       margin-top: 16px;
       font-size: 20px;
-      color: #ff7400;
+      color: #1bc6e2;
       font-weight: 700; }
     #top-nav #left-section #title-center {
       margin: 0 auto 0 auto; }
+    #top-nav #left-section #demo {
+      background: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      padding: 2px 4px 2px 4px;
+      margin-left: 10px;
+      float: left;
+      margin-top: 18px;
+      line-height: 20px;
+      height: 20px;
+      border-radius: 10px; }
   #top-nav #right-section {
     position: relative;
     float: left;
@@ -32,7 +43,7 @@
     height: 60px;
     line-height: 60px; }
     #top-nav #right-section button {
-      background: #ff7400;
+      background: #1bc6e2;
       color: white;
       border: none;
       border-radius: 20px;
@@ -43,4 +54,4 @@
       font-weight: 600;
       min-width: 200px; }
       #top-nav #right-section button :hover {
-        background: rgba(255, 116, 0, 0.5); }
+        background: rgba(27, 198, 226, 0.5); }

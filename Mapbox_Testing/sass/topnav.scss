@@ -36,6 +36,20 @@
 		#title-center{
 			margin:0 auto 0 auto;
 		}
+		
+		#demo{
+			$demosize:20px;
+			background:rgba(255, 255, 255, .2);
+			color:rgba(255, 255, 255, .5);
+			font-size:12px;
+			padding:2px 4px 2px 4px;
+			margin-left:10px;
+			float:left;
+			margin-top:$top_nav_height/2-($demosize+8px)/2+2px;
+			line-height:$demosize;
+			height:$demosize;
+			border-radius:10px;
+		}
 	}
 	
 	#right-section{
