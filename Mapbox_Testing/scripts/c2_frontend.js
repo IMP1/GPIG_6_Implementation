@@ -49,6 +49,11 @@ var map = new mapboxgl.Map({
     zoom: defaultZoom
 });
 
+var scanData = {
+    "type": "FeatureCollection",
+    "features": []
+};
+
 map.on('load', function () {
     
     map.addSource("markers", {
@@ -57,13 +62,53 @@ map.on('load', function () {
     });
    
     updateMap();
-  
-    // Backend Call
+    
+    // ScanArea Data
+    map.addSource('ScanAreaData',{
+        "type": "geojson",
+        "data": scanData
+    });
+    
+    var geom2 = new ScanAreaGeoJSON('1', [[[-67.13734351262877, 45.137451890638886],
+                    [-66.96466, 44.8097],
+                    [-68.03252, 44.3252],
+                    [-69.06, 43.98],
+                    [-70.11617, 43.68405],
+                    [-70.64573401557249, 43.090083319667144],
+                    [-70.75102474636725, 43.08003225358635],
+                    [-70.79761105007827, 43.21973948828747],
+                    [-70.98176001655037, 43.36789581966826],
+                    [-70.94416541205806, 43.46633942318431],
+                    [-71.08482, 45.3052400000002],
+                    [-70.6600225491012, 45.46022288673396],
+                    [-70.30495378282376, 45.914794623389355],
+                    [-70.00014034695016, 46.69317088478567],
+                    [-69.23708614772835, 47.44777598732787],
+                    [-68.90478084987546, 47.184794623394396],
+                    [-68.23430497910454, 47.35462921812177],
+                    [-67.79035274928509, 47.066248887716995],
+                    [-67.79141211614706, 45.702585354182816],
+                    [-67.13734351262877, 45.137451890638886]]])
+    
+    scanData.features.push(geom2);
+    
+    console.log(geom2);
+    
+    map.addLayer({
+        'id': 'route',
+        'type': 'fill',
+        'source': 'ScanAreaData',
+        'layout': {},
+        'paint': {
+            'fill-color': '#088',
+            'fill-opacity': 0.8
+        }
+    });
+    
+     // Backend Call
     setupAPICalls();
     
     setInterval(refreshUI, 250);
-    
-    newPath();
 
 });
 
@@ -581,7 +626,7 @@ function redrawSearchAreas(){
 
 map.on("render", function() {
     redrawSearchAreas()
-    redrawScanAreas();
+    // redrawScanAreas();
     redrawUnitPaths();
 })
 
@@ -591,33 +636,33 @@ map.on("render", function() {
 
 
 
- var lineFunction = d3.svg.line()
-                          .x(function(d) { return d.x; })
-                          .y(function(d) { return d.y; })
-                         .interpolate("linear");
+//  var lineFunction = d3.svg.line()
+//                           .x(function(d) { return d.x; })
+//                           .y(function(d) { return d.y; })
+//                          .interpolate("linear");
                             
-function redrawScanAreas(){
+// function redrawScanAreas(){
 
-    scanAreas.forEach(function(scanArea){
+//     scanAreas.forEach(function(scanArea){
         
-        // Remove First
-        svg.selectAll('#ScanArea-'+scanArea.id).remove();
+//         // Remove First
+//         svg.selectAll('#ScanArea-'+scanArea.id).remove();
         
-        svg.append("path")
-            .attr("d", lineFunction(scanArea.polyData()))
-            .attr("stroke-width", 2)
-			.attr("opacity", .05)
-            .attr("fill", "blue")
-            .attr("stroke", "red")
-            .attr({id:'ScanArea-'+scanArea.id});
+//         svg.append("path")
+//             .attr("d", lineFunction(scanArea.polyData()))
+//             .attr("stroke-width", 2)
+// 			.attr("opacity", .05)
+//             .attr("fill", "blue")
+//             .attr("stroke", "red")
+//             .attr({id:'ScanArea-'+scanArea.id});
 
         
-    });
+//     });
     
-}     
+// }     
 
 ////////////////
-// SCAN AREAS //
+// UNIT PATHS //
 ////////////////
                             
 function redrawUnitPaths(){

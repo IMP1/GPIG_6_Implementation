@@ -67,7 +67,7 @@ var getByAttr = function(arr, attr, value){
 function setupAPICalls(){
 	var refreshInterval = 1000;
 	getUnitsInfo();
-	//getScanInfo();
+	getScanInfo();
 	setInterval(getUnitsInfo, refreshInterval);
 	//setInterval(getScanInfo, 5000);
 	
@@ -337,8 +337,6 @@ function getScanInfo(){
 			   }
 		   }, this);
 		   
-		   console.log(scanJSON);
-		   
 		   if(scan){
 			   
 		   }else{
@@ -349,11 +347,18 @@ function getScanInfo(){
 				   scanArea.center = [scanJSON.locLat, scanJSON.locLong];
 				   scanArea.depth = scanJSON.depth;
 				   scanArea.flowrate = scanJSON.flowRate;
-//				   scanArea.timestamp = scanJSON.timestamp;
-				   scanArea.gpsPoints = scanJSON.distanceReadings;
-				   // scanArea.polyData is generated dynamically for redrawing
+				   scanArea.gpsPoints = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings);
 			   
 			   scanAreas.push(scanArea);
+			   
+			   // Create Visual
+			   var geom2 = new ScanAreaGeoJSON(scanKey, [scanArea.gpsPoints])
+			   console.log(geom2);
+			   scanData.features.push(geom2);
+			  
+			   // Redraw Map
+			   map.getSource('ScanAreaData').setData(scanData);
+			   
 		   }		   
 		});	
 }

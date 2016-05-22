@@ -7,21 +7,28 @@ var ScanArea = function(){
 	this.depth = 0;
 	this.flowrate = 0;
 	this.timestamp = {};
-//	this.polyData = [];
-	this.gpsPoints = [];
-	
-	this.polyData = function(){
-		var data = [];
-		
-		for (var i = 0; i < this.gpsPoints.length; i+=2) {
-			var lat  = this.gpsPoints[i];
-		    var lng  = this.gpsPoints[i+1];
-			
-			var latlong = new mapboxgl.LngLat(lng, lat);				   
-			var xy      = project(latlong);			   
-			data.push({"x":xy.x, "y":xy.y});			
-		}
-	   return data;
-	};
-	
+	this.gpsPoints = [];	
+};
+
+function ConvertCoordinatesTo2DArray(JSONCoordinates){
+	var data = [];
+	for (var i = 0; i < JSONCoordinates.length; i+=2) {
+		// Swapped for GeoJSON format
+		var lat  = JSONCoordinates[i+1];
+		var lng  = JSONCoordinates[i];		
+		data.push([lat, lng]);			
+	}
+	return data;
+}
+
+var ScanAreaGeoJSON = function(id, coordinates){
+	this.type = 'Feature';
+	this.properties = {
+		'id': id
+	}
+	this.geometry = {
+		'type': 'Polygon',
+		'coordinates': coordinates
+	}
+	return this;
 };
