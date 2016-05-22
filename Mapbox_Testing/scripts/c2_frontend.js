@@ -34,29 +34,14 @@ document.getElementById('btn-see-all').addEventListener('click', function(e) {
 
 function showAllUnits(){
     
-    // console.log(units);
+    var bounds = new mapboxgl.LngLatBounds();
+
+    markers.features.forEach(function(feature) {
+        bounds.extend(feature.geometry.coordinates);
+    });
+
+    map.fitBounds(bounds, { padding: '100' });
     
-    // var bounds = map.
-    
-    // // coordinates = [];
-    
-    // // units.forEach(function(unit) {
-    // //     var unitCoords = [unit.coordinates[1], unit.coordinates[0]];
-    // //     coordinates.push(unitCoords);
-    // // }, this);
-    
-    
-    // // // [[
-    // // //     32.958984,
-    // // //     -5.353521
-    // // // ], [
-    // // //     43.50585,
-    // // //     5.615985
-    // // // ]]
-    
-    // console.log(coordinates);
-    
-    // map.fitBounds(coordinates);
 }
 
 function updateMap(){

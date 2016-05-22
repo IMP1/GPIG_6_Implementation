@@ -176,7 +176,8 @@ function getUnitsInfo(){
 		   var coordinates = [unitJSON.locLong, unitJSON.locLat];
     	   unit = addNewUnit(unitKey, 'marker', coordinates, unitJSON.batteryLevel, unitJSON.status, unitJSON.timestamp);
 		   var marker = addNewUnitMarker(unit);
-		   unit.marker = marker;
+		   unit.marker = marker;		   
+		   showAllUnits();
 	   }
 	   
 	   // TODO : Remove Units if they no longer exist
