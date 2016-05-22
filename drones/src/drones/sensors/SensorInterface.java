@@ -128,6 +128,105 @@ public abstract class SensorInterface {
 			}
 		}
 		
+		// For the demo, we will just go on the point we have which is the best approximation
+		// to a 'scan'. So we look at all points, and select one based on 
+		// a) How close it approximates the direction the sensor is *supposed* to be pointing at
+		// b) How close it is to the drone.
+		// For example, if we are meant to be at 5 degrees, and there are two points, one at 7 and 
+		// one at 6, but 7 is closer (within the scan radius), pick 7. This should stop spurious
+		// `long' positioning.
+		for(int i = 0; i < 360; i++){
+			double rad = Math.toRadians(i);
+			double rad0 = mToD(10);
+			double max = Double.MIN_VALUE;				
+			double x1 = lat;
+			double y1 = lon;
+			double x2 = lat + 0;
+			double y2 = lon + rad;
+			
+			for (MapObject edge : edgeList) {
+				System.out.println(edge.lat.toString());
+				for(int j = 0; j < edge.lat.size(); j++){
+					double x3 = edge.lat.get(j);
+					double y3 = edge.lng.get(j);
+					
+					// We have two points, now to find the distance between them
+					// ... and the angle
+					
+					double dx = x2 - x1;
+					double dy = y2 - y1;
+					
+					double hypm = latLongDiffInMeters(dx, dy);
+					
+					double hyp = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+							
+					double ang = 0.0;
+					
+					if (dx >= 0.0){
+						if (dy >= 0.0){
+							// Quadrant 1. Apply standard trig rules
+							//     dx
+							//   .---o
+							// dy|  /
+							//   |@/
+							//   D/
+							
+							ang = Math.tan(dy / dx);
+						}
+						else if (dy < 0.0){
+							// Quadrant 2.
+							//
+							// x2,y2
+							//   o
+							//   |\B
+							// 10| \
+							//   |  \
+							//   D@  \
+							//   |\_  \
+							// dy|  h\_\
+							//   |     \\
+							//   '-------o
+							//    dx
+							
+							// Calculate B
+							double ndy = rad0 + Math.abs(dy);
+							
+							double b = Math.sqrt(Math.pow(ndy, 2) + Math.pow(dx, 2));
+							
+							// Using the cosine rule: Cos@ = (h^2 + rad0 ^ 2 - b  ^ 2 /) (2 * h * rad0)
+							// 
+							double cosang = (Math.pow(hyp, 2) + Math.pow(rad0, 2) - Math.pow(b, 2)) / (2 * hyp * rad0);
+							
+						}
+					}
+					else if (dx < 0.0){
+						if (dy < 0.0){
+							// Quadrant 3.
+							//
+							//       Bo
+							//       /|
+							//      / |10
+							//     /  |
+							//    /  _D@
+							//   / _/ |
+							//  /_/h  |dy
+							// //     |
+							//o-------'
+							// A dx
+							//
+							
+							// This time, we calculate the large RHS A and B. 
+						}
+					}
+					
+					
+				}
+			}
+			
+		}
+		
+		
+		
 		for (MapObject edge : edgeList) {
 			System.out.println(edge.lat.toString());
 			for(int i = 0; i < edge.lat.size(); i++){
@@ -153,6 +252,7 @@ public abstract class SensorInterface {
 			// Then, calculate x2,y2 by adding dx and dy to lat and lon respectively.
 			double hyp = mToD(10);
 			
+		
 			for(int i = 0; i < 360; i++){
 				double rad = Math.toRadians(i);
 				double dx = Math.cos(rad) * hyp;
