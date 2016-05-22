@@ -73,6 +73,18 @@ function setupAPICalls(){
 	
 }
 
+function setupKeypresses(){
+	document.onkeydown = function(evt) {
+		evt = evt || window.event;
+		if (evt.keyCode == 27) {
+			// Escape
+			cancelSearchAreaCreation();
+		}
+	};
+}
+
+
+
 //////////////////////
 // SEARCH UNIT CODE //
 //////////////////////
@@ -212,6 +224,20 @@ function changeDroneAssignmentForSearchArea(inc, searchArea){
 
 // Search Area Asssignment
 
+function cancelSearchAreaCreation(){
+	if(currentSearchArea){
+		svg.selectAll('#SearchArea-'+currentSearchArea.id).remove();
+		svg.selectAll('#SearchArea-Line-'+currentSearchArea.id).remove();
+		svg.selectAll('#SearchArea-Marker-'+currentSearchArea.id).remove();
+		svg.selectAll('#SearchArea-Text-'+currentSearchArea.id).remove();    
+		searchAreaArray.pop();
+		console.log(searchAreaArray);
+		currentSearchArea = null;
+		editingSearchArea = false;
+		updateMap();
+	}
+}
+
 var currentlyAssigningSearchAreas;
 
 function assignSearchAreas(){
@@ -291,12 +317,16 @@ function assignSearchAreas(){
 
 function deleteAllSearchAreas(){
     
-    console.log('//TODO : Prompt Are you sure message.');
+    if(!currentSearchArea){
+		searchAreaArray.forEach(function(searchArea){
+			deleteSearchAreaView(searchArea);
+		});
+		searchAreaArray = [];
+	}else{
+		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
+	}
     
-    searchAreaArray.forEach(function(searchArea){
-        deleteSearchAreaView(searchArea);
-    });
-    searchAreaArray = [];
+    
 }
 
 ///////////////
@@ -342,19 +372,8 @@ function getScanInfo(){
 		   }else{
 			   // Else Create a new one
 			   
-			   var scanArea = new ScanArea();
-			   	   scanArea.id = scanKey;
-				   scanArea.center = [scanJSON.locLat, scanJSON.locLong];
-				   scanArea.depth = scanJSON.depth;
-				   scanArea.flowrate = scanJSON.flowRate;
-				   scanArea.gpsPoints = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings);
-			   
-			   scanAreas.push(scanArea);
-			   
-			   // Create Visual
-			   var geom2 = new ScanAreaGeoJSON(scanKey, [scanArea.gpsPoints])
-			   console.log(geom2);
-			   scanData.features.push(geom2);
+			   var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)])
+			   scanData.features.push(scanArea);
 			  
 			   // Redraw Map
 			   map.getSource('ScanAreaData').setData(scanData);

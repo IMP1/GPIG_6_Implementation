@@ -1,13 +1,14 @@
 // SearchArea Class
-//var scanAreaID = 0;
-
-var ScanArea = function(){
-    this.id = 0;
-    this.center = [];
+var ScanArea = function(id, depth, flowrate, coordinates){
+	this.type = 'Feature';
 	this.depth = 0;
 	this.flowrate = 0;
-	this.timestamp = {};
-	this.gpsPoints = [];	
+	this.id = id;
+	this.geometry = {
+		'type': 'Polygon',
+		'coordinates': coordinates
+	}
+	return this;
 };
 
 function ConvertCoordinatesTo2DArray(JSONCoordinates){
@@ -20,15 +21,3 @@ function ConvertCoordinatesTo2DArray(JSONCoordinates){
 	}
 	return data;
 }
-
-var ScanAreaGeoJSON = function(id, coordinates){
-	this.type = 'Feature';
-	this.properties = {
-		'id': id
-	}
-	this.geometry = {
-		'type': 'Polygon',
-		'coordinates': coordinates
-	}
-	return this;
-};
