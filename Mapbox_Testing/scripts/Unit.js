@@ -45,7 +45,3 @@ function updateUnitFromJSON(unit, unitID, unitJSON){
     unit.lastUpdated = newTimeStamp;
 }
 
-function dateFromJSON(jsonTimestamp){    
-    var date = new Date(jsonTimestamp.date.year, jsonTimestamp.date.month-1, jsonTimestamp.date.day, jsonTimestamp.time.hour, jsonTimestamp.time.minute, jsonTimestamp.time.second, 0);    
-    return date;
-}

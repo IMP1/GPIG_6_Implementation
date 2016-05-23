@@ -25,6 +25,11 @@ function unprojectedDistance(ll0, ll1) {
 	return dist;
 }
 
+function dateFromJSON(jsonTimestamp){
+    var date = new Date(jsonTimestamp.date.year, jsonTimestamp.date.month-1, jsonTimestamp.date.day, jsonTimestamp.time.hour, jsonTimestamp.time.minute, jsonTimestamp.time.second, 0);    
+    return date;
+}
+
 function arraysEqual(a, b) {
   if (a === b) return true;
   if (a == null || b == null) return false;
@@ -277,7 +282,6 @@ function assignSearchAreas(){
 				ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
 				
 				// Responds with the drone uids assigned to this search area 
-				console.log(xmlHttpAssignSearchAreas.responseText)
 				var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
 				
 				if (searchAreaResponse.length > 0){
@@ -336,20 +340,30 @@ function deleteAllSearchAreas(){
 ///////////////
 
 var scanAreas = [];
+var lastTimestamp = new Date('1900-01-01 10:11:55');;
+
+ Date.prototype.timestampFormat = function() {
+   var yyyy = this.getFullYear().toString();
+   var MM   = (this.getMonth()+1).toString(); // getMonth() is zero-based
+   var dd   = this.getDay().toString();
+   var HH   = this.getHours().toString();
+   var mm   = this.getMinutes().toString();
+   var dateString =  yyyy+'-'+MM+'-'+dd+'_'+HH+'-'+mm;
+   return dateString;
+ };
 
 function getScanInfo(){
 	
 	var scanAreasJSON;
 	
 	if(ONLINE){
-		
-		var knownScans = '';
-		scanAreas.forEach(function(scanArea) {
-			knownScans += scanArea.id+',';
-		}, this);
+
+		//yyyy-MM-dd HH:mm
+		var timeToPost = lastTimestamp.timestampFormat();
+		console.log(timeToPost);
 		
 		var xmlHttpScans = new XMLHttpRequest();
-	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?known_scans="+knownScans, false ); // false for synchronous request
+	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?last_timestamp="+timeToPost, false ); // false for synchronous request
 	    	xmlHttpScans.send( null );
 	    
 		// Parse JSON
@@ -357,6 +371,8 @@ function getScanInfo(){
 	}else{
 		scanAreasJSON = scanTestData;
 	}
+
+	console.log(scanAreasJSON)
 	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		   
@@ -374,8 +390,14 @@ function getScanInfo(){
 		   }else{
 			   // Else Create a new one
 			   
-			   var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)])
+			   var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)], scanJSON.received)
 			   scanData.features.push(scanArea);
+
+			   if(scanArea.timestamp > lastTimestamp){
+				   lastTimestamp = scanArea.timestamp;
+			   }
+
+			   console.log(lastTimestamp);
 			  
 			   // Redraw Map
 			   map.getSource('ScanAreaData').setData(scanData);
