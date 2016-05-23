@@ -69,7 +69,7 @@ function setupAPICalls(){
 	getUnitsInfo();
 	getScanInfo();
 	setInterval(getUnitsInfo, refreshInterval);
-	setInterval(getScanInfo, 5000);
+	setInterval(getScanInfo, 1500);
 	
 }
 
