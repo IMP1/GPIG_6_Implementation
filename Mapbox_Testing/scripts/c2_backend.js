@@ -340,12 +340,12 @@ function deleteAllSearchAreas(){
 ///////////////
 
 var scanAreas = [];
-var lastTimestamp = new Date('1900-01-01 10:11:55');
+var lastTimestamp = new Date('1900-11-25 10:11:55');
 
  Date.prototype.timestampFormat = function() {
    var yyyy = this.getFullYear().toString();
    var MM   = (this.getMonth()+1).toString(); // getMonth() is zero-based
-   var dd   = this.getDay().toString();
+   var dd   = this.getUTCDate().toString();
    var HH   = this.getHours().toString();
    var mm   = this.getMinutes().toString();
    var ss   = this.getSeconds().toString();
@@ -398,7 +398,6 @@ function getScanInfo(){
 				   lastTimestamp = scanArea.timestamp;
 			   }
 
-			   console.log(lastTimestamp);
 			  
 			   // Redraw Map
 			   map.getSource('ScanAreaData').setData(scanData);
