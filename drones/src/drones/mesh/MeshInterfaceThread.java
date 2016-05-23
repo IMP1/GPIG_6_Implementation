@@ -142,6 +142,8 @@ public class MeshInterfaceThread extends Thread {
 					requestRouteCalculation(pathCommand.id, pathCommand.latitude, pathCommand.longitude, 0);
 				}
 			} else if (command instanceof MoveCommand) {
+				if (Drone.state() == StatusData.DroneState.RETURNING) return;
+				if (Drone.state() == StatusData.DroneState.FAULT) return;
 				MoveCommand moveCommand = (MoveCommand)command;
 				requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
 			}
@@ -171,7 +173,7 @@ public class MeshInterfaceThread extends Thread {
 	private void returnToBase() {
 		Drone.setState(DroneState.RETURNING);
 		if (c2Position != null) {
-			router.go(c2Position.latitude, c2Position.longitude, 0);
+			requestRouteNavigation(c2Position.latitude, c2Position.longitude, 0);
 		}
 	}
 	
