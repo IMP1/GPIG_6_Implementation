@@ -56,11 +56,18 @@ public class MeshInterfaceThread extends Thread {
 	 */
 	public void addScan(ScanData scan) {
 		synchronized (scanBuffer) {
-			scanBuffer.add(scan);
-			drones.MapHelper.addScan(scan); //TODO: check to see if this is done elsewhere. 
+			if (isFullOfScans()) {
+				returnToBase();
+			} else {
+				drones.MapHelper.addScan(scan);
+				scanBuffer.add(scan);
+			}
 		}
-		//TODO: Check to see if the drone is full up of scan. 
-		//      If so, maybe set state to returning.
+	}
+	
+	private boolean isFullOfScans() {
+		return false;
+		//TODO: have some upper limit
 	}
 	
 	/**
@@ -150,8 +157,15 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void handleBatteryLevel() {
 		if (SensorInterface.isBatteryTooLow()) {
-			Drone.setState(DroneState.RETURNING);
+			returnToBase();
 		}
+	}
+	
+	private void returnToBase() {
+		Drone.setState(DroneState.RETURNING);
+		double latitude = 53.957184; //TODO: what should this be?
+		double longitude = -1.078302; //TODO: what should this be?
+		router.go(latitude, longitude, 0);
 	}
 	
 	private void sendCurrentState() {
@@ -166,9 +180,9 @@ public class MeshInterfaceThread extends Thread {
 		if (currentPath != null) {
 			final int n = Drone.nav().getCurrentPath().getSize();
 			path = new double[n * 2];
-			for (int i = 0; i < n; i += 2) {
-				path[i/2] = currentPath.getLatitude(i/2);
-				path[i/2 + 1] = currentPath.getLatitude(i/2);
+			for (int i = 0; i < n; i ++) {
+				path[i*2] = currentPath.getLatitude(i);
+				path[i*2 + 1] = currentPath.getLongitude(i);
 			}
 		} else {
 			path = new double[0];
@@ -191,10 +205,20 @@ public class MeshInterfaceThread extends Thread {
 	
 	/**
 	 * Adds scan data from another drone's broadcast to this drone's local map.
-	 * @param scanData another drone's scan data
+	 * @param scanData another drone's scan data.
 	 */
 	protected void addExternalScanData(ScanData scan) {
 		drones.MapHelper.addScan(scan);
+	}
+	
+	/**
+	 * Adds positional data from another drone's broadcast to this drone's local map.
+	 * @param status another drone's status data from which its position will be extracted.
+	 */
+	protected void addExternalPosition(StatusData status) {
+		if (status.status == StatusData.DroneState.SCANNING) {
+			drones.MapHelper.updateDronePosition(status.id, status.timestamp, status.latitude, status.longitude);
+		}
 	}
 	
 	private void requestRouteCalculation(String commandID, double latitude, double longitude, double radius) {
@@ -203,7 +227,6 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void requestRouteNavigation(double latitude, double longitude, double radius) {
 		router.go(latitude, longitude, radius);
-		//TODO: make sure router changes the drone's state to moving / searching when necessary
 	}
 	
 }

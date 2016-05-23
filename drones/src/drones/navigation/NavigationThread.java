@@ -5,6 +5,7 @@ import java.util.Random;
 import com.graphhopper.PathWrapper;
 import com.graphhopper.util.PointList;
 
+import drones.Drone;
 import drones.MapHelper;
 import drones.scanner.ScannerHandler;
 import drones.sensors.SensorInterface;
@@ -32,7 +33,7 @@ public class NavigationThread extends Thread {
 	private static final int SHORT_DST_CHECK = 2;
 	private static final int LONG_DST_CHECK = 10;
 	// Constant travel speed
-	private static final double MOVE_DISTANCE = 2.0;
+	private static final double MOVE_DISTANCE = 9000.0;
 	private static final int WAIT_TIME_MILLIS = 250;
 	
 	// Current location
@@ -89,7 +90,6 @@ public class NavigationThread extends Thread {
 				
 				// Check if area already scanned and request scan if not
 				try {
-					// TODO: Check map and make request
 					sensori.run();
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -127,17 +127,20 @@ public class NavigationThread extends Thread {
 						chkLng = currLng;
 					}
 					
-					// TODO: Check if point is viable for scanning
-					waypointFound = true;
+					// Check if point is viable for scanning
+					if (!MapHelper.isScanned(chkLat, chkLng) && !MapHelper.isNearDrone(chkLat, chkLng))
+						waypointFound = true;
 				}
 
 				// Check for routing necessity based on structure intersection
 				if (!checkForRedirect()) {
 					if (MapHelper.pathBlocked(currLat, currLng, chkLat, chkLng)) {
 						routing = NavStatus.ROUTE_TO_CHECK_LOCATION;
+						Drone.setState(network.StatusData.DroneState.MOVING);
 						currRoute = MapHelper.route(currLat, currLng, chkLat, chkLng).getPoints();
 					} else {
 						routing = NavStatus.BUMBLING;
+						Drone.setState(network.StatusData.DroneState.SCANNING);
 						nxtLat = chkLat;
 						nxtLng = chkLng;
 					}
@@ -148,6 +151,7 @@ public class NavigationThread extends Thread {
 			if(checkForRedirect()) {
 				// TODO: Replace synchronised with a lock. Currently can get fudged if redirected in this block!
 				routing = NavStatus.ROUTE_TO_TARGET_AREA;
+				Drone.setState(network.StatusData.DroneState.MOVING);
 				routeStepIndex = 0;
 				currRoute = newRoute;
 				tgtLat = newLat;
@@ -166,10 +170,12 @@ public class NavigationThread extends Thread {
 					nxtLat = tgtLat;
 					nxtLng = tgtLng;
 					routing = NavStatus.BUMBLING;
+					Drone.setState(network.StatusData.DroneState.SCANNING);
 				} else {
 					nxtLat = chkLat;
 					nxtLng = chkLng;
 					routing = NavStatus.BUMBLING;
+					Drone.setState(network.StatusData.DroneState.SCANNING);
 				}
 			}
 			
@@ -253,7 +259,7 @@ public class NavigationThread extends Thread {
 	 * @param longDiff Longitude difference in degrees
 	 * @return Absolute difference in metres
 	 */
-	private static double latLongDiffInMeters(double latDiff, double longDiff) {
+	public static double latLongDiffInMeters(double latDiff, double longDiff) {
 		double latDiffM = Math.toRadians(latDiff) * EARTH_RADIUS;
 		double longDiffM = Math.toRadians(longDiff) * EARTH_RADIUS;
 		double dist = Math.sqrt(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2));
@@ -265,7 +271,7 @@ public class NavigationThread extends Thread {
 	 * @param m Meters distance
 	 * @return Degrees (ignoring curvature of earth
 	 */
-	private static double mToD(double m) {
+	public static double mToD(double m) {
 		double deg = Math.toDegrees(m / EARTH_RADIUS);
 		return deg;
 	}

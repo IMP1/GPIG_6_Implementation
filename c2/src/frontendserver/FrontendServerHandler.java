@@ -67,7 +67,7 @@ public class FrontendServerHandler implements Runnable{
 			SearchArea searchArea = new SearchArea(uniqueID, loclat, loclong, numberRequested, searchRadius);
 			SearchAreaWaiter waiter = new SearchAreaWaiter(searchArea, datastore);
 			String[] result = waiter.doWait();
-			reply(result.toString());//maybe?
+			reply(datastore.gson.toJson(result));
 		}
 		if(request.contains("ClearSearchAreas")){
 			//TODO - More clever things.
@@ -86,7 +86,7 @@ public class FrontendServerHandler implements Runnable{
 			}
 		}
 		if(request.contains("GetScanInfo")){
-			System.out.println(request);
+//			System.out.println(request);
 			String known_scans_string = request.replace("GET /GetScanInfo?known_scans=", "").replace(" HTTP/1.1", "");//ew.
 			String[] known_scans = known_scans_string.split(",");
 			String data = getScanData(known_scans);

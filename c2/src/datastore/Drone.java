@@ -10,6 +10,8 @@ public class Drone {
 	private double locLong;
 	private DroneState status;
 	private LocalDateTime timestamp;
+	private boolean locked;
+	private double[] currentPath;
 	
 	public Drone(double batteryLevel, double locLat, double locLong, DroneState status, LocalDateTime timestamp) {
 		super();
@@ -18,6 +20,7 @@ public class Drone {
 		this.locLong = locLong;
 		this.status = status;
 		this.timestamp = timestamp;
+		this.locked = false;
 	}
 	
 	public double getBatteryLevel() {
@@ -42,6 +45,9 @@ public class Drone {
 		return status;
 	}
 	public void setStatus(DroneState status) {
+		if(status == DroneState.MOVING){
+			this.locked = false;
+		}
 		this.status = status;
 	}
 
@@ -51,6 +57,18 @@ public class Drone {
 
 	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
+	}
+	
+	public void setLock(){
+		this.locked = true;
+	}
+	public boolean isLocked(){
+		return this.locked;
+	}
+
+	public void setPath(double[] currentPath) {
+		this.currentPath = currentPath;
+		
 	}
 
 }

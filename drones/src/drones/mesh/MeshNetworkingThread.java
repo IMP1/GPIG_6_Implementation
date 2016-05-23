@@ -20,6 +20,8 @@ import network.*;
  */
 public class MeshNetworkingThread extends Thread {
 	
+	public final static boolean DEBUG_MESSAGES = false; 
+	
 	private ArrayList<Message> unacknowledgedMessages = new ArrayList<Message>();
 	private ArrayList<String> dealtWithMessages = new ArrayList<String>();
 	
@@ -63,7 +65,7 @@ public class MeshNetworkingThread extends Thread {
     		socket.joinGroup(groupAddress);
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.err.println("Well, shit. :(");
+			System.err.println("[Mesh Network] Well, shit. :(");
 		}
 	}
 
@@ -79,7 +81,7 @@ public class MeshNetworkingThread extends Thread {
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 				socket.receive(receivePacket);
 				String message = new String(receivePacket.getData());
-				System.out.printf("[]<-- '%s'\n", message);
+				if (DEBUG_MESSAGES) System.out.printf("[Mesh Network] []<-- '%s'\n", message);
 				messageHandler.handleMessage(message);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -112,9 +114,9 @@ public class MeshNetworkingThread extends Thread {
 	protected void sendMessage(String message) {
 		try {
 			byte[] data = message.getBytes();
-			System.out.printf("[]--> '%s'\n", message);
+			if (DEBUG_MESSAGES) System.out.printf("[Mesh Network] []--> '%s'\n", message);
 			if (data.length > network.Message.PACKAGE_SIZE) {
-				System.err.printf("THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d.\n", 
+				System.err.printf("[Mesh Network] THIS PACKAGE IS %d BYTES LONG.\nTHIS WILL BE TOO BIG TO BE READ.\nTHE MAX IS CURRENTLY %d.\n", 
 								  data.length, network.Message.PACKAGE_SIZE);
 			}
 			DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, network.Message.MESH_PORT);
@@ -126,7 +128,7 @@ public class MeshNetworkingThread extends Thread {
 
 	protected void acknowledgeMessage(LocalDateTime timestamp) {
 		synchronized (unacknowledgedMessages) {
-			System.out.println("Acknowledging Message...");
+			if (DEBUG_MESSAGES) System.out.println("[Mesh Network] Acknowledging Message...");
 			for (int i = unacknowledgedMessages.size() - 1; i >= 0; i --) {
 				if (unacknowledgedMessages.get(i).timestamp.equals(timestamp)) {
 					unacknowledgedMessages.remove(i);
