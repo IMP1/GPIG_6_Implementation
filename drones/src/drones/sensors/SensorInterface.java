@@ -2,8 +2,8 @@ package drones.sensors;
 
 import network.ScanData;
 
-import java.awt.Polygon;
 import java.awt.geom.Line2D;
+import java.awt.Polygon;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
