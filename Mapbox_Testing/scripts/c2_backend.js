@@ -144,22 +144,34 @@ function addNewUnit(id, symbol, coordinates, batteryLevel, status, lastUpdated){
 
 function getUnitsInfo(){
 	
-	// Get JSON from API endpoints
-	
-	var unitsJSON;
+	// Get JSON from API endpoint
 	
 	if(ONLINE){
 	
 		var xmlHttpUnits = new XMLHttpRequest();
-	    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", false ); // false for synchronous request
-	    	xmlHttpUnits.send( null );
-	    
-		// Parse JSON
-		unitsJSON = JSON.parse(xmlHttpUnits.responseText);
+	    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", true ); // true for asynchronous request
+						
+			xmlHttpUnits.onload = function (e) {
+				if (xmlHttpUnits.readyState === 4) {
+					if (xmlHttpUnits.status === 200) {
+						console.log(xmlHttpUnits.responseText);
+						parseUnitsInfo(JSON.parse(xmlHttpUnits.responseText));
+					} else {
+						console.error(xmlHttpUnits.statusText);
+					}
+				}
+			};
+			xmlHttpUnits.onerror = function (e) {
+				console.error(xmlHttpUnits.statusText);
+			};
+			xmlHttpUnits.send(null);		
 	
 	}else{
-		unitsJSON = unitExamples; 
+		parseUnitsInfo(unitExamples);
 	}
+}
+
+function parseUnitsInfo(unitsJSON){
 	
 	Object.keys(unitsJSON).forEach(function (unitKey) {
 	   
@@ -200,11 +212,26 @@ function getUnitsInfo(){
 // Recall Units
 
 function recallUnits(){
-	
-		var xmlHttpAssignSearchAreas = new XMLHttpRequest();
-		var urlString = "http://localhost:8081/RecallUnits";
-	    xmlHttpAssignSearchAreas.open( "GET", urlString, false );
-	    xmlHttpAssignSearchAreas.send( null );
+		
+		var xmlHttpRecall = new XMLHttpRequest();
+	    	xmlHttpRecall.open( "GET", "http://localhost:8081/RecallUnits", true ); // true for asynchronous request
+						
+			xmlHttpRecall.onload = function (e) {
+				if (xmlHttpRecall.readyState === 4) {
+					if (xmlHttpRecall.status === 200) {
+						console.log(xmlHttpRecall.responseText);
+						ShowNewMessage('Drone Recall Succesful', '', 'success');
+					} else {
+						console.error(xmlHttpRecall.statusText);
+						ShowNewMessage('Drone Recall Error', 'Unable to Recall Drones', 'high');
+					}
+				}
+			};
+			xmlHttpRecall.onerror = function (e) {
+				console.error(xmlHttpRecall.statusText);
+				ShowNewMessage('Drone Recall Error', 'Unable to Recall Drones', 'high');
+			};
+			xmlHttpRecall.send(null);	
 	
 }
 
@@ -271,45 +298,38 @@ function assignSearchAreas(){
 			
 			if(searchArea.assignedDrones.length == 0){	
 				
-				var xmlHttpAssignSearchAreas = new XMLHttpRequest();
 				var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat
 								+"&longitude="+searchArea.center.lng
 								+"&numberRequested="+searchArea.requestedDrones
 								+"&radius="+searchArea.radius;
-				xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
-				xmlHttpAssignSearchAreas.send( null );
 				
-				ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
+				var xmlHttpAssignSearchAreas = new XMLHttpRequest();
 				
-				// Responds with the drone uids assigned to this search area 
-				var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
-				
-				if (searchAreaResponse.length > 0){
-					// Succesfully assigned > 1 drone
-					// Get Drones by UID
-					
-					searchAreaResponse.forEach(function(droneID) {
-						
-						var unit = getByAttr(units, 'id', droneID);
-						if(!unit){
-							ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
-						}else{
-							searchArea.assignedDrones.push(unit);
-						}					
-						
-					}, this);
-					
-				}
+					xmlHttpAssignSearchAreas.open( "GET", urlString, true ); // true for asynchronous request
+								
+					xmlHttpAssignSearchAreas.onload = function (e) {
+						if (xmlHttpAssignSearchAreas.readyState === 4) {
+							if (xmlHttpAssignSearchAreas.status === 200) {
+								console.log(xmlHttpAssignSearchAreas.responseText);
+								parseSearchAreaAssignmentResponse(JSON.parse(xmlHttpAssignSearchAreas.responseText));
+							} else {
+								console.error(xmlHttpAssignSearchAreas.statusText);
+								ShowNewMessage('Search Area Assignment Error', 'Unable to Recall Drones', 'high');
+							}
+						}
+					};
+					xmlHttpAssignSearchAreas.onerror = function (e) {
+						console.error(xmlHttpAssignSearchAreas.statusText);
+						ShowNewMessage('Search Area Assignment Error', 'Unable to connect to C2', 'high');
+					};
+					xmlHttpAssignSearchAreas.send(null);				
 				
 			}
 		
 		}else{
 			
-			ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request (OFFLINE)', '', 'success');
-			
-			var searchUnit = units[1];
-			searchArea.assignedDrones = [searchUnit];
-			
+			ShowNewMessage('Search Area Assignment Error', 'Cannot to connect to C2', 'medium');
+						
 		}
 		
 		
@@ -317,6 +337,26 @@ function assignSearchAreas(){
 	
 	currentlyAssigningSearchAreas = false;
 	
+}
+
+function parseSearchAreaAssignmentResponse(searchAreaResponse){
+	
+	if (searchAreaResponse.length > 0){
+		// Succesfully assigned > 1 drone
+		// Get Drones by UID
+		
+		searchAreaResponse.forEach(function(droneID) {
+			
+			var unit = getByAttr(units, 'id', droneID);
+			if(!unit){
+				ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
+			}else{
+				searchArea.assignedDrones.push(unit);
+			}					
+			
+		}, this);
+		
+	}
 }
 
 // Delete all Search Areas
@@ -354,56 +394,50 @@ var lastTimestamp = new Date('1900-11-25 10:11:55');
  };
 
 function getScanInfo(){
-	
 	var scanAreasJSON;
 	
 	if(ONLINE){
-
-		//yyyy-MM-dd HH:mm
-		var timeToPost = lastTimestamp.timestampFormat();
-		console.log(timeToPost);
 		
 		var xmlHttpScans = new XMLHttpRequest();
-	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?last_timestamp="+timeToPost, false ); // false for synchronous request
-	    	xmlHttpScans.send( null );
-	    
-		// Parse JSON
-		scanAreasJSON = JSON.parse(xmlHttpScans.responseText);
+	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?last_timestamp="+lastTimestamp.timestampFormat(), true ); // false for synchronous request
+			
+			xmlHttpScans.onload = function (e) {
+				if (xmlHttpScans.readyState === 4) {
+					if (xmlHttpScans.status === 200) {
+						console.log(xmlHttpScans.responseText);
+						parseScanAreaResponse(JSON.parse(xmlHttpScans.responseText));
+					} else {
+						console.error(xmlHttpScans.statusText);
+					}
+				}
+			};
+			xmlHttpScans.onerror = function (e) {
+				console.error(xmlHttpScans.statusText);
+			};
+			xmlHttpScans.send(null);	
+			
 	}else{
-		scanAreasJSON = scanTestData;
+		parseScanAreaResponse(scanTestData);
 	}
-
-	console.log(scanAreasJSON)
 	
+}
+
+function parseScanAreaResponse(scanAreasJSON){
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
-		   
-		   var scanJSON = scanAreasJSON[scanKey];
-		   
-		   var scan;
-		   scanAreas.forEach(function(existingScan) {
-			   if(existingScan.id == scanKey){
-				   scan = existingScan;
-			   }
-		   }, this);
-		   
-		   if(scan){
-			   
-		   }else{
-			   // Else Create a new one
-			   
-			   var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)], scanJSON.received)
-			   scanData.features.push(scanArea);
+		
+		var scanJSON = scanAreasJSON[scanKey];
+			
+		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)], scanJSON.received)
+		scanData.features.push(scanArea);
 
-			   if(scanArea.timestamp > lastTimestamp){
-				   lastTimestamp = scanArea.timestamp;
-			   }
-
-			  
-			   // Redraw Map
-			   map.getSource('ScanAreaData').setData(scanData);
-			   
-		   }		   
-		});	
+		if(scanArea.timestamp > lastTimestamp){
+			lastTimestamp = scanArea.timestamp;
+		}		
+			
+		// Redraw Map
+		map.getSource('ScanAreaData').setData(scanData);
+		
+	});	
 }
 
 ///////////////
