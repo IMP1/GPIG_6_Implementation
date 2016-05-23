@@ -4,7 +4,9 @@ var ScanArea = function(id, depth, flowrate, coordinates, timestamp){
 	this.depth = 0;
 	this.flowrate = 0;
 	this.id = id;
-	this.timestamp = dateFromJSON(timestamp);
+	if(timestamp){
+		this.timestamp = dateFromJSON(timestamp);
+	}	
 	this.geometry = {
 		'type': 'Polygon',
 		'coordinates': coordinates

@@ -340,7 +340,7 @@ function deleteAllSearchAreas(){
 ///////////////
 
 var scanAreas = [];
-var lastTimestamp = new Date('1900-01-01 10:11:55');;
+var lastTimestamp = new Date('1900-01-01 10:11:55');
 
  Date.prototype.timestampFormat = function() {
    var yyyy = this.getFullYear().toString();
@@ -348,7 +348,7 @@ var lastTimestamp = new Date('1900-01-01 10:11:55');;
    var dd   = this.getDay().toString();
    var HH   = this.getHours().toString();
    var mm   = this.getMinutes().toString();
-   var ss   = this.getSeconds().toString();
+   var ss   = (this.getSeconds()+1).toString();
    var dateString =  yyyy+'-'+(MM < 10 ? '0': '')+MM+'-'+(dd < 10 ? '0': '')+dd+'_'+(HH < 10 ? '0': '')+HH+'-'+(mm < 10 ? '0': '')+mm+'-'+(ss < 10 ? '0': '')+ss;
    return dateString;
  };
