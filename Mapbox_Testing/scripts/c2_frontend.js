@@ -28,6 +28,22 @@ document.getElementById('btn-recall-all').addEventListener('click', function(e) 
     recallUnits();
 });
 
+document.getElementById('btn-see-all').addEventListener('click', function(e) {            
+    showAllUnits();
+});
+
+function showAllUnits(){
+    
+    var bounds = new mapboxgl.LngLatBounds();
+
+    markers.features.forEach(function(feature) {
+        bounds.extend(feature.geometry.coordinates);
+    });
+
+    map.fitBounds(bounds, { padding: '100' });
+    
+}
+
 function updateMap(){
     if(editingSearchArea){
         map['doubleClickZoom'].disable();
@@ -49,6 +65,11 @@ var map = new mapboxgl.Map({
     zoom: defaultZoom
 });
 
+var scanData = {
+    "type": "FeatureCollection",
+    "features": []
+};
+
 map.on('load', function () {
     
     map.addSource("markers", {
@@ -57,13 +78,32 @@ map.on('load', function () {
     });
    
     updateMap();
-  
-    // Backend Call
-    setupAPICalls();
     
+    // ScanArea Data
+    map.addSource('ScanAreaData',{
+        "type": "geojson",
+        "data": scanData
+    });
+    
+    map.addLayer({
+        'id': 'route',
+        'type': 'fill',
+        'source': 'ScanAreaData',
+        'layout': {},
+        'paint': {
+            'fill-color': '#088',
+            'fill-opacity': 0.5
+        }
+    });
+    
+     // Backend Call
+    setupAPICalls();  
+    setupKeypresses();  
     setInterval(refreshUI, 250);
     
-    newPath();
+    // Remove Mapbox Elements
+    var toRemove = document.getElementsByClassName('mapboxgl-ctrl-bottom-right')[0];
+    toRemove.parentNode.removeChild(toRemove);
 
 });
 
@@ -209,7 +249,7 @@ function updateUnitUI(){
         if(timeDif > 60*warningMins){
             timeDif = Math.round(timeDif/60);
             timeUnit = 'm';
-            element_lastseen.style.color = 'red';
+            // element_lastseen.style.color = 'red';
             
             // Conv to hours
             if(timeDif > 60){
@@ -581,7 +621,7 @@ function redrawSearchAreas(){
 
 map.on("render", function() {
     redrawSearchAreas()
-    redrawScanAreas();
+    // redrawScanAreas();
     redrawUnitPaths();
 })
 
@@ -591,32 +631,33 @@ map.on("render", function() {
 
 
 
- var lineFunction = d3.svg.line()
-                          .x(function(d) { return d.x; })
-                          .y(function(d) { return d.y; })
-                         .interpolate("linear");
+//  var lineFunction = d3.svg.line()
+//                           .x(function(d) { return d.x; })
+//                           .y(function(d) { return d.y; })
+//                          .interpolate("linear");
                             
-function redrawScanAreas(){
+// function redrawScanAreas(){
 
-    scanAreas.forEach(function(scanArea){
+//     scanAreas.forEach(function(scanArea){
         
-        // Remove First
-        svg.selectAll('#ScanArea-'+scanArea.id).remove();
+//         // Remove First
+//         svg.selectAll('#ScanArea-'+scanArea.id).remove();
         
-        svg.append("path")
-            .attr("d", lineFunction(scanArea.polyData()))
-            .attr("stroke-width", 2)
-			.attr("opacity", .2)
-            .attr("fill", "blue")
-            .attr({id:'ScanArea-'+scanArea.id});
+//         svg.append("path")
+//             .attr("d", lineFunction(scanArea.polyData()))
+//             .attr("stroke-width", 2)
+// 			.attr("opacity", .05)
+//             .attr("fill", "blue")
+//             .attr("stroke", "red")
+//             .attr({id:'ScanArea-'+scanArea.id});
 
         
-    });
+//     });
     
-}     
+// }     
 
 ////////////////
-// SCAN AREAS //
+// UNIT PATHS //
 ////////////////
                             
 function redrawUnitPaths(){

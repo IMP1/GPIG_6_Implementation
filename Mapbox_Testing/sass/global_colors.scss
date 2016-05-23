@@ -1,13 +1,13 @@
-$highlight_color:#79dcde;
+$highlight_color:#1bc6e2;
 $background_light_color:#414852;
 $background_dark_color:#363e48;
 $border_color:rgba(255,255,255,.2);
 
-$message-high-level-1:#e20000;
-$message-high-level-2:#f30000;
+$message-high-level-1:#FF2F19;
+$message-high-level-2:#FF2F19;
 
-$message-med-level-1:#e29000;
-$message-med-level-2:#e28500;
+$message-med-level-1:#FFB819;
+$message-med-level-2:#FFB819;
 
-$message-success-1:#85e200;
-$message-success-2:#7acf02;
+$message-success-1:$highlight_color;
+$message-success-2:$highlight_color;
