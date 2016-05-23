@@ -3,7 +3,7 @@
   top: 60px;
   bottom: 0;
   left: 500px;
-  width: calc(100% - $controls_width); }
+  width: calc(100% - 500px); }
 
 #map_overlays {
   pointer-events: none; }
