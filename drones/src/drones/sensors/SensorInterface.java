@@ -38,6 +38,8 @@ public abstract class SensorInterface {
 	// Static demo variables for modification
 	private static double gpsLat = DEFAULT_GPS_LAT;
 	private static double gpsLng = DEFAULT_GPS_LONG;
+	
+	private static final double MAX_DIST = 50.0;
 
 	/**
 	 * Get the current latitude (via GPS)
@@ -138,11 +140,12 @@ public abstract class SensorInterface {
 		for(int i = 0; i < 360; i++){
 			double rad = Math.toRadians(i);
 			double rad0 = mToD(10);
-			double max = Double.MIN_VALUE;				
+			double angmax = Double.MAX_VALUE;				
 			double x1 = lat;
 			double y1 = lon;
 			double x2 = lat + 0;
 			double y2 = lon + rad;
+			//double angmax = 0;
 			
 			for (MapObject edge : edgeList) {
 				System.out.println(edge.lat.toString());
@@ -153,16 +156,29 @@ public abstract class SensorInterface {
 					// We have two points, now to find the distance between them
 					// ... and the angle
 					
-					double dx = x2 - x1;
-					double dy = y2 - y1;
+					double dx = x3 - x1;
+					double dy = y3 - y1;
 					
 					double hypm = latLongDiffInMeters(dx, dy);
 					
 					double hyp = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 							
-					double ang = 0.0;
+					double ang = Math.atan2(dx, dy);
+					if (ang < 0.0){
+						ang = (2 * Math.PI) + ang;
+					}
 					
-					if (dx >= 0.0){
+					//System.out.println("Deg: " + Math.toDegrees(ang) + " Dist: " + hypm);
+					
+					double angdiff = rad - ang;
+					
+					if (Math.abs(angdiff) < angmax && hypm < MAX_DIST){
+						System.out.println(angdiff + "Update closest at angle: " + i + " actual: " + Math.toDegrees(ang) + " Dist: " + hypm);
+						angmax = angdiff;
+						output[i] = hypm;
+					}
+					
+					/*if (dx >= 0.0){
 						if (dy >= 0.0){
 							// Quadrant 1. Apply standard trig rules
 							//     dx
@@ -217,7 +233,7 @@ public abstract class SensorInterface {
 							
 							// This time, we calculate the large RHS A and B. 
 						}
-					}
+					}*/
 					
 					
 				}
@@ -227,7 +243,7 @@ public abstract class SensorInterface {
 		
 		
 		
-		for (MapObject edge : edgeList) {
+		/*for (MapObject edge : edgeList) {
 			System.out.println(edge.lat.toString());
 			for(int i = 0; i < edge.lat.size(); i++){
 				System.out.println(edge.lat.get(i).toString() + "," + edge.lng.get(i).toString());
@@ -315,7 +331,7 @@ public abstract class SensorInterface {
 			
 			
 
-		}
+		}*/
 		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, 1.0, 1.0, output);
 		// So, we are point lat, lon. For 360 degrees from this point, find the nearest edge.
 		
