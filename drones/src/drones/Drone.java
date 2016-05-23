@@ -95,6 +95,10 @@ public class Drone {
 		System.out.println("Mesh Interface started.");
 		navThread.start();
 		System.out.println("Navigation Thread started.");
+		
+		if (args.length >= 2) {
+			//TODO: handle the arguments and induce some faults!
+		}
 	}
 	
 }
