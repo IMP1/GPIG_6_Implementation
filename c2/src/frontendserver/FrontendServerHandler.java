@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -87,9 +88,14 @@ public class FrontendServerHandler implements Runnable{
 		}
 		if(request.contains("GetScanInfo")){
 //			System.out.println(request);
-			String known_scans_string = request.replace("GET /GetScanInfo?known_scans=", "").replace(" HTTP/1.1", "");//ew.
-			String[] known_scans = known_scans_string.split(",");
-			String data = getScanData(known_scans);
+			String known_scans_string = request.replace("GET /GetScanInfo?last_timestamp=", "").replace(" HTTP/1.1", "");//ew.
+//			String str = "1986-04-08 12:30";
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+			LocalDateTime dateTime = LocalDateTime.parse(known_scans_string, formatter);
+			dateTime = dateTime.plusSeconds(1);
+			System.out.println(dateTime);
+			String data = getScanData(dateTime);
+//			System.err.println(data);
 			reply(data);
 		}
 	}
@@ -99,7 +105,7 @@ public class FrontendServerHandler implements Runnable{
 		
 	}
 	
-	public String getScanData(String[] known_scans){
+	public String getScanData(LocalDateTime known_scans){
 		return datastore.getScansAsJSON(known_scans);
 	}
 	

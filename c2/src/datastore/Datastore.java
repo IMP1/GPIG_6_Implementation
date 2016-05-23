@@ -1,6 +1,7 @@
 package datastore;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import com.google.gson.*;
 
@@ -61,13 +62,18 @@ public class Datastore {
 		return drones.size()-1; //bcos of C2
 	}
 	
-	public synchronized String getScansAsJSON(String[] known_scans){
+	public synchronized String getScansAsJSON(LocalDateTime known_scans){
 		HashMap<String, Scan> temp = (HashMap<String, Scan>) scans.clone();
-		for (final String id : known_scans) {
-//			System.out.println(id);
+		ArrayList<String> toPop = new ArrayList<String>();
+		//Come up with a list of items not to bother returning.
+		for (final String id : temp.keySet()) {
+			if(temp.get(id).received.isBefore(known_scans) || temp.get(id).received.equals(known_scans)){
+				toPop.add(id);
+			}
+		}
+		for(final String id: toPop){
 			temp.remove(id);
 		}
-		return gson.toJson(temp);
-		
+		return gson.toJson(temp);	
 	}
 }
