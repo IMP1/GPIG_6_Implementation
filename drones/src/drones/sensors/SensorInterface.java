@@ -94,7 +94,7 @@ public abstract class SensorInterface {
 		Collection<MapObject> edgeList = null;
 		
 		double depth = 0.0;
-		
+		double flow = 0.0;
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.registerTypeAdapter(MapObject.class, new MapObjectDeserialiser());
@@ -180,6 +180,7 @@ public abstract class SensorInterface {
 					// can't find the edge of it.
 					output[i] = MAX_DIST;
 					depth = 10.0;
+					flow = 3.2;
 				}
 				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && !p.contains(Position.dtoM(x2), Position.dtoM(y2))){
 									
@@ -242,9 +243,10 @@ public abstract class SensorInterface {
 				}
 			}
 			depth = Math.sqrt(mindist); // Bit of a fudge factor, make it non-linear to distance ;)
+			flow = Math.sin(mindist);
 		}
 		
-		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, 1.0, output);
+		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
 		
 		return outputs;
 	}
