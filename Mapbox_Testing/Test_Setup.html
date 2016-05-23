@@ -3,13 +3,12 @@
     
     <head>
         <meta charset='utf-8' />
-        <title>Group 6 - Sonar Mapping</title>
+        <title>SonarScout</title>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
         
         <!--Lib Scripts-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
-        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
-        <script src="scripts/lib/selector.js"></script>   
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>   
         <script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
         
         <!--Lib CSS-->
@@ -37,9 +36,13 @@
             
         <!--Top Nav-->
         <div id='top-nav'>
+            <div id='bottom-line'></div>
             <div id='left-section'>
-                <img src="" id="logo"></img>
-            	<div id="title">Sonar Mapping Assistant</div>
+                <div id="title-center">
+                    <img src="images/header_logo.png" id="logo"></img>
+                    <div id="title"><b>Sonar</b>Scout</div>
+                    <div id="demo">demo</div>
+                </div>
             </div>
             <div id='right-section'>
                 	<button id="btn-assign-search-areas">
@@ -54,7 +57,7 @@
                     <button>
                         Hide Controls
                     </button>
-                    <button>
+                    <button id="btn-see-all">
                         See All Units
                     </button>
             </div>
@@ -63,8 +66,8 @@
         <!--Control Panel-->
         <div id='controls'>
             
-            <!--Environmental Factors-->
-<!--            <h1>Environment</h2>
+<!--            Environmental Factors-->
+            <h1>Environment</h2>
             <div id="environmental-factors" class='panel'>
                 <div class="weather-overview">
                 
@@ -72,7 +75,7 @@
                 <div class="weather-overview">
                     
                 </div>                             
-            </div>-->
+            </div>
             
             <!--Search Unit Controls-->
             <h1>Search Units</h2>
@@ -118,8 +121,11 @@
             <!--Classes-->
             <script src="scripts/Unit.js"></script>
             <script src="scripts/SearchArea.js"></script>
+            <script src="scripts/ScanArea.js"></script>
+            <script src="scripts/UnitPath.js"></script>
             
             <!--Functionality-->
+            <script src="scripts/test_data.js"></script>
             <script src="scripts/c2_frontend.js"></script>
             <script src="scripts/c2_backend.js"></script>
             <script src="scripts/c2_messages.js"></script>

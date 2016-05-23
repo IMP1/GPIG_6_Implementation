@@ -11,6 +11,7 @@ public class Drone {
 	private DroneState status;
 	private LocalDateTime timestamp;
 	private boolean locked;
+	private double[] currentPath;
 	
 	public Drone(double batteryLevel, double locLat, double locLong, DroneState status, LocalDateTime timestamp) {
 		super();
@@ -63,6 +64,11 @@ public class Drone {
 	}
 	public boolean isLocked(){
 		return this.locked;
+	}
+
+	public void setPath(double[] currentPath) {
+		this.currentPath = currentPath;
+		
 	}
 
 }

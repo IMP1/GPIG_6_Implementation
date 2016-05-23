@@ -15,7 +15,7 @@ import network.ScanData;
 import network.StatusData;
 
 public class DroneServerHandler implements Runnable {
-	
+	private static final int EARTH_RADIUS = 6731000;
 	protected String data;
 	protected Datastore datastore;
 	
@@ -47,6 +47,7 @@ public class DroneServerHandler implements Runnable {
 					drone.setLocLat(statusdata.latitude);
 					drone.setLocLong(statusdata.longitude);
 					drone.setStatus(statusdata.status);
+					drone.setPath(statusdata.currentPath);
 				}
 				
 			}else{
@@ -60,17 +61,23 @@ public class DroneServerHandler implements Runnable {
 			id = scandata.id;
 			dt = scandata.timestamp;
 			String ident = scandata.id+scandata.timestamp;
-			System.out.println("Receiving scandata"+id);
+//			System.out.println("Receiving scandata"+id);
 			if(!datastore.scanExists(ident)){
-				System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
-				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, scandata.distanceReadings);
-				datastore.addScan(ident, scan);
+//				System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
+				double lat = scandata.latitude;
+				double lon = scandata.longitude;
+				double[] absoluteEdges = new double[360 * 2];
+//				System.out.println(scandata.distanceReadings.length);
+				for (int i = 0; i < 360; i ++) {
+				    absoluteEdges[i*2] = lat + mToD(scandata.distanceReadings[i] * Math.cos(Math.toRadians(i)));
+				    absoluteEdges[i*2+1] = lon + mToD(scandata.distanceReadings[i] * Math.sin(Math.toRadians(i)));
+				}
+				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, absoluteEdges);
+				datastore.addScan(ident.replace(":", "").replace(".", ""), scan); //because jqyuery hates colons and periods in selectors.
 			}
 		} else if(Message.getType(data) == PathData.class){
 			PathData pathdata = new PathData(data);
 			System.out.println("Got eta of "+pathdata.eta+" from drone "+pathdata.id);
-			System.out.println(pathdata.pathCommandID);
-			System.out.println(datastore .getSearchArea().id);
 			if(pathdata.pathCommandID.equals(datastore.getSearchArea().id)){
 				System.out.println("Got eta");
 				if(!datastore.getSearchArea().etas.containsKey(pathdata.id)){
@@ -82,11 +89,15 @@ public class DroneServerHandler implements Runnable {
 		}
 		//TODO - should this be moved?
 		if( Message.getType(data)==ScanData.class){
-			System.out.println("Acking scan data");
+//			System.out.println("Acking scan data");
 			Acknowledgement ack = new ScanAcknowledgement(id, dt);
-			System.out.println(ack.toString());
+//			System.out.println(ack.toString());
 			Broadcast.broadcast(ack.toString());
 		}
+	}
+	public static double mToD(double m) {
+		double deg = Math.toDegrees(m / EARTH_RADIUS);
+		return deg;
 	}
 
 }

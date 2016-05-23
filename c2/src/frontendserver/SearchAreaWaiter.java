@@ -27,8 +27,6 @@ public class SearchAreaWaiter {
 		Broadcast.broadcast(message.toString());
 		LocalDateTime waitingFrom = LocalDateTime.now();
 		LocalDateTime waitingUntil = waitingFrom.plusSeconds(20);
-		System.out.println(waitingUntil);
-		System.out.println(waitingUntil.isAfter(LocalDateTime.now()));
 		while(datastore.getSearchArea().etas.size() < datastore.getNumberOfDrones() && waitingUntil.isAfter(LocalDateTime.now())); //ew
 		
 		//clone the hashmap. Too late now if you didn't reply
@@ -55,25 +53,31 @@ public class SearchAreaWaiter {
 	public String popClosestDrone(){
 		String minKey = null;
 		Double minValue = Double.MAX_VALUE;
+		System.out.println("KEYS:");
+		System.out.println(etas.keySet());
 		for (String key : etas.keySet()) {
 	        Double value = etas.get(key);
 	        System.err.println(datastore.getDroneById(key).getStatus());
 	        System.err.println(datastore.getDroneById(key).isLocked());
-	        if (value < minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.MOVING) && !datastore.getDroneById(key).isLocked()) {
-	            minValue = value;
+	        System.out.println(value);
+	        if (value <= minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.MOVING) && !datastore.getDroneById(key).isLocked()) {
+	            System.out.println("HERE!");
+	            System.out.println(value);
+	        	minValue = value;
 	            minKey = key;
 	        }
 	    }
 		if(minValue == Double.MAX_VALUE){
 			for (String key : etas.keySet()) {
 		        Double value = etas.get(key);
-		        if (value < minValue ) {
+		        if (value <= minValue ) {
 		            minValue = value;
 		            minKey = key;
 		        }
 		    }
 		}
 		etas.remove(minKey);
+		System.out.println(minKey);
 	    return minKey;
 	}
 }

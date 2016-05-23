@@ -86,7 +86,7 @@ public class FrontendServerHandler implements Runnable{
 			}
 		}
 		if(request.contains("GetScanInfo")){
-			System.out.println(request);
+//			System.out.println(request);
 			String known_scans_string = request.replace("GET /GetScanInfo?known_scans=", "").replace(" HTTP/1.1", "");//ew.
 			String[] known_scans = known_scans_string.split(",");
 			String data = getScanData(known_scans);

@@ -180,9 +180,9 @@ public class MeshInterfaceThread extends Thread {
 		if (currentPath != null) {
 			final int n = Drone.nav().getCurrentPath().getSize();
 			path = new double[n * 2];
-			for (int i = 0; i < n; i += 2) {
-				path[i/2] = currentPath.getLatitude(i/2);
-				path[i/2 + 1] = currentPath.getLatitude(i/2);
+			for (int i = 0; i < n; i ++) {
+				path[i*2] = currentPath.getLatitude(i);
+				path[i*2 + 1] = currentPath.getLongitude(i);
 			}
 		} else {
 			path = new double[0];
@@ -205,10 +205,20 @@ public class MeshInterfaceThread extends Thread {
 	
 	/**
 	 * Adds scan data from another drone's broadcast to this drone's local map.
-	 * @param scanData another drone's scan data
+	 * @param scanData another drone's scan data.
 	 */
 	protected void addExternalScanData(ScanData scan) {
 		drones.MapHelper.addScan(scan);
+	}
+	
+	/**
+	 * Adds positional data from another drone's broadcast to this drone's local map.
+	 * @param status another drone's status data from which its position will be extracted.
+	 */
+	protected void addExternalPosition(StatusData status) {
+		if (status.status == StatusData.DroneState.SCANNING) {
+			drones.MapHelper.updateDronePosition(status.id, status.timestamp, status.latitude, status.longitude);
+		}
 	}
 	
 	private void requestRouteCalculation(String commandID, double latitude, double longitude, double radius) {
