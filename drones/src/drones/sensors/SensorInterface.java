@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.awt.Polygon;
+import java.awt.geom.Line2D;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,7 +41,7 @@ public abstract class SensorInterface {
 	private static double gpsLat = DEFAULT_GPS_LAT;
 	private static double gpsLng = DEFAULT_GPS_LONG;
 	
-	private static final double MAX_DIST = 50.0;
+	private static final double MAX_DIST = 20.0;
 
 	/**
 	 * Get the current latitude (via GPS)
@@ -86,7 +88,7 @@ public abstract class SensorInterface {
 
 	// TODO: Create and read in pre-defined sonar, depth and flow data
 	public static ScanData getDataForPoint(double lat, double lon){
-		CSVReader reader = null;
+
 		double[] output = new double[360];
 		ScanData outputs = null;
 		Collection<MapObject> edgeList = null;
@@ -99,15 +101,6 @@ public abstract class SensorInterface {
 		JsonArray json = null;
 		BufferedReader file = null;
 		
-		
-		try{
-			reader = new CSVReader(new FileReader("../sonar.csv"));
-		}
-		catch (Exception e){
-			// ohnoes
-			System.out.println(e.getMessage());
-		}
-				
 		// Read in list of water edges 
 		if (edgeList == null) {
 			try {
@@ -137,21 +130,38 @@ public abstract class SensorInterface {
 		// For example, if we are meant to be at 5 degrees, and there are two points, one at 7 and 
 		// one at 6, but 7 is closer (within the scan radius), pick 7. This should stop spurious
 		// `long' positioning.
+		/*
 		for(int i = 0; i < 360; i++){
 			double rad = Math.toRadians(i);
 			double rad0 = mToD(10);
 			double angmax = Double.MAX_VALUE;				
 			double x1 = lat;
 			double y1 = lon;
+			int x1_hack = dtoM(x1);
+			int y1_hack = dtoM(y1);
 			double x2 = lat + 0;
 			double y2 = lon + rad;
+			boolean water = false;
 			//double angmax = 0;
-			
+			System.out.println("Drone is at : " + x1 + "," + y1);
 			for (MapObject edge : edgeList) {
-				System.out.println(edge.lat.toString());
+				//System.out.println(edge.lat.toString());
+				int[] alat = new int[edge.lat.size()];
+				int[] alng = new int[edge.lng.size()];
+				for(int c = 0; c < edge.lat.size(); c++){
+					alat[c] = dtoM(edge.lat.get(c));
+					alng[c] = dtoM(edge.lng.get(c));
+				}
+				Polygon p = new Polygon(alat, alng, edge.lat.size());
+				if(p.contains(x1_hack, y1_hack)){
+					water = true;
+					System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HAPPY END");
+				}
+				
 				for(int j = 0; j < edge.lat.size(); j++){
 					double x3 = edge.lat.get(j);
 					double y3 = edge.lng.get(j);
+					System.out.println("Point is at: " + x3 + "," + y3);
 					
 					// We have two points, now to find the distance between them
 					// ... and the angle
@@ -168,14 +178,17 @@ public abstract class SensorInterface {
 						ang = (2 * Math.PI) + ang;
 					}
 					
-					//System.out.println("Deg: " + Math.toDegrees(ang) + " Dist: " + hypm);
+					System.out.println("Deg: " + Math.toDegrees(ang) + " Dist: " + hypm);
 					
 					double angdiff = rad - ang;
 					
-					if (Math.abs(angdiff) < angmax && hypm < MAX_DIST){
+					if (Math.abs(angdiff) < angmax && hypm < MAX_DIST && water){
 						System.out.println(angdiff + "Update closest at angle: " + i + " actual: " + Math.toDegrees(ang) + " Dist: " + hypm);
 						angmax = angdiff;
 						output[i] = hypm;
+					}
+					if(Math.toDegrees(angmax) > 10.0 || !water){
+						output[i] = 0.0;
 					}
 					
 					/*if (dx >= 0.0){
@@ -233,22 +246,31 @@ public abstract class SensorInterface {
 							
 							// This time, we calculate the large RHS A and B. 
 						}
-					}*/
+					}
 					
 					
 				}
 			}
 			
-		}
+		}*/
 		
 		
 		
-		/*for (MapObject edge : edgeList) {
-			System.out.println(edge.lat.toString());
-			for(int i = 0; i < edge.lat.size(); i++){
-				System.out.println(edge.lat.get(i).toString() + "," + edge.lng.get(i).toString());
-				
-			}
+		for(int i = 0; i < 360; i++){
+
+			double hyp = mToD(MAX_DIST);
+
+			double rad = Math.toRadians(i);
+			double dx = Math.cos(rad) * hyp;
+			double dy = Math.sin(rad) * hyp;
+			
+			double x1 = lat;
+			double y1 = lon;
+			double x2 = lat + dx;
+			double y2 = lon + dy;
+			
+
+			
 			// We want to check for the intersection of two lines...
 			// So, we take our drone location to be x1,y1, and a position 10 metres away to be x2,y2
 			// Then, for each vertex in our flood shape, take this to be x3,y3 and x4,y4
@@ -266,72 +288,90 @@ public abstract class SensorInterface {
 			// So, we need dx,dy. Basic trig time! (But remember to do it in Radians)
 			// We know the hyp. and angle. So, dx = cos(theta) * hyp and dy = sin(theta) * hyp
 			// Then, calculate x2,y2 by adding dx and dy to lat and lon respectively.
-			double hyp = mToD(10);
 			
-		
-			for(int i = 0; i < 360; i++){
-				double rad = Math.toRadians(i);
-				double dx = Math.cos(rad) * hyp;
-				double dy = Math.sin(rad) * hyp;
-				
-				double x1 = lat;
-				double y1 = lon;
-				double x2 = lat + dx;
-				double y2 = lon + dy;
-				
-				// We have our first line. We now need to calculate the second from a set of two points
-				// x3,y3 shall be the points at the counter. 
-				// x4,y4 shall be the points at the counter + 1. Remember this may not be a polygon, so 
-				// 		 for this reason we can't wrap around!
-				double maxdist = Double.MAX_VALUE;
-				for(int j = 0; j < edge.lat.size() - 1; j++){
-					double x3 = edge.lat.get(j);
-					double y3 = edge.lng.get(j);
-					double x4 = edge.lat.get(j+1);
-					double y4 = edge.lng.get(j+1);
-					
-					// We have our two lines, now we can calculate the intersection between them (if any)
-					// From Wikipedia...
-					double px = ((((x1 * y2) - (y1 * x2)) * (x3 - x4)) - ((x1 - x2) * ((x3 * y4) - (y3 * x4)))) 
-							  / ( ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4)) );
-					double py = ((((x1 * y2) - (y1 * x2)) * (y3 - y4)) - ((y1 - y2) * ((x3 * y4) - (y3 * x4)))) 
-							  / ( ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4)) );
-					
-					//System.out.println("Intersection :" + px + "," + py);
-					
-					// We have our intersection point, now to calculate the distance back to x1,x2
-					dx = x1 - px;
-					dy = y1 - py;
-					double dist = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-					//System.out.println("Drone is at : "+ x1 + "," + y1 + "deg " + i);
-					//System.out.println("Distance is : " + dx + "," + dy);
-					//System.out.println("Intersection :" + px + "," + py + " Dist : " + dist);
-					
-					// Because this assumes that the lines may be infinite, we need to bound the result.
-					// First, it may be 180 degrees behind the direction we are 'looking' in.
-					// We'll bodge around this by saying the drone has sensors on the front and the back.
-					// But we'll still return 360 points because 'redundancy'.
-					// TODO: This currently means the returned sensor data is "mirrored". Needs fixing in 
-					// 		 order to get more realistic scan data returns.
-					
-					// Convert back to metres
-					double distm = latLongDiffInMeters(dx, dy);
-					//System.out.println("Distance in metres is:" + distm);
-					if( distm < maxdist){
-						maxdist = distm;
-					}
-
-					
+			for (MapObject edge : edgeList) {
+			
+			
+				int[] alat = new int[edge.lat.size()];
+				int[] alng = new int[edge.lng.size()];
+				for(int c = 0; c < edge.lat.size(); c++){
+					alat[c] = dtoM(edge.lat.get(c));
+					alng[c] = dtoM(edge.lng.get(c));
 				}
+				Polygon p = new Polygon(alat, alng, edge.lat.size());
+				if(p.contains(dtoM(x1), dtoM(y1)) && p.contains(dtoM(x2), dtoM(y2))){
+
+					output[i] = MAX_DIST;
+					System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HAPPY END");
+				}
+				if(p.contains(dtoM(x1), dtoM(y1)) && !p.contains(dtoM(x2), dtoM(y2))){
+									
+					// We have our first line. We now need to calculate the second from a set of two points
+					// x3,y3 shall be the points at the counter. 
+					// x4,y4 shall be the points at the counter + 1. Remember this may not be a polygon, so 
+					// 		 for this reason we can't wrap around!
+					//double maxdist = Double.MAX_VALUE;
+					
+					for(int j = 0; j < edge.lat.size(); j++){
+						double x3 = edge.lat.get(j);
+						double y3 = edge.lng.get(j);
+						double x4, y4;
+						if (j < edge.lat.size() - 1){
+							x4 = edge.lat.get(j+1);
+							y4 = edge.lng.get(j+1);
+						}
+						else { // Wrap around to the first point
+							x4 = edge.lat.get(0);
+							y4 = edge.lng.get(0);
+						}
+						Line2D.Double polyline  = new Line2D.Double(x3, y3, x4, y4);
+						Line2D.Double droneline = new Line2D.Double(x1, y1, x2, y2);
+						if(polyline.intersectsLine(droneline)){
+							
+							
+							// We have our two lines, now we can calculate the intersection between them (if any)
+							// From Wikipedia...
+							double px = ((((x1 * y2) - (y1 * x2)) * (x3 - x4)) - ((x1 - x2) * ((x3 * y4) - (y3 * x4)))) 
+									  / ( ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4)) );
+							double py = ((((x1 * y2) - (y1 * x2)) * (y3 - y4)) - ((y1 - y2) * ((x3 * y4) - (y3 * x4)))) 
+									  / ( ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4)) );
+							
+							//System.out.println("Intersection :" + px + "," + py);
+							
+							// We have our intersection point, now to calculate the distance back to x1,x2
+							dx = x1 - px;
+							dy = y1 - py;
+							//double dist = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+							//System.out.println("Drone is at : "+ x1 + "," + y1 + "deg " + i);
+							//System.out.println("Distance is : " + dx + "," + dy);
+							//System.out.println("Intersection :" + px + "," + py + " Dist : " + dist);
+							
+							// Because this assumes that the lines may be infinite, we need to bound the result.
+							// First, it may be 180 degrees behind the direction we are 'looking' in.
+							// We'll bodge around this by saying the drone has sensors on the front and the back.
+							// But we'll still return 360 points because 'redundancy'.
+							// TODO: This currently means the returned sensor data is "mirrored". Needs fixing in 
+							// 		 order to get more realistic scan data returns.
+							
+							// Convert back to metres
+							double distm = latLongDiffInMeters(dx, dy);
+							System.out.println("Distance in metres is:" + distm);
+							output[i] = distm;
+
+							}
+					
+						
+					}		
+					}
 				//System.out.println("At degrees " + i + " distance is " + maxdist);
-				output[i] = maxdist;
+		
 			}
 				
 				
 			
 			
 
-		}*/
+		}
 		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, 1.0, 1.0, output);
 		// So, we are point lat, lon. For 360 degrees from this point, find the nearest edge.
 		
@@ -382,6 +422,16 @@ public abstract class SensorInterface {
 	public static double mToD(double m) {
 		double deg = Math.toDegrees(m / EARTH_RADIUS);
 		return deg;
+	}
+	
+	/**
+	 * Convert degrees to metres
+	 * @param d Degrees distance
+	 * @return Metres (ignoring curvature of earth
+	 */
+	public static int dtoM(double d) {
+		int met = (int) (Math.toRadians(d) * EARTH_RADIUS);
+		return met;
 	}
 	
 	/**
