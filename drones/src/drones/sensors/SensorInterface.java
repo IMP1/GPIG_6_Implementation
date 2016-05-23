@@ -65,6 +65,7 @@ public abstract class SensorInterface {
 	 */
 	@Deprecated
 	public static void setGPS(double lat, double lng) {
+		if (Drone.state() == network.StatusData.DroneState.FAULT) return; // nope, we've broken down :(
 		gpsLat = lat;
 		gpsLng = lng;
 	}
