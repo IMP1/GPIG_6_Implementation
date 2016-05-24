@@ -476,7 +476,6 @@ function parseScanAreaResponse(scanAreasJSON){
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 			
 		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received)
-		console.log(scanArea);
 		scanData.features.push(scanArea);
 
 		if(scanArea.timestamp > lastTimestamp){

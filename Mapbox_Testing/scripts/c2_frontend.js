@@ -214,7 +214,6 @@ function updateMap(){
 }
 
 function addNewUnitMapLayer(unit){
-    console.log(unit);
     map.addLayer({
         "id":     unit.id,
         "type":   "symbol",
