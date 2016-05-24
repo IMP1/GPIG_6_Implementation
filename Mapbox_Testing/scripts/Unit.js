@@ -36,6 +36,16 @@ var UnitMarker = function(unit){
     }
 }
 
+var UnitPath = function(pathCoordinates){
+	this.type = 'Feature';
+	this.properties = {};
+	this.geometry = {
+		'type': 'LineString',
+		'coordinates': pathCoordinates
+	}
+	return this;
+};
+
 function updateUnitFromJSON(unit, unitID, unitJSON){
     
 	unit.id              = unitID;

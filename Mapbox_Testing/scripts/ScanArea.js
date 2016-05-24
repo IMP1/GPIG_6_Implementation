@@ -1,4 +1,4 @@
-// SearchArea Class
+// ScanArea Class
 var ScanArea = function(id, depth, flowrate, coordinates, timestamp){
 	this.type = 'Feature';
 	this.depth = 0;
