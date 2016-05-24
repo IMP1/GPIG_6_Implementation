@@ -33,11 +33,11 @@ import network.ScanData;
  */
 public abstract class MapHelper {
 	
-	private static class DronePosition {
+	public static class DronePosition {
 		public final double latitude;
 		public final double longitude;
 		public final LocalDateTime time;
-		private DronePosition(LocalDateTime time, double lat, double lng) {
+		public DronePosition(LocalDateTime time, double lat, double lng) {
 			this.time = time;
 			this.latitude = lat;
 			this.longitude = lng;
