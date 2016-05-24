@@ -34,39 +34,19 @@
     </target>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
-        <ant antfile="build.xml" dir="${network.location}" inheritAll="false" target="build-project">
-            <propertyset>
-                <propertyref name="build.compiler"/>
-            </propertyset>
-        </ant>
+        <ant antfile="build.xml" dir="${network.location}" inheritAll="false" target="build-project"/>
     </target>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
             <classpath refid="c2.classpath"/>
+            <compilerarg value="-Xlint"/>
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
         <ant antfile="build.xml" dir="${drones.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${drones.location}" inheritAll="false" target="build">
-            <propertyset>
-                <propertyref name="build.compiler"/>
-            </propertyset>
-        </ant>
-    </target>
-    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
-        <copy todir="${ant.library.dir}">
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </copy>
-        <unzip dest="${ant.library.dir}">
-            <patternset includes="jdtCompilerAdapter.jar"/>
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </unzip>
-    </target>
-    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
-        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
-        <antcall target="build"/>
+        <ant antfile="build.xml" dir="${drones.location}" inheritAll="false" target="build"/>
     </target>
     <target name="C2">
         <java classname="c2.C2" failonerror="true" fork="yes">
