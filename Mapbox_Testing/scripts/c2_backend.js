@@ -97,13 +97,13 @@ function ConvertCoordinatesTo2DArray(JSONCoordinates, subsampleRate){
 
 function setupAPICalls(){
 	
-	var refreshRate = 500;
+	var refreshRate = 1000;
 	
 	getUnitsInfo();
-	// getScanInfo();
+	getScanInfo();
 	
 	setInterval(getUnitsInfo, refreshRate);
-	// setInterval(getScanInfo, refreshRate);
+	setInterval(getScanInfo, refreshRate);
 	
 }
 
@@ -447,7 +447,6 @@ function getScanInfo(){
 			xmlHttpScans.onload = function (e) {
 				if (xmlHttpScans.readyState === 4) {
 					if (xmlHttpScans.status === 200) {
-						// console.log(xmlHttpScans.responseText);
 						parseScanAreaResponse(JSON.parse(xmlHttpScans.responseText));
 					} else {
 						console.error(xmlHttpScans.statusText);
@@ -466,6 +465,9 @@ function getScanInfo(){
 }
 
 function parseScanAreaResponse(scanAreasJSON){
+	
+	console.log(scanAreasJSON);
+	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		
 		var scanJSON = scanAreasJSON[scanKey];
