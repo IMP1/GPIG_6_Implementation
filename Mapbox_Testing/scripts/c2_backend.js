@@ -1,7 +1,9 @@
 // Debug Vars
 var ONLINE = true;
 
-// Utility Functions
+///////////////////////
+// Utility Functions //
+///////////////////////
 
 function unprojectedDistance(ll0, ll1) {
     
@@ -76,16 +78,32 @@ function ConvertCoordinatesTo2DArray(JSONCoordinates, subsampleRate){
 	return data;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /////////////////////////
 // FRONTEND COMMS CODE //
 /////////////////////////
 
 function setupAPICalls(){
-	var refreshInterval = 1000;
+	
+	var refreshRate = 500;
+	
 	getUnitsInfo();
 	// getScanInfo();
-	setInterval(getUnitsInfo, refreshInterval);
-	// setInterval(getScanInfo, 1500);
+	
+	setInterval(getUnitsInfo, refreshRate);
+	// setInterval(getScanInfo, refreshRate);
 	
 }
 
@@ -98,6 +116,20 @@ function setupKeypresses(){
 		}
 	};
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -140,8 +172,6 @@ var units = [];
 
 function getUnitsInfo(){
 	
-	// Get JSON from API endpoint
-	
 	if(ONLINE){
 	
 		var xmlHttpUnits = new XMLHttpRequest();
@@ -183,29 +213,33 @@ function parseUnitsInfo(unitsJSON){
 	   if(unit){
 		   // If Unit Exists Update It
 		   updateUnitFromJSON(unit, unitKey, unitJSON);
-	   }else{
-		   
-		   unit = new Unit(unitKey);
-		   updateUnitFromJSON(unit, unitKey, unitJSON);
-		   var marker = addNewUnitMarker(unit);
-		   unit.marker = marker;		   
-		   showAllUnits();
-		   units.push(unit);
+	   }else{		   
+		   addNewUnit(unitKey, unitJSON);
 	   }
 	   
 	   // TODO : Remove Units if they no longer exist
 	   
 	});
 	
-	// Redraw Map
-	map.getSource('markers').setData(markers);
-	
 	// Redraw UI
 	updateUnitUI();
 	
 }
 
-// Recall Units
+function addNewUnit(unitKey, unitJSON){
+	
+	// Create new Unit Object	
+	var unit = new Unit(unitKey);
+	updateUnitFromJSON(unit, unitKey, unitJSON);	
+	units.push(unit);
+	
+	// Add to Map
+	addNewUnitMapLayer(unit);
+	
+	// Add controls
+	addNewUnitControls(unit);
+}
+
 
 function recallUnits(){
 		
@@ -224,6 +258,14 @@ function recallUnits(){
 			xmlHttpRecall.send(null);	
 	
 }
+
+
+
+
+
+
+
+
 
 //////////////////////
 // SEARCH AREA CODE //
@@ -330,9 +372,6 @@ function assignSearchAreas(){
 function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
 	
 	if (searchAreaResponse.length > 0){
-		// Succesfully assigned > 1 drone
-		// Get Drones by UID
-		
 		searchAreaResponse.forEach(function(droneID) {
 			
 			var unit = getByAttr(units, 'id', droneID);
@@ -347,8 +386,6 @@ function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
 	}
 }
 
-// Delete all Search Areas
-
 function deleteAllSearchAreas(){
     
     if(!currentSearchArea){
@@ -362,6 +399,24 @@ function deleteAllSearchAreas(){
     
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ///////////////
 // SCAN CODE //
@@ -432,61 +487,3 @@ function parseScanAreaResponse(scanAreasJSON){
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
 }
-
-// ///////////////
-// // PATH CODE //
-// ///////////////
-
-// var pathExamples = {
-// 	"path1":
-// 	{"points":[ [ 53.965099,-1.083076 ], 
-// 	 			[53.964935,-1.082089 ],
-// 				[53.964594,-1.081188 ], 
-// 				[53.964026,-1.080201 ], 
-// 				[53.963408,-1.079063 ], 
-// 				[53.962827,-1.07784],
-// 				[53.962209,-1.076639],
-// 				[53.961552,-1.075523],
-// 				[53.961401,-1.074536],
-// 				[53.961211,-1.073678],
-// 				[53.960795,-1.073184],
-// 				[53.960378,-1.07269],
-// 				[53.959961,-1.072197],
-// 				[53.959482,-1.071811],
-// 				[53.959002,-1.071424]],
-// 	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
-	 
-// }
-
-// var unitPaths = [];
-
-// function newPath(){
-	
-// 	var pathsJSON = pathExamples;
-	
-// 	Object.keys(pathsJSON).forEach(function (pathKey) {
-		   
-// 	   var pathJSON = pathsJSON[pathKey];
-	   
-// 	   var unitPath;
-// 	   unitPaths.forEach(function(existingPath) {
-// 		   if(existingPath.id == pathKey){
-// 			   unitPath = existingPath;
-// 		   }
-// 	   }, this);
-	   
-// 	   if(unitPath){
-		   
-// 	   }else{
-// 		   // Else Create a new one
-		   
-// 		   var unitPath = new UnitPath();
-// 		   	   unitPath.id = pathKey;
-// 			   unitPath.gpsPoints = pathJSON.points;
-// 			   // unitPath.polyData is generated dynamically for redrawing
-		   
-// 		   unitPaths.push(unitPath);
-// 	   }		   
-// 	});	
-	
-// }
