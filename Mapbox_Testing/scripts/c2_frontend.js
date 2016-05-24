@@ -70,6 +70,11 @@ var scanData = {
     "features": []
 };
 
+var unitPathData = {
+    "type": "FeatureCollection",
+    "features": []
+};
+
 map.on('load', function () {
     
     map.addSource("markers", {
@@ -86,13 +91,34 @@ map.on('load', function () {
     });
     
     map.addLayer({
-        'id': 'route',
+        'id': 'ScanAreaData',
         'type': 'fill',
         'source': 'ScanAreaData',
         'layout': {},
         'paint': {
             'fill-color': '#088',
             'fill-opacity': 0.5
+        }
+    });
+    
+    // Unit Movement Paths
+    
+    map.addSource('UnitPathData',{
+        "type": "geojson",
+        "data": unitPathData
+    });
+    
+    map.addLayer({
+        "id": "route",
+        "type": "line",
+        "source": "UnitPathData",
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            "line-color": "#888",
+            "line-width": 4
         }
     });
     
@@ -277,6 +303,20 @@ function setMarkerPosition(lat, long, marker){
 function refreshUI(){
     updateUnitUI();
     redrawSearchAreasUI();
+    updateUnitPaths();
+}
+
+function updateUnitPaths(){
+    
+    unitPathData.features = [];
+    
+    units.forEach(function(unit) {        
+        if(unit.unitPath){
+          unitPathData.features.push(unit.unitPath);
+        }
+    }, this);
+    
+    map.getSource('UnitPathData').setData(unitPathData);
 }
 
 // Map Projection/Unprojection
@@ -622,7 +662,6 @@ function redrawSearchAreas(){
 map.on("render", function() {
     redrawSearchAreas()
     // redrawScanAreas();
-    redrawUnitPaths();
 })
 
 ////////////////
@@ -660,26 +699,26 @@ map.on("render", function() {
 // UNIT PATHS //
 ////////////////
                             
-function redrawUnitPaths(){
+// function redrawUnitPaths(){
     
-//    console.log(unitPaths);
+// //    console.log(unitPaths);
 
-    unitPaths.forEach(function(unitPath){
+//     unitPaths.forEach(function(unitPath){
         
-        console.log(unitPath.polyData())
+//         console.log(unitPath.polyData())
         
-        // Remove First
-        svg.selectAll('#UnitPath-'+unitPath.id).remove();
+//         // Remove First
+//         svg.selectAll('#UnitPath-'+unitPath.id).remove();
         
-        svg.append("path")
-            .attr("d", lineFunction(unitPath.polyData()))
-            .attr("stroke-width", 2)
-			.attr("opacity", 1)
-            .attr("stroke", "blue")
-            .attr("fill", "none")
-            .attr({id:'UnitPath-'+unitPath.id});
+//         svg.append("path")
+//             .attr("d", lineFunction(unitPath.polyData()))
+//             .attr("stroke-width", 2)
+// 			.attr("opacity", 1)
+//             .attr("stroke", "blue")
+//             .attr("fill", "none")
+//             .attr({id:'UnitPath-'+unitPath.id});
 
         
-    });
+//     });
     
-}                                                   
+// }                                                   

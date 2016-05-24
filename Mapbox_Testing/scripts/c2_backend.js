@@ -65,6 +65,17 @@ var getByAttr = function(arr, attr, value){
 	return false;
 }
 
+function ConvertCoordinatesTo2DArray(JSONCoordinates, subsampleRate){
+	var data = [];
+	for (var i = 0; i < JSONCoordinates.length; i+=2/subsampleRate) {
+		// Swapped for GeoJSON format
+		var lat  = JSONCoordinates[i+1];
+		var lng  = JSONCoordinates[i];		
+		data.push([lat, lng]);			
+	}
+	return data;
+}
+
 /////////////////////////
 // FRONTEND COMMS CODE //
 /////////////////////////
@@ -72,9 +83,9 @@ var getByAttr = function(arr, attr, value){
 function setupAPICalls(){
 	var refreshInterval = 1000;
 	getUnitsInfo();
-	getScanInfo();
+	// getScanInfo();
 	setInterval(getUnitsInfo, refreshInterval);
-	setInterval(getScanInfo, 1500);
+	// setInterval(getScanInfo, 1500);
 	
 }
 
@@ -123,24 +134,9 @@ var unitExamples = {
 	 "status":"Scanning",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
-	 
 }
 
 var units = [];
-
-function addNewUnit(id, symbol, coordinates, batteryLevel, status, lastUpdated){
-	
-	// Map symbol is generated based on ID
-	if(id == "c2"){
-		symbol = "castle";
-	}else{
-		symbol = "marker";
-	}
-	
-    var unit = new Unit(id, symbol, coordinates, batteryLevel, status, lastUpdated);
-    units.push(unit);
-	return unit;    
-}
 
 function getUnitsInfo(){
 	
@@ -154,7 +150,6 @@ function getUnitsInfo(){
 			xmlHttpUnits.onload = function (e) {
 				if (xmlHttpUnits.readyState === 4) {
 					if (xmlHttpUnits.status === 200) {
-						console.log(xmlHttpUnits.responseText);
 						parseUnitsInfo(JSON.parse(xmlHttpUnits.responseText));
 					} else {
 						console.error(xmlHttpUnits.statusText);
@@ -189,12 +184,13 @@ function parseUnitsInfo(unitsJSON){
 		   // If Unit Exists Update It
 		   updateUnitFromJSON(unit, unitKey, unitJSON);
 	   }else{
-		   // Else Create a new one
-		   var coordinates = [unitJSON.locLong, unitJSON.locLat];
-    	   unit = addNewUnit(unitKey, 'marker', coordinates, unitJSON.batteryLevel, unitJSON.status, unitJSON.timestamp);
+		   
+		   unit = new Unit(unitKey);
+		   updateUnitFromJSON(unit, unitKey, unitJSON);
 		   var marker = addNewUnitMarker(unit);
 		   unit.marker = marker;		   
 		   showAllUnits();
+		   units.push(unit);
 	   }
 	   
 	   // TODO : Remove Units if they no longer exist
@@ -218,13 +214,7 @@ function recallUnits(){
 						
 			xmlHttpRecall.onload = function (e) {
 				if (xmlHttpRecall.readyState === 4) {
-					if (xmlHttpRecall.status === 200) {
-						console.log(xmlHttpRecall.responseText);
-						ShowNewMessage('Drone Recall Succesful', '', 'success');
-					} else {
-						console.error(xmlHttpRecall.statusText);
-						ShowNewMessage('Drone Recall Error', 'Unable to Recall Drones', 'high');
-					}
+					ShowNewMessage('Drone Recall Succesful', '', 'success');
 				}
 			};
 			xmlHttpRecall.onerror = function (e) {
@@ -264,7 +254,6 @@ function cancelSearchAreaCreation(){
 		svg.selectAll('#SearchArea-Marker-'+currentSearchArea.id).remove();
 		svg.selectAll('#SearchArea-Text-'+currentSearchArea.id).remove();    
 		searchAreaArray.pop();
-		console.log(searchAreaArray);
 		currentSearchArea = null;
 		editingSearchArea = false;
 		updateMap();
@@ -310,8 +299,7 @@ function assignSearchAreas(){
 					xmlHttpAssignSearchAreas.onload = function (e) {
 						if (xmlHttpAssignSearchAreas.readyState === 4) {
 							if (xmlHttpAssignSearchAreas.status === 200) {
-								console.log(xmlHttpAssignSearchAreas.responseText);
-								parseSearchAreaAssignmentResponse(JSON.parse(xmlHttpAssignSearchAreas.responseText));
+								parseSearchAreaAssignmentResponse(JSON.parse(xmlHttpAssignSearchAreas.responseText), searchArea);
 							} else {
 								console.error(xmlHttpAssignSearchAreas.statusText);
 								ShowNewMessage('Search Area Assignment Error', 'Unable to Recall Drones', 'high');
@@ -339,7 +327,7 @@ function assignSearchAreas(){
 	
 }
 
-function parseSearchAreaAssignmentResponse(searchAreaResponse){
+function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
 	
 	if (searchAreaResponse.length > 0){
 		// Succesfully assigned > 1 drone
@@ -404,7 +392,7 @@ function getScanInfo(){
 			xmlHttpScans.onload = function (e) {
 				if (xmlHttpScans.readyState === 4) {
 					if (xmlHttpScans.status === 200) {
-						console.log(xmlHttpScans.responseText);
+						// console.log(xmlHttpScans.responseText);
 						parseScanAreaResponse(JSON.parse(xmlHttpScans.responseText));
 					} else {
 						console.error(xmlHttpScans.statusText);
@@ -426,74 +414,79 @@ function parseScanAreaResponse(scanAreasJSON){
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		
 		var scanJSON = scanAreasJSON[scanKey];
+		
+		var subsampleRate = 1;
+		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 			
-		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)], scanJSON.received)
+		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received)
+		console.log(scanArea);
 		scanData.features.push(scanArea);
 
 		if(scanArea.timestamp > lastTimestamp){
 			lastTimestamp = scanArea.timestamp;
 		}		
-			
-		// Redraw Map
-		map.getSource('ScanAreaData').setData(scanData);
 		
-	});	
+		
+	});		
+		
+	// Redraw Map
+	map.getSource('ScanAreaData').setData(scanData);
 }
 
-///////////////
-// PATH CODE //
-///////////////
+// ///////////////
+// // PATH CODE //
+// ///////////////
 
-var pathExamples = {
-	"path1":
-	{"points":[ [ 53.965099,-1.083076 ], 
-	 			[53.964935,-1.082089 ],
-				[53.964594,-1.081188 ], 
-				[53.964026,-1.080201 ], 
-				[53.963408,-1.079063 ], 
-				[53.962827,-1.07784],
-				[53.962209,-1.076639],
-				[53.961552,-1.075523],
-				[53.961401,-1.074536],
-				[53.961211,-1.073678],
-				[53.960795,-1.073184],
-				[53.960378,-1.07269],
-				[53.959961,-1.072197],
-				[53.959482,-1.071811],
-				[53.959002,-1.071424]],
-	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
+// var pathExamples = {
+// 	"path1":
+// 	{"points":[ [ 53.965099,-1.083076 ], 
+// 	 			[53.964935,-1.082089 ],
+// 				[53.964594,-1.081188 ], 
+// 				[53.964026,-1.080201 ], 
+// 				[53.963408,-1.079063 ], 
+// 				[53.962827,-1.07784],
+// 				[53.962209,-1.076639],
+// 				[53.961552,-1.075523],
+// 				[53.961401,-1.074536],
+// 				[53.961211,-1.073678],
+// 				[53.960795,-1.073184],
+// 				[53.960378,-1.07269],
+// 				[53.959961,-1.072197],
+// 				[53.959482,-1.071811],
+// 				[53.959002,-1.071424]],
+// 	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
 	 
-}
+// }
 
-var unitPaths = [];
+// var unitPaths = [];
 
-function newPath(){
+// function newPath(){
 	
-	var pathsJSON = pathExamples;
+// 	var pathsJSON = pathExamples;
 	
-	Object.keys(pathsJSON).forEach(function (pathKey) {
+// 	Object.keys(pathsJSON).forEach(function (pathKey) {
 		   
-	   var pathJSON = pathsJSON[pathKey];
+// 	   var pathJSON = pathsJSON[pathKey];
 	   
-	   var unitPath;
-	   unitPaths.forEach(function(existingPath) {
-		   if(existingPath.id == pathKey){
-			   unitPath = existingPath;
-		   }
-	   }, this);
+// 	   var unitPath;
+// 	   unitPaths.forEach(function(existingPath) {
+// 		   if(existingPath.id == pathKey){
+// 			   unitPath = existingPath;
+// 		   }
+// 	   }, this);
 	   
-	   if(unitPath){
+// 	   if(unitPath){
 		   
-	   }else{
-		   // Else Create a new one
+// 	   }else{
+// 		   // Else Create a new one
 		   
-		   var unitPath = new UnitPath();
-		   	   unitPath.id = pathKey;
-			   unitPath.gpsPoints = pathJSON.points;
-			   // unitPath.polyData is generated dynamically for redrawing
+// 		   var unitPath = new UnitPath();
+// 		   	   unitPath.id = pathKey;
+// 			   unitPath.gpsPoints = pathJSON.points;
+// 			   // unitPath.polyData is generated dynamically for redrawing
 		   
-		   unitPaths.push(unitPath);
-	   }		   
-	});	
+// 		   unitPaths.push(unitPath);
+// 	   }		   
+// 	});	
 	
-}
+// }

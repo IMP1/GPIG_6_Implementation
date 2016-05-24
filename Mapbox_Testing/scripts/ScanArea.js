@@ -13,14 +13,3 @@ var ScanArea = function(id, depth, flowrate, coordinates, timestamp){
 	}
 	return this;
 };
-
-function ConvertCoordinatesTo2DArray(JSONCoordinates){
-	var data = [];
-	for (var i = 0; i < JSONCoordinates.length; i+=2) {
-		// Swapped for GeoJSON format
-		var lat  = JSONCoordinates[i+1];
-		var lng  = JSONCoordinates[i];		
-		data.push([lat, lng]);			
-	}
-	return data;
-}
