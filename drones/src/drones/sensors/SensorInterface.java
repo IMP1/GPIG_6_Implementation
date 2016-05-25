@@ -159,6 +159,7 @@ public abstract class SensorInterface {
 			// Then, calculate x2,y2 by adding dx and dy to lat and lon respectively.
 			
 			double hyp = Position.mToD(MAX_DIST);
+			double mindist = Double.MAX_VALUE;
 
 			double rad = Math.toRadians(i);
 			double dx = Math.cos(rad) * hyp;
@@ -188,20 +189,13 @@ public abstract class SensorInterface {
 				}
 				Polygon p = new Polygon(alat, alng, edge.lat.size());
 				
-				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && p.contains(Position.dtoM(x2), Position.dtoM(y2))){
-					// The max scan range of the drone is within the flood polygon, so we 
-					// can't find the edge of it.
-					output[i] = MAX_DIST;
-					depth = 10.0;
-					flow = 3.2;
-				}
-				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && !p.contains(Position.dtoM(x2), Position.dtoM(y2))){
-									
+				if(p.contains(dtoM(x1), dtoM(y1)) /*&& !p.contains(dtoM(x2), dtoM(y2))*/){
 					// We know that the sonar can find the edge of the water polygon.
 					// We now need to calculate the second from a set of two points
 					// x3,y3 shall be the points at the counter. 
 					// x4,y4 shall be the points at the counter + 1. Since this is a polygon, we 
 					// wrap around at the end.
+					
 					
 					for(int j = 0; j < edge.lat.size(); j++){
 						
@@ -240,10 +234,20 @@ public abstract class SensorInterface {
 							
 							// Convert back to metres
 							double distm = Position.latLongDiffInMeters(dx, dy);
-							output[i] = distm;
-
+							
+							// In the case of two lines possibly being intersecting the ray from the drone, we
+							// want the closer of the two.
+							if(distm < mindist){
+								output[i] = distm;
+								mindist = distm;
+							}
 						}
-					}
+						// Finally, if both the drone and the max scanning distance are within the water polygon,
+						// we check that any intersection point is over the scanning distance before plotting it.
+						if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && p.contains(Position.dtoM(x2), Position.dtoM(y2)) && mindist > MAX_DIST){
+							output[i] = MAX_DIST;
+						}
+					}		
 				}
 			}
 		}
