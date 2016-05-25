@@ -69,7 +69,7 @@ function setupAPICalls(){
 	getUnitsInfo();
 	getScanInfo();
 	setInterval(getUnitsInfo, refreshInterval);
-	//setInterval(getScanInfo, 5000);
+	setInterval(getScanInfo, 1500);
 	
 }
 
@@ -277,6 +277,7 @@ function assignSearchAreas(){
 				ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
 				
 				// Responds with the drone uids assigned to this search area 
+				console.log(xmlHttpAssignSearchAreas.responseText)
 				var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
 				
 				if (searchAreaResponse.length > 0){
