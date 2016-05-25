@@ -69,9 +69,21 @@ function setupAPICalls(){
 	getUnitsInfo();
 	getScanInfo();
 	setInterval(getUnitsInfo, refreshInterval);
-	setInterval(getScanInfo, refreshInterval);
+	setInterval(getScanInfo, 1500);
 	
 }
+
+function setupKeypresses(){
+	document.onkeydown = function(evt) {
+		evt = evt || window.event;
+		if (evt.keyCode == 27) {
+			// Escape
+			cancelSearchAreaCreation();
+		}
+	};
+}
+
+
 
 //////////////////////
 // SEARCH UNIT CODE //
@@ -81,14 +93,14 @@ var unitExamples = {
 	"c2":
 	{"batteryLevel":1,
 	 "locLat":53.959,
-	 "locLong":-1.08369,
+	 "locLong":-1.09369,
 	 "status":"Moving",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
 	 
 	 ,"Drone 1":
 	{"batteryLevel":1,
-	 "locLat":53.967,
-	 "locLong":-1.09024,
+	 "locLat":53.95566264825,
+	 "locLong":-1.07909046359,
 	 "status":"Navigating",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
@@ -164,7 +176,8 @@ function getUnitsInfo(){
 		   var coordinates = [unitJSON.locLong, unitJSON.locLat];
     	   unit = addNewUnit(unitKey, 'marker', coordinates, unitJSON.batteryLevel, unitJSON.status, unitJSON.timestamp);
 		   var marker = addNewUnitMarker(unit);
-		   unit.marker = marker;
+		   unit.marker = marker;		   
+		   showAllUnits();
 	   }
 	   
 	   // TODO : Remove Units if they no longer exist
@@ -212,6 +225,20 @@ function changeDroneAssignmentForSearchArea(inc, searchArea){
 
 // Search Area Asssignment
 
+function cancelSearchAreaCreation(){
+	if(currentSearchArea){
+		svg.selectAll('#SearchArea-'+currentSearchArea.id).remove();
+		svg.selectAll('#SearchArea-Line-'+currentSearchArea.id).remove();
+		svg.selectAll('#SearchArea-Marker-'+currentSearchArea.id).remove();
+		svg.selectAll('#SearchArea-Text-'+currentSearchArea.id).remove();    
+		searchAreaArray.pop();
+		console.log(searchAreaArray);
+		currentSearchArea = null;
+		editingSearchArea = false;
+		updateMap();
+	}
+}
+
 var currentlyAssigningSearchAreas;
 
 function assignSearchAreas(){
@@ -250,6 +277,7 @@ function assignSearchAreas(){
 				ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
 				
 				// Responds with the drone uids assigned to this search area 
+				console.log(xmlHttpAssignSearchAreas.responseText)
 				var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
 				
 				if (searchAreaResponse.length > 0){
@@ -291,12 +319,16 @@ function assignSearchAreas(){
 
 function deleteAllSearchAreas(){
     
-    console.log('//TODO : Prompt Are you sure message.');
+    if(!currentSearchArea){
+		searchAreaArray.forEach(function(searchArea){
+			deleteSearchAreaView(searchArea);
+		});
+		searchAreaArray = [];
+	}else{
+		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
+	}
     
-    searchAreaArray.forEach(function(searchArea){
-        deleteSearchAreaView(searchArea);
-    });
-    searchAreaArray = [];
+    
 }
 
 ///////////////
@@ -304,30 +336,6 @@ function deleteAllSearchAreas(){
 ///////////////
 
 var scanAreas = [];
-
-//{"e9b7d680-8704-4c37-88e6-3243a9c4ae0c2016-05-20T11:22:36.506":{"locLat":53.957184,"locLong":-1.078302,"depth":1.0,"flowRate":5.0,"distanceReadings":
-
-var scanExamples = {
-	"scan1":
-	{"locLat":53.959,
-	 "locLong":-1.08369,
-	 "depth":10,
-	 "flowRate":10,
-	 // Latlong are reversed
-	 "distanceReadings":[-1.080062204934591, 53.955374658400174 , 
-	 			 -1.079072578584086, 53.955751100286385 , 
-				 -1.079302491776628, 53.956027547632175 , 
-				 -1.079492420066118, 53.956198120612022 , 
-				 -1.080082197386116, 53.95626870233059 , 
-				 -1.08047205019086, 53.95626870233059 , 
-				 -1.080641986028826, 53.956151066066589 , 
-				 -1.080791929415266, 53.956004020269859 , 
-				 -1.080232140772556, 53.955645226349397 , 
-				 -1.080252133224082, 53.955504060681911 , 
-				 -1.080072201160353, 53.955374658400174 ],
-	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
-	 
-}
 
 function getScanInfo(){
 	
@@ -347,7 +355,7 @@ function getScanInfo(){
 		// Parse JSON
 		scanAreasJSON = JSON.parse(xmlHttpScans.responseText);
 	}else{
-		scanAreasJSON = scanExamples;
+		scanAreasJSON = scanTestData;
 	}
 	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
@@ -361,23 +369,17 @@ function getScanInfo(){
 			   }
 		   }, this);
 		   
-		   console.log(scanJSON);
-		   
 		   if(scan){
 			   
 		   }else{
 			   // Else Create a new one
 			   
-			   var scanArea = new ScanArea();
-			   	   scanArea.id = scanKey;
-				   scanArea.center = [scanJSON.locLat, scanJSON.locLong];
-				   scanArea.depth = scanJSON.depth;
-				   scanArea.flowrate = scanJSON.flowRate;
-//				   scanArea.timestamp = scanJSON.timestamp;
-				   scanArea.gpsPoints = scanJSON.distanceReadings;
-				   // scanArea.polyData is generated dynamically for redrawing
+			   var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)])
+			   scanData.features.push(scanArea);
+			  
+			   // Redraw Map
+			   map.getSource('ScanAreaData').setData(scanData);
 			   
-			   scanAreas.push(scanArea);
 		   }		   
 		});	
 }

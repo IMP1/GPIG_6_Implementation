@@ -28,7 +28,6 @@ public class Drone {
 	private static DroneState state = DroneState.IDLE;
 	
 	// Singleton accessors
-	// TODO: Handle synchronous read / write access to map (move to MapHelper and make protected?)
 	public static GraphHopper map() {
 		return map;
 	}
@@ -40,13 +39,16 @@ public class Drone {
 	}
 	
 	public static DroneState state() {
-		return Drone.state;
+		synchronized (Drone.state) {
+			return Drone.state;
+		}
 	}
 	
 	public static void setState(DroneState state) {
-		//TODO: unlimit this?
-		if (!SensorInterface.isBatteryTooLow()) {
-			Drone.state = state;
+		synchronized (Drone.state) {
+			if (!SensorInterface.isBatteryTooLow() || state == DroneState.RETURNING) {
+				Drone.state = state;
+			}
 		}
 	}
 
@@ -90,6 +92,28 @@ public class Drone {
 		System.out.println("Mesh Interface started.");
 		navThread.start();
 		System.out.println("Navigation Thread started.");
+		
+		int argOffset = 0;
+		if (args.length >= 3) argOffset ++;
+		if (args.length > 0){
+			if (args[argOffset].equals("-fault")) {
+				try {
+					Thread.sleep(4 * 1000);
+					if (args[argOffset + 1].equals("battery")) {
+						System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
+						SensorInterface.setBatteryLow();
+					} else if (args[argOffset + 1].equals("engine")) {
+						System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
+						Drone.setState(network.StatusData.DroneState.FAULT);
+					} else if (args[argOffset + 1].equals("dead")) {
+						System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
+						System.exit(0);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 }

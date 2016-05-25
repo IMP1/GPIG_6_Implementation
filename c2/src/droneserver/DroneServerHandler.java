@@ -69,8 +69,8 @@ public class DroneServerHandler implements Runnable {
 				double[] absoluteEdges = new double[360 * 2];
 //				System.out.println(scandata.distanceReadings.length);
 				for (int i = 0; i < 360; i ++) {
-				    absoluteEdges[i*2] = lat + mToD(scandata.distanceReadings[i] * Math.sin(Math.toRadians(i)));
-				    absoluteEdges[i*2+1] = lon + mToD(scandata.distanceReadings[i] * Math.cos(Math.toRadians(i)));
+				    absoluteEdges[i*2] = lat + mToD(scandata.distanceReadings[i] * Math.cos(Math.toRadians(i)));
+				    absoluteEdges[i*2+1] = lon + mToD(scandata.distanceReadings[i] * Math.sin(Math.toRadians(i)));
 				}
 				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, absoluteEdges);
 				datastore.addScan(ident.replace(":", "").replace(".", ""), scan); //because jqyuery hates colons and periods in selectors.
