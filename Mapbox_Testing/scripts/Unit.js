@@ -2,30 +2,32 @@
 
 var UnitCount = 0;
 
-var Unit = function(id, symbol, coordinates, batteryLevel, status, lastUpdated){
+var Unit = function(id){  
     
-    // If ID is C2
+    // Assign name and symbol based on id
+    this.id         = id;
     
     if(id == 'c2'){
-        this.name = 'C2';
+        this.name   = 'C2';
+        this.symbol = 'harbor';
     }else{
-        this.name = 'Drone '+UnitCount;
+        this.name   = 'Drone '+UnitCount;
+        this.symbol = 'marker';
     }
     
-    UnitCount++;
+    // Create visual map marker  
+    this.marker = new UnitMarker(this);
     
-    this.id = id;
-    this.symbol = symbol;
-    this.coordinates = coordinates;
-    this.batteryLevel = batteryLevel;
-    this.status = status;
-    this.lastUpdated = dateFromJSON(lastUpdated);
+    // Init coordinates
+    this.coordinates = [0, 0];
+    
+    UnitCount++;
+    return this;
 }
 
 var UnitMarker = function(unit){
     this.type = "Feature";
     this.properties = {
-        "name" : unit.id,
         "marker-symbol": unit.symbol
     }
     this.geometry = {
@@ -34,18 +36,33 @@ var UnitMarker = function(unit){
     }
 }
 
+var UnitPath = function(pathCoordinates){
+	this.type = 'Feature';
+	this.properties = {};
+	this.geometry = {
+		'type': 'LineString',
+		'coordinates': pathCoordinates
+	}
+	return this;
+};
+
 function updateUnitFromJSON(unit, unitID, unitJSON){
-	unit.id             = unitID;
-	unit.batteryLevel   = unitJSON.batteryLevel;
-	unit.coordinates[1] = unitJSON.locLat;
-	unit.coordinates[0] = unitJSON.locLong;
-	unit.status         = unitJSON.status;
     
-    var newTimeStamp = dateFromJSON(unitJSON.timestamp);
-    unit.lastUpdated = newTimeStamp;
+	unit.id              = unitID;
+	unit.batteryLevel    = unitJSON.batteryLevel;
+	unit.coordinates[1]  = unitJSON.locLat;
+	unit.coordinates[0]  = unitJSON.locLong;
+	unit.status          = unitJSON.status;
+    
+    unit.marker.geometry.coordinates = unit.coordinates;
+    
+    if(unitJSON.currentPath && unitJSON.currentPath.length > 0){
+        var pathCoordinates  = ConvertCoordinatesTo2DArray(unitJSON.currentPath, 1);
+        unit.unitPath        = new UnitPath(pathCoordinates);
+    }else{
+        unit.unitPath = undefined;
+    }
+    
+    unit.lastUpdated = dateFromJSON(unitJSON.timestamp);
 }
 
-function dateFromJSON(jsonTimestamp){    
-    var date = new Date(jsonTimestamp.date.year, jsonTimestamp.date.month-1, jsonTimestamp.date.day, jsonTimestamp.time.hour, jsonTimestamp.time.minute, jsonTimestamp.time.second, 0);    
-    return date;
-}

@@ -61,7 +61,7 @@ public class DroneServerHandler implements Runnable {
 			id = scandata.id;
 			dt = scandata.timestamp;
 			String ident = scandata.id+scandata.timestamp;
-//			System.out.println("Receiving scandata"+id);
+			System.out.println("Receiving scandata"+ident);
 			if(!datastore.scanExists(ident)){
 //				System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
 				double lat = scandata.latitude;
@@ -72,7 +72,7 @@ public class DroneServerHandler implements Runnable {
 				    absoluteEdges[i*2] = lat + mToD(scandata.distanceReadings[i] * Math.cos(Math.toRadians(i)));
 				    absoluteEdges[i*2+1] = lon + mToD(scandata.distanceReadings[i] * Math.sin(Math.toRadians(i)));
 				}
-				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, absoluteEdges);
+				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, absoluteEdges, LocalDateTime.now());
 				datastore.addScan(ident.replace(":", "").replace(".", ""), scan); //because jqyuery hates colons and periods in selectors.
 			}
 		} else if(Message.getType(data) == PathData.class){
