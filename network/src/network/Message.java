@@ -14,6 +14,7 @@ public abstract class Message {
 	public static final String MESH_GROUP_ADDRESS = "234.0.0.6";
 	public static final int MESH_PORT = 5224;
 	public static final int PACKAGE_SIZE = 8192;
+	public static final String C2_ID = "c2";
 	
 	public final static String SEPARATOR = ";";
 	public final static String SUFFIX = "#";

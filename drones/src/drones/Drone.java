@@ -40,13 +40,18 @@ public class Drone {
 	}
 	
 	public static DroneState state() {
-		return Drone.state;
+		synchronized (Drone.state) {
+			return Drone.state;
+		}
 	}
 	
 	public static void setState(DroneState state) {
 		//TODO: unlimit this?
-		if (!SensorInterface.isBatteryTooLow()) {
-			Drone.state = state;
+		//      limit it further?
+		synchronized (Drone.state) {
+			if (!SensorInterface.isBatteryTooLow()) {
+				Drone.state = state;
+			}
 		}
 	}
 
