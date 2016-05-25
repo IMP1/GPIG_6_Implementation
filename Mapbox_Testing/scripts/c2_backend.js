@@ -103,7 +103,7 @@ function setupAPICalls(){
 	getScanInfo();
 	
 	setInterval(getUnitsInfo, refreshRate);
-	setInterval(getScanInfo, refreshRate);
+	// setInterval(getScanInfo, refreshRate);
 	
 }
 
@@ -503,6 +503,7 @@ function parseScanAreaResponse(scanAreasJSON){
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 			
 		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received)
+			scanArea.center = [scanJSON.locLat, scanJSON.locLong];
 		scanData.features.push(scanArea);
 
 		if(scanArea.timestamp > lastTimestamp){
@@ -514,4 +515,8 @@ function parseScanAreaResponse(scanAreasJSON){
 		
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
+	
+	
+    
+    addClosePopups()    
 }

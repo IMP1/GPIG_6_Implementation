@@ -28,12 +28,15 @@ function distance(ll0, ll1) {
 }
 
 
+
+
+
 ///////////////////
 // Constant Vars //
 ///////////////////
 
 var mapCenter  = [-1.0873, 53.9600];
-var defaultZoom = 15;
+var defaultZoom = 18;
 var latOffset  = 0;
 var longOffset = 0;
 
@@ -161,7 +164,7 @@ map.on('load', function () {
     // Mapbox Elements
     map.addControl(new mapboxgl.Navigation());
     var toRemove = document.getElementsByClassName('mapboxgl-ctrl-bottom-right')[0];
-    toRemove.parentNode.removeChild(toRemove);     
+    toRemove.parentNode.removeChild(toRemove); 
 
 });
 
@@ -282,7 +285,7 @@ function updateUnitFeatureCollections(){
 /////////////////////////
 
 var mouseDownCoords;
-var minRadius = 20;
+var minRadius = 5;
 var maxRadius = 500;//metres
 
 function enableSearchAreaDrawing(){
@@ -461,4 +464,63 @@ function redrawSearchAreas(){
         
     });
     
+}
+
+
+
+
+
+
+
+
+
+////////////////
+// Flood Info //
+////////////////
+
+var infoPopups = [];
+
+function roundToDecimalPlaces(num, dp){
+    var mult = 10^dp;
+    return Math.round(num * mult) / mult
+}
+    
+function addClosePopups(){
+    var subsampleScans = 5; // Use every nth scan for center;
+    
+    for(var i = 0; i < scanData.features.length; i+= subsampleScans){
+        
+        var scan         = scanData.features[i];
+        var centerLngLat = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
+        
+        // Check if there's a tooltip within n metres        
+        var tooltip_radius = 30;
+        var within_radius = false;
+        
+        infoPopups.forEach(function(tooltip) {
+            
+            console.log(centerLngLat, tooltip._lngLat)
+            
+            var dist = unprojectedDistance(tooltip._lngLat, centerLngLat);
+            console.log(dist)
+            if(dist < tooltip_radius){
+                within_radius = true;
+            }            
+            
+        }, this);
+        
+        if(!within_radius){
+        
+            var depth_string    = 'Depth : '+roundToDecimalPlaces(scan.depth, 2)+'m';
+            var flowrate_string = 'Flowrate : '+roundToDecimalPlaces(scan.flowrate, 2)+'m';
+            
+            var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
+                .setLngLat([scan.center[1], scan.center[0]])
+                .setHTML('<p>'+depth_string+'</p>'+'<p>'+flowrate_string+'</p>')
+                .addTo(map);
+                
+            infoPopups.push(tooltip);
+        }
+        
+    }
 }
