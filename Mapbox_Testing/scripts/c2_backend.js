@@ -104,6 +104,9 @@ function setupAPICalls(){
 	
 	setInterval(getUnitsInfo, refreshRate);
 	setInterval(getScanInfo, refreshRate);
+
+	// Search Area Enter/Exit
+	setInterval(monitorSearchAreas, refreshRate);
 	
 }
 
@@ -378,7 +381,10 @@ function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
 			if(!unit){
 				ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
 			}else{
+				ShowNewMessage('Succesfully Assigned Drone', unit.name+' assigned to search area '+searchArea.id+'.', 'success');
 				searchArea.assignedDrones.push(unit);
+
+				// Monitor Search Area for Drone Enter/Exit
 			}					
 			
 		}, this);
@@ -400,8 +406,35 @@ function deleteAllSearchAreas(){
     
 }
 
+function monitorSearchAreas(){
 
+	// Loop backwards through array to enable removal
 
+	for (var i = searchAreaArray.length - 1; i >= 0; i--) {
+
+		var searchArea = searchAreaArray[i];
+		if(searchArea.assignedDrones.length > 0){
+
+			searchArea.assignedDrones.forEach(function(unit) {
+
+				// Check if Unit within Search Area Radius using distance
+				var unitLL       = new mapboxgl.LngLat(unit.coordinates[0],  unit.coordinates[1]);
+				var dist         = unprojectedDistance(unitLL, searchArea.center);
+
+				if(!searchArea.assignedDronesEntered && dist <= searchArea.radius){
+					searchArea.assignedDronesEntered = true;
+					console.log('enter')
+				}else if(searchArea.assignedDronesEntered && dist > searchArea.radius){
+					// Remove Search Area
+					console.log('exit')
+					deleteSearchArea(searchArea);
+				}
+
+			});
+
+		}	
+	}
+}
 
 
 

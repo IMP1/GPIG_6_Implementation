@@ -12,6 +12,7 @@ function SearchArea(){
     
     // Assignment
     this.assignedDrones = [];
+    this.assignedDronesEntered = false;
 }
 
 function deleteSearchArea(searchArea){        

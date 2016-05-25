@@ -40,7 +40,7 @@ var longOffset = 0;
 //// Global Vars
 var editingSearchArea = false;
 var refreshRate = 100; //ms
-
+var floodOutlineVisible = true;
 
 
 
@@ -65,7 +65,9 @@ document.getElementById('btn-see-all').addEventListener('click', function(e) {
     showAllUnits();
 });
 
-
+document.getElementById('btn-show-flood-outline').addEventListener('click', function(e) {            
+    toggleFloodOutline();
+});
 
 
 
@@ -159,7 +161,7 @@ map.on('load', function () {
     // Mapbox Elements
     map.addControl(new mapboxgl.Navigation());
     var toRemove = document.getElementsByClassName('mapboxgl-ctrl-bottom-right')[0];
-    toRemove.parentNode.removeChild(toRemove);
+    toRemove.parentNode.removeChild(toRemove);     
 
 });
 
@@ -224,6 +226,20 @@ function addNewUnitMapLayer(unit){
         }
     });
 }
+
+function toggleFloodOutline(){
+    floodOutlineVisible = !floodOutlineVisible;
+    if(!floodOutlineVisible){
+        map.setLayoutProperty('sensor-edge', 'visibility', 'none');
+    }else{
+        map.setLayoutProperty('sensor-edge', 'visibility', 'visible');
+    }
+    
+}
+
+
+
+
 
 ////////////////
 // Refresh UI //
