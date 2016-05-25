@@ -530,9 +530,11 @@ function combinePolygons(scanArea1, scanArea2) {
 	// EITHER: find a library with this functionality
 	//     OR: go through each edge, find the intersection, add that as a new point of the shape,
 	//         and then remove any points inside the other shape.
+	//         (http://stackoverflow.com/questions/7915734/intersection-and-union-of-polygons)
 }
 
 function isPointInPoly(pt, poly){
+	// from http://jsfromhell.com/math/is-point-in-poly
 	for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
 		((poly[i][1] <= pt[1] && pt[1] < poly[j][1]) || (poly[j][1] <= pt[1] && pt[1] < poly[i][1]))
 		&& (pt[0] < (poly[j][0] - poly[i][0]) * (pt[1] - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0])
