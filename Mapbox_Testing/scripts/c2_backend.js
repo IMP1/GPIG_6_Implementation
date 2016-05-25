@@ -104,9 +104,6 @@ function setupAPICalls(){
 	
 	setInterval(getUnitsInfo, refreshRate);
 	setInterval(getScanInfo, refreshRate);
-
-	// Search Area Enter/Exit
-	setInterval(monitorSearchAreas, refreshRate);
 	
 }
 
@@ -383,12 +380,42 @@ function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
 			}else{
 				ShowNewMessage('Succesfully Assigned Drone', unit.name+' assigned to search area '+searchArea.id+'.', 'success');
 				searchArea.assignedDrones.push(unit);
-
-				// Monitor Search Area for Drone Enter/Exit
+				searchArea.hasBeenAssignedDrones = true;
+				removeUnasignedSearchAreas(unit, searchArea);
 			}					
 			
 		}, this);
 		
+	}
+}
+
+function removeUnasignedSearchAreas(assignedUnit, assignedSearchArea){
+
+	// Remove Search Areas which previously had this unit assigned and now have none
+	// Loop backwards through array to enable removal
+
+	for (var i = searchAreaArray.length - 1; i >= 0; i--) {
+
+		var searchArea = searchAreaArray[i];
+
+		// Skip if its the just assigned Search Area
+		if(searchArea == assignedSearchArea || searchArea.assignedDrones.length == 0) continue;
+
+		// Loop backwards through array to enable removal
+		for (var d = searchArea.assignedDrones.length - 1; d >= 0; d--) {
+			var unit = searchArea.assignedDrones[d];
+			if(unit == assignedUnit){
+				console.log('unit reassigned')
+				// This Search Area had the now re-assigned drone, so remove from its assigned drones
+				searchArea.assignedDrones.splice(d, 1);
+			}
+
+		}
+
+		if(searchArea.assignedDrones.length == 0){
+			deleteSearchArea(searchArea);
+		}	
+
 	}
 }
 
@@ -401,39 +428,8 @@ function deleteAllSearchAreas(){
 		searchAreaArray = [];
 	}else{
 		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
-	}
+	}    
     
-    
-}
-
-function monitorSearchAreas(){
-
-	// Loop backwards through array to enable removal
-
-	for (var i = searchAreaArray.length - 1; i >= 0; i--) {
-
-		var searchArea = searchAreaArray[i];
-		if(searchArea.assignedDrones.length > 0){
-
-			searchArea.assignedDrones.forEach(function(unit) {
-
-				// Check if Unit within Search Area Radius using distance
-				var unitLL       = new mapboxgl.LngLat(unit.coordinates[0],  unit.coordinates[1]);
-				var dist         = unprojectedDistance(unitLL, searchArea.center);
-
-				if(!searchArea.assignedDronesEntered && dist <= searchArea.radius){
-					searchArea.assignedDronesEntered = true;
-					console.log('enter')
-				}else if(searchArea.assignedDronesEntered && dist > searchArea.radius){
-					// Remove Search Area
-					console.log('exit')
-					deleteSearchArea(searchArea);
-				}
-
-			});
-
-		}	
-	}
 }
 
 
@@ -498,8 +494,6 @@ function getScanInfo(){
 }
 
 function parseScanAreaResponse(scanAreasJSON){
-	
-	console.log(scanAreasJSON);
 	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		

@@ -57,7 +57,7 @@ function addNewUnitControls(unit){
         map.flyTo({
             center: offsetCoordinates(unit.coordinates),
             zoom: defaultZoom,        
-            speed: 0.6, 
+            speed: 2, 
             curve: 1,         
             easing: function (t) {
                 return t;
