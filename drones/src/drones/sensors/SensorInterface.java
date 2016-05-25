@@ -189,7 +189,7 @@ public abstract class SensorInterface {
 				}
 				Polygon p = new Polygon(alat, alng, edge.lat.size());
 				
-				if(p.contains(dtoM(x1), dtoM(y1)) /*&& !p.contains(dtoM(x2), dtoM(y2))*/){
+				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) /*&& !p.contains(dtoM(x2), dtoM(y2))*/){
 					// We know that the sonar can find the edge of the water polygon.
 					// We now need to calculate the second from a set of two points
 					// x3,y3 shall be the points at the counter. 
