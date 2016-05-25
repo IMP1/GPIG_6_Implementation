@@ -70,13 +70,19 @@ public abstract class SensorInterface {
 		gpsLng = lng;
 	}
 	
-	private static double lastTime = System.nanoTime() / 1_000_000_000.0; 
+	@Deprecated
+	public static void setBatteryLow() {
+		originalBattery = 50;
+	}
+	
+	private static double lastTime = System.nanoTime() / 1_000_000_000.0;
+	private static int originalBattery = 96;
 	public static double getBatteryLevel() {
 		final float battery_per_second = 0.01f;
 		double currentTime = System.nanoTime() / 1_000_000_000.0;
 		double dt = currentTime - lastTime;
 		lastTime = currentTime;
-		return 70 - dt * battery_per_second;
+		return originalBattery - dt * battery_per_second;
 	}
 	
 	public static boolean isBatteryTooLow() {

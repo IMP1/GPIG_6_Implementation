@@ -90,6 +90,19 @@ public class Drone {
 		System.out.println("Mesh Interface started.");
 		navThread.start();
 		System.out.println("Navigation Thread started.");
+		
+		if (args.length >= 3 && args[1].equals("-fault")) {
+			try {
+				Thread.sleep(2 * 1000);
+				if (args[2].equals("battery")) {
+					SensorInterface.setBatteryLow();
+				} else if (args[2].equals("engine")) {
+					Drone.setState(network.StatusData.DroneState.FAULT);
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 }
