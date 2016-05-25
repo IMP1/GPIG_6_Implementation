@@ -30,6 +30,11 @@ public class MessageHandler {
 	 * 
 	 * Recieving a message also signifies that we have regained connection
 	 * to the mesh, and so this triggers a resend of all the stored messages.
+	 * 
+	 * <pre>PathCommand.class.isAssignableFrom(messageClass)</pre> is the
+	 * silly java way of returning whether {@link messageClass} is a subclass
+	 * of {@link PathCommand}.
+	 * 
 	 * @param message
 	 */
 	protected void handleMessage(String message) {
@@ -42,7 +47,7 @@ public class MessageHandler {
 		if (PathCommand.class.isAssignableFrom(messageClass)) {
 			handleCommand(message);
 		}
-		if (Message.getId(message).equals(Drone.ID)) {
+		if (Message.getId(message).equals(Drone.ID)) { // if it's for/from us
 			if (Command.class.isAssignableFrom(messageClass)) {
 				handleCommand(message);
 			} else if (ScanAcknowledgement.class.isAssignableFrom(messageClass)) {
