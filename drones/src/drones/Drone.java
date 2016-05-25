@@ -108,6 +108,9 @@ public class Drone {
 				} else if (args[argOffset + 1].equals("engine")) {
 					System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
 					Drone.setState(network.StatusData.DroneState.FAULT);
+				} else if (args[argOffset + 1].equals("dead")) {
+					System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
+					System.exit(0);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
