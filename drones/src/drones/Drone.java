@@ -9,6 +9,7 @@ import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.util.EncodingManager;
 
 import drones.mesh.MeshInterfaceThread;
+import drones.mesh.MeshNetworkingThread;
 import drones.navigation.NavigationThread;
 import drones.sensors.SensorInterface;
 
@@ -96,12 +97,16 @@ public class Drone {
 		navThread.start();
 		System.out.println("Navigation Thread started.");
 		
-		if (args.length >= 3 && args[1].equals("-fault")) {
+		int argOffset = 0;
+		if (args.length >= 3) argOffset ++;
+		if (args[argOffset].equals("-fault")) {
 			try {
-				Thread.sleep(2 * 1000);
-				if (args[2].equals("battery")) {
+				Thread.sleep(4 * 1000);
+				if (args[argOffset + 1].equals("battery")) {
+					System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
 					SensorInterface.setBatteryLow();
-				} else if (args[2].equals("engine")) {
+				} else if (args[argOffset + 1].equals("engine")) {
+					System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
 					Drone.setState(network.StatusData.DroneState.FAULT);
 				}
 			} catch (InterruptedException e) {
