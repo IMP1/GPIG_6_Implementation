@@ -71,6 +71,10 @@ public abstract class SensorInterface {
 		gpsLng = lng;
 	}
 	
+	/**
+	 * DEMO FUNCTION FOR USE TO REPLICATE LOW BATTERY ONLY.
+	 * Lowers the current battery percentage by 50.
+	 */
 	@Deprecated
 	public static void setBatteryLow() {
 		batteryLevel -= 50;
@@ -78,8 +82,12 @@ public abstract class SensorInterface {
 	
 	private static double lastTime = System.nanoTime() / 1_000_000_000.0;
 	private static double batteryLevel = 70 + Math.random() * (100 - 70);
+	/**
+	 * 
+	 * @return the battery level of this drone as a percentage (0-100).
+	 */
 	public static double getBatteryLevel() {
-		final float batteryPerSecond = 0.01f;
+		final float batteryPerSecond = 0.015f;
 		double currentTime = System.nanoTime() / 1_000_000_000.0;
 		double dt = currentTime - lastTime;
 		lastTime = currentTime;
@@ -89,11 +97,8 @@ public abstract class SensorInterface {
 	
 	public static boolean isBatteryTooLow() {
 		//XXX: some function of distance from the C2? 
-		return SensorInterface.getBatteryLevel() < 0.4;
+		return SensorInterface.getBatteryLevel() < 50;
 	}
-	
-	
-	// TODO: Set GPS via 'Navigation'
 
 	public static ScanData getDataForPoint(double lat, double lon){
 
