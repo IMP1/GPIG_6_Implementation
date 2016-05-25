@@ -73,17 +73,18 @@ public abstract class SensorInterface {
 	
 	@Deprecated
 	public static void setBatteryLow() {
-		originalBattery = 50;
+		batteryLevel -= 50;
 	}
 	
 	private static double lastTime = System.nanoTime() / 1_000_000_000.0;
-	private static int originalBattery = 96;
+	private static double batteryLevel = 70 + Math.random() * (100 - 70);
 	public static double getBatteryLevel() {
-		final float battery_per_second = 0.01f;
+		final float batteryPerSecond = 0.01f;
 		double currentTime = System.nanoTime() / 1_000_000_000.0;
 		double dt = currentTime - lastTime;
 		lastTime = currentTime;
-		return originalBattery - dt * battery_per_second;
+		batteryLevel -= dt * batteryPerSecond;
+		return batteryLevel; 
 	}
 	
 	public static boolean isBatteryTooLow() {
