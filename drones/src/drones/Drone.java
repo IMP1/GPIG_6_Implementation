@@ -95,21 +95,23 @@ public class Drone {
 		
 		int argOffset = 0;
 		if (args.length >= 3) argOffset ++;
-		if (args[argOffset].equals("-fault")) {
-			try {
-				Thread.sleep(4 * 1000);
-				if (args[argOffset + 1].equals("battery")) {
-					System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
-					SensorInterface.setBatteryLow();
-				} else if (args[argOffset + 1].equals("engine")) {
-					System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
-					Drone.setState(network.StatusData.DroneState.FAULT);
-				} else if (args[argOffset + 1].equals("dead")) {
-					System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
-					System.exit(0);
+		if (args.length > 0){
+			if (args[argOffset].equals("-fault")) {
+				try {
+					Thread.sleep(4 * 1000);
+					if (args[argOffset + 1].equals("battery")) {
+						System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
+						SensorInterface.setBatteryLow();
+					} else if (args[argOffset + 1].equals("engine")) {
+						System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
+						Drone.setState(network.StatusData.DroneState.FAULT);
+					} else if (args[argOffset + 1].equals("dead")) {
+						System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
+						System.exit(0);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 		}
 	}

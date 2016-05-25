@@ -15,12 +15,12 @@ public class Position {
 		}
 		
 		/**
-		 * Convert degrees to metres
+		 * Convert degrees to metres, with a compensation factor to keep accuracy
 		 * @param d Degrees distance
 		 * @return Metres (ignoring curvature of earth
 		 */
 		public static int dtoM(double d) {
-			int met = (int) (Math.toRadians(d) * EARTH_RADIUS);
+			int met = (int) (Math.toRadians(d) * EARTH_RADIUS * 100);
 			return met;
 		}
 		
