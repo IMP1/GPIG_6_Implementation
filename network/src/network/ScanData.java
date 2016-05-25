@@ -41,7 +41,7 @@ public final class ScanData extends Data {
 	
 	public ScanData(final String rawMessage) {
 		super(rawMessage);
-		final String message = super.strip(rawMessage);
+		final String message = Data.strip(rawMessage);
 		if (!message.startsWith(SCAN_DATA_PREFIX)) throw new RuntimeException("A Data Type {SCAN, STATUS, PATH} needs to be supplied.");
 		final String scanMessage = message.substring(SCAN_DATA_PREFIX.length() + 1);
 		String data[] = scanMessage.split(SEPARATOR);
