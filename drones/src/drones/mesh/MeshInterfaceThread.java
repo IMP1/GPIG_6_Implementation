@@ -122,13 +122,15 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void tick() {
-		for (String commandID : paths.keySet()) {
-			if (paths.get(commandID).isDone()) {
-				try {
-					broadcastRouteData(commandID, paths.get(commandID).get());
-					paths.remove(commandID);
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
+		synchronized (paths) {
+			for (String commandID : paths.keySet()) {
+				if (paths.get(commandID).isDone()) {
+					try {
+						broadcastRouteData(commandID, paths.get(commandID).get());
+						paths.remove(commandID);
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -236,7 +238,9 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void requestRouteCalculation(String commandID, double latitude, double longitude, double radius) {
-		paths.put(commandID, router.calculate(latitude, longitude, radius));
+		synchronized (paths) {
+			paths.put(commandID, router.calculate(latitude, longitude, radius));
+		}
 	}
 	
 	private void requestRouteNavigation(double latitude, double longitude, double radius) {
