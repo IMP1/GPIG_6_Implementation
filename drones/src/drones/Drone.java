@@ -9,7 +9,6 @@ import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.util.EncodingManager;
 
 import drones.mesh.MeshInterfaceThread;
-import drones.mesh.MeshNetworkingThread;
 import drones.navigation.NavigationThread;
 import drones.sensors.SensorInterface;
 
@@ -29,7 +28,6 @@ public class Drone {
 	private static DroneState state = DroneState.IDLE;
 	
 	// Singleton accessors
-	// TODO: Handle synchronous read / write access to map (move to MapHelper and make protected?)
 	public static GraphHopper map() {
 		return map;
 	}
@@ -47,10 +45,8 @@ public class Drone {
 	}
 	
 	public static void setState(DroneState state) {
-		//TODO: unlimit this?
-		//      limit it further?
 		synchronized (Drone.state) {
-			if (!SensorInterface.isBatteryTooLow()) {
+			if (!SensorInterface.isBatteryTooLow() || state == DroneState.RETURNING) {
 				Drone.state = state;
 			}
 		}
