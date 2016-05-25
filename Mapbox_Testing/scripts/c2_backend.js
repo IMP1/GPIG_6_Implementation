@@ -475,16 +475,71 @@ function parseScanAreaResponse(scanAreasJSON){
 		var subsampleRate = 1;
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 			
-		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received)
-		scanData.features.push(scanArea);
+		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received);
+		var overlaps = [];
+		console.log(scanData.features.length);
+		for (var i = 0; i < scanData.features.length; i ++) {
+			console.log(i);
+			console.log(scanData.features[i]);
+			if (polygonsIntersect(scanArea, scanData.features[i])) {
+				overlaps.push(i);
+			}
+		}
+		if (overlaps.length == 0) {
+			scanData.features.push(scanArea);
+		} else {
+			var combinedPolygon = scanArea;
+			for (var i in overlaps) {
+				var index = overlaps[i];
+				combinedPolygon = combinePolygons(combinedPolygon, scanData.features[index]);
+			}
+			for (var i in overlaps) {
+				var index = overlaps[i];
+				scanData.features.splice(index, 1);
+			}
+			scanData.features.push(combinedPolygon);
+		}
 
 		if(scanArea.timestamp > lastTimestamp){
 			lastTimestamp = scanArea.timestamp;
-		}		
-		
+		}
 		
 	});		
 		
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
+}
+
+function polygonsIntersect(scanArea1, scanArea2) {
+	for (var i = 0; i < scanArea1.geometry.coordinates.length; i ++) {
+		if (isPointInPoly(scanArea1.geometry.coordinates[0][i], scanArea2.geometry.coordinates[0])) {
+			return true;
+		}
+	}
+	for (var i = 0; i < scanArea2.geometry.coordinates.length; i ++) {
+		if (isPointInPoly(scanArea2.geometry.coordinates[0][i], scanArea1.geometry.coordinates[0])) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function combinePolygons(scanArea1, scanArea2) {
+	return scanArea2;
+	// TODO: combine the polyons
+	// EITHER: find a library with this functionality
+	//     OR: go through each edge, find the intersection, add that as a new point of the shape,
+	//         and then remove any points inside the other shape.
+}
+
+function isPointInPoly(pt, poly){
+	for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
+		((poly[i][1] <= pt[1] && pt[1] < poly[j][1]) || (poly[j][1] <= pt[1] && pt[1] < poly[i][1]))
+		&& (pt[0] < (poly[j][0] - poly[i][0]) * (pt[1] - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0])
+		&& (c = !c);
+	return c;
+}
+
+function edgeIntersection(e1, e2) {
+
 }
