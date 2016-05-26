@@ -17,5 +17,6 @@ function SearchArea(){
 
 function deleteSearchArea(searchArea){        
     deleteSearchAreaView(searchArea);    
-    removeByAttr(searchAreaArray, 'id', searchArea.id);
+    removeByAttr(searchAreaArray, 'id', searchArea.id);    
+    redrawSearchAreasUI();
 }

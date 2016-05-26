@@ -619,3 +619,37 @@ function removeAllPopups(){
     lastDataScanned = 0;
     infoPopups = [];
 }
+
+
+
+
+
+
+
+
+////////////
+// Faults //
+////////////
+
+var faultDisplayed = false;
+
+function showUnitFault(){
+    
+    if(!faultDisplayed){        
+        ShowNewMessage('Major Drone Fault', 'There is an unexpected fault with Drone. Please attend unit.', 'high');    
+        faultDisplayed = true;    
+    }
+}
+
+function addUnitBatteryFault(unit){
+    
+    if(!unit.batteryFaultDisplayed){     
+        console.log(unit);
+        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+unit.batteryLevel+'%. Please recall to C2.', 'medium');    
+        unit.batteryFaultDisplayed = true;    
+    }
+}
+
+function removeUnitBatteryFault(unit){
+    
+}

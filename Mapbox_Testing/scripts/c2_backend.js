@@ -250,9 +250,7 @@ function recallUnits(){
 	    	xmlHttpRecall.open( "GET", "http://localhost:8081/RecallUnits", true ); // true for asynchronous request
 						
 			xmlHttpRecall.onload = function (e) {
-				if (xmlHttpRecall.readyState === 4) {
-					ShowNewMessage('Drone Recall Succesful', '', 'success');
-				}
+				ShowNewMessage('Drone Recall Succesful', '', 'success');
 			};
 			xmlHttpRecall.onerror = function (e) {
 				console.error(xmlHttpRecall.statusText);
@@ -432,6 +430,8 @@ function deleteAllSearchAreas(){
 	}else{
 		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
 	}    
+	
+	redrawSearchAreasUI();
     
 }
 
