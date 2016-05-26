@@ -531,18 +531,25 @@ function addNewPopupIfRequired(i){
     
         var depth_string    = roundToDecimalPlaces(scan.depth, 2)   +'m';
         var flowrate_string = roundToDecimalPlaces(scan.flowrate, 2)+'m/s';
+        
+        var depth_severity = getDepthSeverity(scan.depth);
+        var flow_severity  = getFlowSeverity(scan.flowrate);
 
-        var depth_class     = 'severity-'+getDepthSeverity(scan.depth);
-        var flow_class      = 'severity-'+getFlowSeverity(scan.flowrate);
+        var depth_class     = 'severity-'+depth_severity;
+        var flow_class      = 'severity-'+flow_severity;
+        
+        var warnings        = getWarnings(depth_severity, flow_severity);
         
         var html_string     = '';
+        
+        console.log(depth_severity, flow_severity)
 
-        if(true){
-            html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_temp.png\'></img></div>     <div class=\'warning_text\'>Boat Required</div>   </div>'
-        }
+        warnings.forEach(function(warning) {
+            html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning[0]+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning[1]+'</div></div>   </div>'
+        }, this);
 
-            html_string    += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
-            html_string    += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
+        html_string        += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
+        html_string        += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
 
         var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
             .setLngLat([scan.center[1], scan.center[0]])
@@ -551,6 +558,22 @@ function addNewPopupIfRequired(i){
             
         infoPopups.push(tooltip);
     }  
+}
+
+function getWarnings(depth_severity, flow_severity){
+    var warnings = [];
+    
+    // Warnings of form 'icon', 'text' (2 Lines)
+    
+    if(depth_severity >= 6){
+        warnings.push(['boat', 'Boat Required']);
+    }
+    
+    if(depth_severity >= 4){
+        warnings.push(['boat', 'Rapid Water']);
+    }
+    
+    return warnings;
 }
 
 function getDepthSeverity(depth){
