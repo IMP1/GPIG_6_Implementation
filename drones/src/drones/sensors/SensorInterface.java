@@ -254,15 +254,19 @@ public abstract class SensorInterface {
 			}
 		}
 		
-		if(depth != 10.0){
-			double mindist = Double.MIN_VALUE;
-			for(int i = 0; i < output.length; i++){
-				if(output[i] > mindist){
-					mindist = output[i];
-				}
-			}
-			depth = Math.sqrt(mindist); // Bit of a fudge factor, make it non-linear to distance ;)
-			flow = Math.sin(mindist);
+		// Determine depth / flow rate based on longitude
+		if(lon < -1.0745){
+			// All hard constants; sets peak depths at Ouse and Foss, peak flow at Foss.
+			// Max depth 8m, min depth 0m
+			depth = 0 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 4);
+			// Max flow 6m/s, min flow 1m/s
+			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 2.5);
+		} else {
+			// Linear increase/decrease in depth/flow moving east
+			// Max depth 0.4m, min depth 0.1m
+			depth = 0.1 + (((lon + 1.072090) / 0.004696) * 0.3);
+			// Max flow 2m/s, min flow 1m/s
+			flow = 2 - (((lon + 1.072090) / 0.004696) * 1);
 		}
 		
 		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
