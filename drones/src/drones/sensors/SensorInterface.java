@@ -137,6 +137,9 @@ public abstract class SensorInterface {
 					}
 			}
 		}
+
+		// Indicator for if we ever encounter a polygon
+		boolean onWater = false;
 				
 		for(int i = 0; i < 360; i++){
 
@@ -195,6 +198,7 @@ public abstract class SensorInterface {
 					// x3,y3 shall be the points at the counter. 
 					// x4,y4 shall be the points at the counter + 1. Since this is a polygon, we 
 					// wrap around at the end.
+					onWater = true;
 					
 					
 					for(int j = 0; j < edge.lat.size(); j++){
@@ -248,10 +252,12 @@ public abstract class SensorInterface {
 							output[i] = MAX_DIST;
 						}
 					}		
-				} else {
-					return null; // Prevent output
 				}
 			}
+		}
+		
+		if (!onWater) {
+			return null;
 		}
 		
 		// Determine depth / flow rate based on longitude
@@ -259,14 +265,14 @@ public abstract class SensorInterface {
 			// All hard constants; sets peak depths at Ouse and Foss, peak flow at Foss.
 			// Max depth 8m, min depth 0m
 			depth = 0 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 4);
-			// Max flow 6m/s, min flow 1m/s
-			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 2.5);
+			// Max flow 4m/s, min flow 0.5m/s
+			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 1.75);
 		} else {
 			// Linear increase/decrease in depth/flow moving east
 			// Max depth 0.4m, min depth 0.1m
 			depth = 0.1 + (((lon + 1.072090) / 0.004696) * 0.3);
-			// Max flow 2m/s, min flow 1m/s
-			flow = 2 - (((lon + 1.072090) / 0.004696) * 1);
+			// Max flow 2m/s, min flow 0.5m/s
+			flow = 2 - (((lon + 1.072090) / 0.004696) * 1.5);
 		}
 		
 		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
