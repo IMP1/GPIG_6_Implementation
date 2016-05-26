@@ -535,8 +535,14 @@ function addNewPopupIfRequired(i){
         var depth_class     = 'severity-'+getDepthSeverity(scan.depth);
         var flow_class      = 'severity-'+getFlowSeverity(scan.flowrate);
         
-        var html_string     = '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
-            html_string    += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>'
+        var html_string     = '';
+
+        if(true){
+            html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_temp.png\'></img></div>     <div class=\'warning_text\'>Boat Required</div>   </div>'
+        }
+
+            html_string    += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
+            html_string    += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
 
         var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
             .setLngLat([scan.center[1], scan.center[0]])
