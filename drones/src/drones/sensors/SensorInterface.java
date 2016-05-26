@@ -248,6 +248,8 @@ public abstract class SensorInterface {
 							output[i] = MAX_DIST;
 						}
 					}		
+				} else {
+					return null; // Prevent output
 				}
 			}
 		}
