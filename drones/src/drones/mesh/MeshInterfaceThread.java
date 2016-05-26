@@ -123,15 +123,19 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void tick() {
 		synchronized (paths) {
+			ArrayList<String> pathsToRemove = new ArrayList<String>();
 			for (String commandID : paths.keySet()) {
 				if (paths.get(commandID).isDone()) {
 					try {
 						broadcastRouteData(commandID, paths.get(commandID).get());
-						paths.remove(commandID);
+						pathsToRemove.add(commandID);
 					} catch (InterruptedException | ExecutionException e) {
 						e.printStackTrace();
 					}
 				}
+			}
+			for (String commandID : pathsToRemove) {
+				paths.remove(commandID);
 			}
 		}
 
