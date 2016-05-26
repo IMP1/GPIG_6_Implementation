@@ -172,7 +172,16 @@ map.on("render", function() {
     redrawSearchAreas()
 })
 
+var zoomLevel_popups = 17;
 
+map.on('move', function(e) {
+    var z = e.target.getZoom();
+    if (z < zoomLevel_popups) {
+        removeAllPopups();
+    }else{
+        addNewPopups();
+    }
+});
 
 
 
@@ -200,12 +209,16 @@ var map_overlays = document.getElementById('map_overlays');
 // Map Functions //
 ///////////////////
 
-function showAllUnits(){    
-    var bounds = new mapboxgl.LngLatBounds();
-    markers.features.forEach(function(feature) {
-        bounds.extend(feature.geometry.coordinates);
-    });
-    map.fitBounds(bounds, { padding: '100' });    
+function showAllUnits(){  
+    if(markers.features.length >= 2){
+
+        console.log(markers.features);  
+        var bounds = new mapboxgl.LngLatBounds();
+        markers.features.forEach(function(feature) {
+            bounds.extend(feature.geometry.coordinates);
+        });
+        map.fitBounds(bounds, { padding: '100' });    
+    }
 }
 
 function updateMap(){
@@ -227,7 +240,7 @@ function addNewUnitMapLayer(unit){
             "icon-image": unit.symbol + "-15",
             "icon-allow-overlap": true
         }
-    });
+    });   
 }
 
 function toggleFloodOutline(){
@@ -479,48 +492,101 @@ function redrawSearchAreas(){
 ////////////////
 
 var infoPopups = [];
+var lastDataScanned = 0;
+var subsampleScans = 5; // Use every nth scan for center;
 
 function roundToDecimalPlaces(num, dp){
-    var mult = 10^dp;
+    var mult = Math.pow(10, dp);
     return Math.round(num * mult) / mult
 }
-    
-function addClosePopups(){
-    var subsampleScans = 5; // Use every nth scan for center;
-    
-    for(var i = 0; i < scanData.features.length; i+= subsampleScans){
-        
-        var scan         = scanData.features[i];
-        var centerLngLat = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
-        
-        // Check if there's a tooltip within n metres        
-        var tooltip_radius = 30;
-        var within_radius = false;
-        
-        infoPopups.forEach(function(tooltip) {
-            
-            console.log(centerLngLat, tooltip._lngLat)
-            
-            var dist = unprojectedDistance(tooltip._lngLat, centerLngLat);
-            console.log(dist)
-            if(dist < tooltip_radius){
-                within_radius = true;
-            }            
-            
-        }, this);
-        
-        if(!within_radius){
-        
-            var depth_string    = 'Depth : '+roundToDecimalPlaces(scan.depth, 2)+'m';
-            var flowrate_string = 'Flowrate : '+roundToDecimalPlaces(scan.flowrate, 2)+'m';
-            
-            var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
-                .setLngLat([scan.center[1], scan.center[0]])
-                .setHTML('<p>'+depth_string+'</p>'+'<p>'+flowrate_string+'</p>')
-                .addTo(map);
-                
-            infoPopups.push(tooltip);
+
+function addNewPopups(){
+    // Go from last scan data
+    if(map.getZoom() > zoomLevel_popups){
+        for(var i = lastDataScanned; i < scanData.features.length; i+= subsampleScans){
+            addNewPopupIfRequired(i);
         }
-        
+        lastDataScanned = scanData.features.length;
     }
+}
+
+function addNewPopupIfRequired(i){
+    var scan         = scanData.features[i];
+    var centerLngLat = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
+    
+    // Check if there's a tooltip within n metres        
+    var tooltip_radius = 30;
+    var within_radius = false;
+    
+    infoPopups.forEach(function(tooltip) {
+        
+        var dist = unprojectedDistance(tooltip._lngLat, centerLngLat);
+        if(dist < tooltip_radius){
+            within_radius = true;
+        }            
+        
+    }, this);
+    
+    if(!within_radius){
+    
+        var depth_string    = roundToDecimalPlaces(scan.depth, 2)   +'m';
+        var flowrate_string = roundToDecimalPlaces(scan.flowrate, 2)+'m/s';
+
+        var depth_class     = 'severity-'+getDepthSeverity(scan.depth);
+        var flow_class      = 'severity-'+getFlowSeverity(scan.flowrate);
+        
+        var html_string     = '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
+            html_string    += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>'
+
+        var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
+            .setLngLat([scan.center[1], scan.center[0]])
+            .setHTML(html_string)
+            .addTo(map);
+            
+        infoPopups.push(tooltip);
+    }  
+}
+
+function getDepthSeverity(depth){
+    if(depth > 5){
+        return 7;
+    }else if(depth > 4){
+        return 6;
+    }else if(depth > 3){
+        return 5;
+    }else if(depth > 2){
+        return 4;
+    }else if(depth > 1){
+        return 3;
+    }else if(depth > .5){
+        return 2;
+    }else{
+        return 1;
+    }
+}
+
+function getFlowSeverity(flow){
+    if(flow > 2){
+        return 7;
+    }else if(flow > 1.6){
+        return 6;
+    }else if(flow > 1.3){
+        return 5;
+    }else if(flow > .9){
+        return 4;
+    }else if(flow > .7){
+        return 3;
+    }else if(flow > .4){
+        return 2;
+    }else{
+        return 1;
+    }
+}
+
+function removeAllPopups(){
+    infoPopups.forEach(function(tooltip) {
+        tooltip.remove();
+    }, this);
+    lastDataScanned = 0;
+    infoPopups = [];
 }

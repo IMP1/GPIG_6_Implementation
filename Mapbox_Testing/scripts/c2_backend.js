@@ -103,7 +103,7 @@ function setupAPICalls(){
 	getScanInfo();
 	
 	setInterval(getUnitsInfo, refreshRate);
-	// setInterval(getScanInfo, refreshRate);
+	setInterval(getScanInfo, refreshRate);
 	
 }
 
@@ -213,7 +213,7 @@ function parseUnitsInfo(unitsJSON){
 	   if(unit){
 		   // If Unit Exists Update It
 		   updateUnitFromJSON(unit, unitKey, unitJSON);
-	   }else{		   
+	   }else{		
 		   addNewUnit(unitKey, unitJSON);
 	   }
 	   
@@ -238,6 +238,9 @@ function addNewUnit(unitKey, unitJSON){
 	
 	// Add controls
 	addNewUnitControls(unit);
+
+	updateUnitFeatureCollections()
+	showAllUnits();
 }
 
 
@@ -515,8 +518,4 @@ function parseScanAreaResponse(scanAreasJSON){
 		
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
-	
-	
-    
-    addClosePopups()    
 }
