@@ -515,7 +515,7 @@ function addNewPopupIfRequired(i){
     var centerLngLat = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
     
     // Check if there's a tooltip within n metres        
-    var tooltip_radius = 30;
+    var tooltip_radius = 40;
     var within_radius = false;
     
     infoPopups.forEach(function(tooltip) {
