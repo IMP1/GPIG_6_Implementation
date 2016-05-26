@@ -3,10 +3,15 @@ package datastore;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import com.google.gson.*;
 
+import drones.sensors.SensorInterface;
 import frontendserver.SearchArea;
+import gpig.all.schema.Coord;
 import network.StatusData.DroneState;
+import sun.management.Sensor;
 
 public class Datastore {
 	private HashMap<String, Drone> drones;
@@ -75,5 +80,27 @@ public class Datastore {
 			temp.remove(id);
 		}
 		return gson.toJson(temp);	
+	}
+
+
+	public ArrayList<ArrayList<Coord>> getEdges() {
+		ArrayList<ArrayList<Coord>> edgesList = new ArrayList<ArrayList<Coord>>();
+		for(final String id: scans.keySet()){
+			ArrayList<Coord> edges = new ArrayList<Coord>();
+			int i = 0;
+			for(final double reading: scans.get(id).rawDistanceReadings){
+				System.out.println(reading);
+				if(reading < SensorInterface.MAX_DIST){
+					Coord coord = new Coord();
+					coord.latitude = (float) scans.get(id).distanceReadings[i*2];
+					coord.longitude = (float) scans.get(id).distanceReadings[i*2+1];
+					System.out.println(coord.latitude +" "+coord.longitude);
+					edges.add(coord);
+				}
+				i++;
+			}
+			edgesList.add(edges);
+		}
+		return edgesList;
 	}
 }

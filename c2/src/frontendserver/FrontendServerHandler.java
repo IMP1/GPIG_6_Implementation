@@ -4,15 +4,32 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import broadcast.Broadcast;
 import datastore.Datastore;
 import datastore.Drone;
+import gpig.all.schema.BoundingBox;
+import gpig.all.schema.Coord;
+import gpig.all.schema.GISPosition;
+import gpig.all.schema.GPIGData;
+import gpig.all.schema.Point;
+import gpig.all.schema.Poly;
+import gpig.all.schema.Timestamp;
+import gpig.all.schema.datatypes.WaterEdge;
 import network.MoveCommand;
 import network.PathCommand;
 
@@ -97,6 +114,45 @@ public class FrontendServerHandler implements Runnable{
 			String data = getScanData(dateTime);
 //			System.err.println(data);
 			reply(data);
+		}
+		if(request.contains("ExternalEndpoint")){
+	        StringWriter sw = new StringWriter();
+//			StringWriter data = new StringWriter();
+			
+			Timestamp ts = new Timestamp();
+	        ts.date = new Date();
+	        
+	        GPIGData data = new GPIGData();
+	        data.positions = new HashSet<>();
+	        
+	        ArrayList<ArrayList<Coord>> edges = datastore.getEdges();
+	        for (final ArrayList<Coord> edgeslist:edges){
+	        	Poly poly = new Poly();
+		        poly.coords = edgeslist;
+		        WaterEdge wateredge = new WaterEdge();
+		        
+
+		        GISPosition gis = new GISPosition();
+		        gis.position = poly;
+		        gis.timestamp = ts;
+		        gis.payload = wateredge;
+		        data.positions.add(gis);
+	        }
+	          
+	        JAXBContext jaxbContext = null;
+	        try {
+	            jaxbContext = JAXBContext.newInstance(GPIGData.class);
+	            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+	            // output pretty printed
+	            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+	            jaxbMarshaller.marshal(data, sw);
+	        } catch (JAXBException e) {
+	            e.printStackTrace();
+	        }
+	        System.out.println(sw.toString());
+			reply("TEST"+sw.toString());
 		}
 	}
 	

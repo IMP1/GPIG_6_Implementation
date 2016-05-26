@@ -72,7 +72,7 @@ public class DroneServerHandler implements Runnable {
 				    absoluteEdges[i*2] = lat + mToD(scandata.distanceReadings[i] * Math.cos(Math.toRadians(i)));
 				    absoluteEdges[i*2+1] = lon + mToD(scandata.distanceReadings[i] * Math.sin(Math.toRadians(i)));
 				}
-				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, absoluteEdges, LocalDateTime.now());
+				Scan scan = new Scan(scandata.latitude, scandata.longitude, scandata.depth, scandata.flowRate, absoluteEdges, scandata.distanceReadings, LocalDateTime.now());
 				datastore.addScan(ident.replace(":", "").replace(".", ""), scan); //because jqyuery hates colons and periods in selectors.
 			}
 		} else if(Message.getType(data) == PathData.class){

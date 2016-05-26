@@ -40,7 +40,7 @@ public abstract class SensorInterface {
 	private static double gpsLat = DEFAULT_GPS_LAT;
 	private static double gpsLng = DEFAULT_GPS_LONG;
 	
-	private static final double MAX_DIST = 20.0;
+	public static final double MAX_DIST = 20.0;
 
 	/**
 	 * Get the current latitude (via GPS)
