@@ -125,6 +125,7 @@ public class FrontendServerHandler implements Runnable{
 	        GPIGData data = new GPIGData();
 	        data.positions = new HashSet<>();
 	        
+	        //Edges
 	        ArrayList<ArrayList<Coord>> edges = datastore.getEdges();
 	        for (final ArrayList<Coord> edgeslist:edges){
 	        	Poly poly = new Poly();
@@ -138,6 +139,7 @@ public class FrontendServerHandler implements Runnable{
 		        gis.payload = wateredge;
 		        data.positions.add(gis);
 	        }
+	        //TODO: Depth, flow.
 	          
 	        JAXBContext jaxbContext = null;
 	        try {
@@ -152,7 +154,7 @@ public class FrontendServerHandler implements Runnable{
 	            e.printStackTrace();
 	        }
 	        System.out.println(sw.toString());
-			reply("TEST"+sw.toString());
+			reply(sw.toString());
 		}
 	}
 	
