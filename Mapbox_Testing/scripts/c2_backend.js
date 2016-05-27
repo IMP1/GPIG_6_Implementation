@@ -506,8 +506,8 @@ function parseScanAreaResponse(scanAreasJSON){
 			
 		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received);
 		scanJSON.id = scanKey;
-		var overlaps = [];
 
+		var overlaps = [];
 		for (var i = 0; i < scanData.features.length; i ++) {
 			if (polygonsIntersect(scanArea, scanData.features[i])) {
 				overlaps.push(i);
@@ -519,12 +519,13 @@ function parseScanAreaResponse(scanAreasJSON){
 			console.log("Combining Polygons...");
 			// Combine polygons
 			var combinedPolygon = scanArea;
-			for (var index in overlaps) {
+			for (var i = 0; i < overlaps.length; i ++) {
+				var index = overlaps[i];
 				combinedPolygon = combinePolygons(combinedPolygon, scanData.features[index], scanJSON);
 			}
 			// Remove now-combined shapes
-			for (var index in overlaps) {
-				scanData.features.splice(index, 1);
+			for (var i = overlaps.length - 1; i >= 0; i--) {
+				scanData.features.splice(overlaps[i], 1);
 			}
 			// Add the fully combined shape
 			combinedPolygon.center = [scanJSON.locLat, scanJSON.locLong]; // TODO change this to make it work :)
