@@ -16,15 +16,25 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import datastore.Datastore;
 import gpig.all.schema.DataType;
+import gpig.all.schema.GISPosition;
 import gpig.all.schema.GPIGData;
 import gpig.all.schema.Point;
 import gpig.all.schema.Polar;
 import gpig.all.schema.Position;
+import gpig.all.schema.datatypes.Blockage;
+import gpig.all.schema.datatypes.Delivery;
+import gpig.all.schema.datatypes.StrandedPerson;
 
 public class ExternalPollThread implements Runnable {
 
+	private Datastore datastore;
 	private ArrayList<String> endpoints;
+
+	public ExternalPollThread(Datastore datastore) {
+		this.datastore = datastore;
+	}
 
 	@Override
 	public void run() {
@@ -67,11 +77,33 @@ public class ExternalPollThread implements Runnable {
 			jc = JAXBContext.newInstance(GPIGData.class);
 			Unmarshaller u = jc.createUnmarshaller();
 			GPIGData data = (GPIGData) u.unmarshal(new StringReader(result.toString()));
-			Position position = data.positions.iterator().next().position;
-			if (position instanceof Point) {
-				Point point = (Point) position;
-			}
-			System.out.println(data.positions.iterator().next().position);
+			GISPosition position = data.positions.iterator().next();
+//			datastore.addExternalData(position);
+//			if (position.position instanceof Polar) {
+//				Polar point = (Polar) position.position;
+//				if (position.payload instanceof Delivery) {
+//					Delivery delivery = (Delivery) position.payload;
+//				}
+//				if (position.payload instanceof StrandedPerson) {
+//					Delivery delivery = (Delivery) position.payload;
+//				}
+//				if (position.payload instanceof Blockage) {
+//					Blockage new_name = (Blockage) position.payload;	
+//				}
+//			}
+//			if (position.position instanceof Point) {
+//				Point point = (Point) position.position;
+//				if (position.payload instanceof Delivery) {
+//					Delivery delivery = (Delivery) position.payload;
+//				}
+//				if (position.payload instanceof StrandedPerson) {
+//					Delivery delivery = (Delivery) position.payload;
+//				}
+//				if (position.payload instanceof Blockage) {
+//					Blockage new_name = (Blockage) position.payload;	
+//				}
+//			}
+//			System.out.println(data.positions.iterator().next().position);
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -113,6 +113,10 @@ public class FrontendServerHandler implements Runnable{
 //			System.err.println(data);
 			reply(data);
 		}
+		if(request.contains("GetExternalData")){
+			String data = datastore.getExternalDataAsJson();
+			reply(data);
+		}
 		if(request.contains("ExternalEndpoint")){
 	        StringWriter sw = new StringWriter();
 //			StringWriter data = new StringWriter();

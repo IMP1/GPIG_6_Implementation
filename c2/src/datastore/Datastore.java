@@ -10,6 +10,7 @@ import com.google.gson.*;
 import drones.sensors.SensorInterface;
 import frontendserver.SearchArea;
 import gpig.all.schema.Coord;
+import gpig.all.schema.GISPosition;
 import network.StatusData.DroneState;
 import sun.management.Sensor;
 
@@ -17,18 +18,25 @@ public class Datastore {
 	private HashMap<String, Drone> drones;
 	private HashMap<String, Scan> scans;
 	private SearchArea currentSearchArea;
+	private ArrayList<GISPosition> externalData;
 	
 	public Gson gson;
 	
 	public Datastore(){
 		drones = new HashMap<String,Drone>();
 		scans = new HashMap<String, Scan>();
+		externalData = new ArrayList<GISPosition>();
 		gson = new GsonBuilder().disableHtmlEscaping().create();
 		Drone c2 = new Drone(100.0,53.9461765, -1.0306976, DroneState.IDLE, LocalDateTime.now());
 		drones.put("c2", c2);
 	}
 	
-	
+	public synchronized void addExternalData(ArrayList<GISPosition> positions){
+		externalData = positions;
+	}
+	public synchronized String getExternalDataAsJson(){
+		return gson.toJson(externalData);
+	}
 	public synchronized HashMap<String, Drone> getDrones(){
 		return drones;
 	}
