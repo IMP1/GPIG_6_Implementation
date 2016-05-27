@@ -33,7 +33,7 @@ function addNewUnitControls(unit){
     unit_element_stats.className = 'stats';        
     unit_element.appendChild(unit_element_stats);
     
-    var unit_icons = ['fa-battery-4', 'fa-feed', 'fa-cloud', 'fa-anchor'];
+    var unit_icons = ['fa-battery-4', 'fa-info-circle', 'fa-clock-o', 'fa-sort-amount-asc'];
     
     for(var i = 0; i<unit_element_ids.length; i++){
     
@@ -43,6 +43,7 @@ function addNewUnitControls(unit){
         
             var unit_element_stats_stat_icon       = document.createElement('div');
             unit_element_stats_stat_icon.className = 'icon fa '+unit_icons[i];
+            unit_element_stats_stat_icon.id        = layerID+'-icon-'+unit_element_ids[i];
             unit_element_stats_stat.appendChild(unit_element_stats_stat_icon);
             
             var unit_element_stats_stat_text       = document.createElement('div');
@@ -57,7 +58,7 @@ function addNewUnitControls(unit){
         map.flyTo({
             center: offsetCoordinates(unit.coordinates),
             zoom: defaultZoom,        
-            speed: 0.6, 
+            speed: 2, 
             curve: 1,         
             easing: function (t) {
                 return t;
@@ -70,56 +71,25 @@ function addNewUnitControls(unit){
 function updateUnitUI(){
     
     var searchUnitsEmpty = document.getElementById('search-units-empty');
-    if(units.length > 0){
-        searchUnitsEmpty.hidden = true;
-    }else{
-        searchUnitsEmpty.hidden = false;
-    }
+    searchUnitsEmpty.hidden = units.length > 0;
     
     units.forEach(function(unit) {
-        
-	   var layerID = unit.id;
        
        // Name
-        var element_name = document.getElementById(layerID+'-'+'name');
+        var element_name = document.getElementById(unit.id+'-'+'name');
             element_name.textContent = unit.name;
         
         // Battery
-        var element_battery = document.getElementById(layerID+'-'+unit_element_ids[0]);
-            element_battery.textContent = Math.round(unit.batteryLevel*100) + '%';
+        updateBatteryLevelUI(unit);
         
         // State
-        var element_state = document.getElementById(layerID+'-'+unit_element_ids[1]);
-            element_state.textContent = unit.status;
+        updateStatus(unit);
         
         // Time
-        var element_lastseen = document.getElementById(layerID+'-'+unit_element_ids[2]);
-        
-        var timeUnit = 's';
-        var curTime = Date.now();
-        var timeDif = Math.round((curTime-unit.lastUpdated) / 1000);
-        
-        element_lastseen.style.color = '';
-        
-        // Conv to mins
-        var warningMins = 3;
-        if(timeDif > 60*warningMins){
-            timeDif = Math.round(timeDif/60);
-            timeUnit = 'm';
-            // element_lastseen.style.color = 'red';
-            
-            // Conv to hours
-            if(timeDif > 60){
-                timeDif = Math.round(timeDif/60);
-                timeUnit = 'h';
-            }  
-        }
-        
-            
-        element_lastseen.textContent = 'Last seen '+timeDif+timeUnit+' ago';
+        updateTimeLastSeen(unit);
         
         // Depth
-        var element_depth = document.getElementById(layerID+'-'+unit_element_ids[3]);
+        var element_depth = document.getElementById(unit.id+'-'+unit_element_ids[3]);
             element_depth.textContent = 'Depth : 20m';
        
        
@@ -127,7 +97,91 @@ function updateUnitUI(){
    
 }
 
+function updateBatteryLevelUI(unit){
+    
+    var fa_battery_icon = 'fa-battery-full';
+    if(unit.batteryLevel <= 75){
+        fa_battery_icon = 'fa-battery-three-quarters'
+    }
+    if(unit.batteryLevel <= 50){
+        fa_battery_icon = 'fa-battery-half'
+    }
+    if(unit.batteryLevel <= 25){
+        fa_battery_icon = 'fa-battery-quarter'
+    }
+    if(unit.batteryLevel <= 10){
+        fa_battery_icon = 'fa-battery-empty'
+    }
+    
+    var element_battery_icon             = document.getElementById(unit.id+'-icon-'+unit_element_ids[0]);
+        element_battery_icon.className   = 'icon fa '+fa_battery_icon;
+    
+    var element_battery_text             = document.getElementById(unit.id+'-'+unit_element_ids[0]);
+        element_battery_text.textContent = Math.round(unit.batteryLevel) + '%';
+         
+     // Add Warning if Battery Level < Threshold
+    
+    if(unit.batteryLevel < unit.warningBatteryLevel){
+        element_battery_icon.classList.add("warning");
+        element_battery_text.classList.add("warning");
+        addUnitBatteryFault(unit);
+    }else{
+        element_battery_icon.classList.remove("warning");
+        element_battery_text.classList.remove("warning");
+        removeUnitBatteryFault(unit);
+    }
+}
 
+function updateStatus(unit){
+    
+    var element_state = document.getElementById(unit.id+'-'+unit_element_ids[1]);
+        element_state.textContent = 'Status : '+unit.status.capitalizeFirstLetter();
+    
+    if(unit.status == 'fault'){
+        
+    }
+    
+}
+
+function updateTimeLastSeen(unit){
+    
+    // Number Of Seconds to show a warning after
+    var warningSecs = 30;
+    
+    var element_lastseen_icon = document.getElementById(unit.id+'-icon-'+unit_element_ids[2]);
+    var element_lastseen      = document.getElementById(unit.id+'-'+unit_element_ids[2]);
+        
+    var timeUnit = 's';
+    var curTime = Date.now();    
+    var timeDifSecs = Math.round((curTime-unit.lastUpdated) / 1000);
+    var usedTimeDif = timeDifSecs;
+    
+    // Conv to mins
+    
+    if(timeDifSecs > 60){
+        var timeDifMins = Math.round(timeDifSecs/60);
+        usedTimeDif = timeDifMins;
+        timeUnit = 'm';
+        // element_lastseen.style.color = 'red';
+        
+        // Conv to hours
+        if(timeDifMins > 60){
+            timeDifHours = Math.round(timeDifMins/60);
+            usedTimeDif = timeDifHours;
+            timeUnit = 'h';
+        }  
+    }   
+    
+    if(timeDifSecs > warningSecs){
+        element_lastseen_icon.classList.add("warning");
+        element_lastseen.classList.add("warning");
+    }else{
+        element_lastseen.classList.remove("warning");
+        element_lastseen_icon.classList.remove("warning");
+    }
+        
+    element_lastseen.textContent = 'Last seen '+usedTimeDif+timeUnit+' ago';
+}
 
 
 
@@ -201,14 +255,15 @@ function addNewSearchAreaControls(searchArea){
 
 }
 
-function redrawSearchAreaControls(searchArea){
-    
+function redrawSearchAreasUI(){
+    console.log(searchAreaArray.length)
     var searchAreasEmpty = document.getElementById('search-areas-empty');
-    if(searchAreaArray.length > 0){
-        searchAreasEmpty.hidden = true;
-    }else{
-        searchAreasEmpty.hidden = false;
-    }
+        searchAreasEmpty.hidden = searchAreaArray.length > 0;
+}
+
+function redrawSearchAreaControls(searchArea){    
+    
+    redrawSearchAreasUI();
        
     if(searchArea.complete){
         var htmlString = 'control-searcharea-'+searchArea.id+'-assigned';  
