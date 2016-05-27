@@ -1,23 +1,16 @@
-// SearchArea Class
-var ScanArea = function(id, depth, flowrate, coordinates){
+// ScanArea Class
+var ScanArea = function(id, depth, flowrate, coordinates, timestamp){
 	this.type = 'Feature';
-	this.depth = 0;
-	this.flowrate = 0;
+	this.center = [];
+	this.depth = depth;
+	this.flowrate = flowrate;
 	this.id = id;
+	if(timestamp){
+		this.timestamp = dateFromJSON(timestamp);
+	}	
 	this.geometry = {
 		'type': 'Polygon',
 		'coordinates': coordinates
 	}
 	return this;
 };
-
-function ConvertCoordinatesTo2DArray(JSONCoordinates){
-	var data = [];
-	for (var i = 0; i < JSONCoordinates.length; i+=2) {
-		// Swapped for GeoJSON format
-		var lat  = JSONCoordinates[i+1];
-		var lng  = JSONCoordinates[i];		
-		data.push([lat, lng]);			
-	}
-	return data;
-}

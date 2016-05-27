@@ -10,6 +10,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
         <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>   
         <script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
+        <script src="scripts/clipper.js"></script>
         
         <!--Lib CSS-->
         <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
@@ -22,9 +23,13 @@
         <link href='css/controls.css' rel='stylesheet' />
         <link href='css/debug.css' rel='stylesheet' />
         <link href='css/topnav.css' rel='stylesheet' />
+        <link href='css/mapbox_override.css' rel='stylesheet' />
         
         <!--Fonts-->
         <link href='https://fonts.googleapis.com/css?family=Lato:400,900italic,700italic,400italic,300italic,100italic,900,700,300,100' rel='stylesheet' type='text/css'>
+        
+        <!--Favicon-->
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     
     </head>
     
@@ -54,8 +59,8 @@
                     <button id="btn-recall-all">
                         Recall All Search Units
                     </button>
-                    <button>
-                        Hide Controls
+                    <button id="btn-show-flood-outline">
+                        Show Flood Outlines
                     </button>
                     <button id="btn-see-all">
                         See All Units
@@ -67,7 +72,7 @@
         <div id='controls'>
             
 <!--            Environmental Factors-->
-            <h1>Environment</h2>
+            <!--<h1>Environment</h2>
             <div id="environmental-factors" class='panel'>
                 <div class="weather-overview">
                 
@@ -75,7 +80,7 @@
                 <div class="weather-overview">
                     
                 </div>                             
-            </div>
+            </div>-->
             
             <!--Search Unit Controls-->
             <h1>Search Units</h2>
@@ -122,10 +127,10 @@
             <script src="scripts/Unit.js"></script>
             <script src="scripts/SearchArea.js"></script>
             <script src="scripts/ScanArea.js"></script>
-            <script src="scripts/UnitPath.js"></script>
             
             <!--Functionality-->
             <script src="scripts/test_data.js"></script>
+            <script src="scripts/c2_controls.js"></script>
             <script src="scripts/c2_frontend.js"></script>
             <script src="scripts/c2_backend.js"></script>
             <script src="scripts/c2_messages.js"></script>

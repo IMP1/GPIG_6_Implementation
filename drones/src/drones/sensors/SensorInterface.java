@@ -40,7 +40,7 @@ public abstract class SensorInterface {
 	private static double gpsLat = DEFAULT_GPS_LAT;
 	private static double gpsLng = DEFAULT_GPS_LONG;
 	
-	private static final double MAX_DIST = 20.0;
+	public static final double MAX_DIST = 20.0;
 
 	/**
 	 * Get the current latitude (via GPS)
@@ -137,6 +137,9 @@ public abstract class SensorInterface {
 					}
 			}
 		}
+
+		// Indicator for if we ever encounter a polygon
+		boolean onWater = false;
 				
 		for(int i = 0; i < 360; i++){
 
@@ -159,6 +162,7 @@ public abstract class SensorInterface {
 			// Then, calculate x2,y2 by adding dx and dy to lat and lon respectively.
 			
 			double hyp = Position.mToD(MAX_DIST);
+			double mindist = Double.MAX_VALUE;
 
 			double rad = Math.toRadians(i);
 			double dx = Math.cos(rad) * hyp;
@@ -188,20 +192,14 @@ public abstract class SensorInterface {
 				}
 				Polygon p = new Polygon(alat, alng, edge.lat.size());
 				
-				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && p.contains(Position.dtoM(x2), Position.dtoM(y2))){
-					// The max scan range of the drone is within the flood polygon, so we 
-					// can't find the edge of it.
-					output[i] = MAX_DIST;
-					depth = 10.0;
-					flow = 3.2;
-				}
-				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && !p.contains(Position.dtoM(x2), Position.dtoM(y2))){
-									
+				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) /*&& !p.contains(dtoM(x2), dtoM(y2))*/){
 					// We know that the sonar can find the edge of the water polygon.
 					// We now need to calculate the second from a set of two points
 					// x3,y3 shall be the points at the counter. 
 					// x4,y4 shall be the points at the counter + 1. Since this is a polygon, we 
 					// wrap around at the end.
+					onWater = true;
+					
 					
 					for(int j = 0; j < edge.lat.size(); j++){
 						
@@ -240,23 +238,41 @@ public abstract class SensorInterface {
 							
 							// Convert back to metres
 							double distm = Position.latLongDiffInMeters(dx, dy);
-							output[i] = distm;
-
+							
+							// In the case of two lines possibly being intersecting the ray from the drone, we
+							// want the closer of the two.
+							if(distm < mindist){
+								output[i] = distm;
+								mindist = distm;
+							}
 						}
-					}
+						// Finally, if both the drone and the max scanning distance are within the water polygon,
+						// we check that any intersection point is over the scanning distance before plotting it.
+						if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && p.contains(Position.dtoM(x2), Position.dtoM(y2)) && mindist > MAX_DIST){
+							output[i] = MAX_DIST;
+						}
+					}		
 				}
 			}
 		}
 		
-		if(depth != 10.0){
-			double mindist = Double.MIN_VALUE;
-			for(int i = 0; i < output.length; i++){
-				if(output[i] > mindist){
-					mindist = output[i];
-				}
-			}
-			depth = Math.sqrt(mindist); // Bit of a fudge factor, make it non-linear to distance ;)
-			flow = Math.sin(mindist);
+		if (!onWater) {
+			return null;
+		}
+		
+		// Determine depth / flow rate based on longitude
+		if(lon < -1.0745){
+			// All hard constants; sets peak depths at Ouse and Foss, peak flow at Foss.
+			// Max depth 8m, min depth 0m
+			depth = 0 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 4);
+			// Max flow 4m/s, min flow 0.5m/s
+			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 1.75);
+		} else {
+			// Linear increase/decrease in depth/flow moving east
+			// Max depth 0.4m, min depth 0.1m
+			depth = 0.1 + (((lon + 1.072090) / 0.004696) * 0.3);
+			// Max flow 2m/s, min flow 0.5m/s
+			flow = 2 - (((lon + 1.072090) / 0.004696) * 1.5);
 		}
 		
 		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);

@@ -1,7 +1,9 @@
 // Debug Vars
 var ONLINE = true;
 
-// Utility Functions
+///////////////////////
+// Utility Functions //
+///////////////////////
 
 function unprojectedDistance(ll0, ll1) {
     
@@ -23,6 +25,11 @@ function unprojectedDistance(ll0, ll1) {
 	dist = dist * 1.609344 * 1000 // Convert to Meters
     
 	return dist;
+}
+
+function dateFromJSON(jsonTimestamp){
+    var date = new Date(jsonTimestamp.date.year, jsonTimestamp.date.month-1, jsonTimestamp.date.day, jsonTimestamp.time.hour, jsonTimestamp.time.minute, jsonTimestamp.time.second, 0);    
+    return date;
 }
 
 function arraysEqual(a, b) {
@@ -60,16 +67,43 @@ var getByAttr = function(arr, attr, value){
 	return false;
 }
 
+function ConvertCoordinatesTo2DArray(JSONCoordinates, subsampleRate){
+	var data = [];
+	for (var i = 0; i < JSONCoordinates.length; i+=2/subsampleRate) {
+		// Swapped for GeoJSON format
+		var lat  = JSONCoordinates[i+1];
+		var lng  = JSONCoordinates[i];		
+		data.push([lat, lng]);			
+	}
+	return data;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /////////////////////////
 // FRONTEND COMMS CODE //
 /////////////////////////
 
 function setupAPICalls(){
-	var refreshInterval = 1000;
+	
+	var refreshRate = 1000;
+	
 	getUnitsInfo();
 	getScanInfo();
-	setInterval(getUnitsInfo, refreshInterval);
-	setInterval(getScanInfo, 1500);
+	
+	setInterval(getUnitsInfo, refreshRate);
+	setInterval(getScanInfo, refreshRate);
 	
 }
 
@@ -82,6 +116,20 @@ function setupKeypresses(){
 		}
 	};
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -118,43 +166,37 @@ var unitExamples = {
 	 "status":"Scanning",
 	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
 	 
-	 
 }
 
 var units = [];
 
-function addNewUnit(id, symbol, coordinates, batteryLevel, status, lastUpdated){
-	
-	// Map symbol is generated based on ID
-	if(id == "c2"){
-		symbol = "castle";
-	}else{
-		symbol = "marker";
-	}
-	
-    var unit = new Unit(id, symbol, coordinates, batteryLevel, status, lastUpdated);
-    units.push(unit);
-	return unit;    
-}
-
 function getUnitsInfo(){
-	
-	// Get JSON from API endpoints
-	
-	var unitsJSON;
 	
 	if(ONLINE){
 	
 		var xmlHttpUnits = new XMLHttpRequest();
-	    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", false ); // false for synchronous request
-	    	xmlHttpUnits.send( null );
-	    
-		// Parse JSON
-		unitsJSON = JSON.parse(xmlHttpUnits.responseText);
+	    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", true ); // true for asynchronous request
+						
+			xmlHttpUnits.onload = function (e) {
+				if (xmlHttpUnits.readyState === 4) {
+					if (xmlHttpUnits.status === 200) {
+						parseUnitsInfo(JSON.parse(xmlHttpUnits.responseText));
+					} else {
+						console.error(xmlHttpUnits.statusText);
+					}
+				}
+			};
+			xmlHttpUnits.onerror = function (e) {
+				console.error(xmlHttpUnits.statusText);
+			};
+			xmlHttpUnits.send(null);		
 	
 	}else{
-		unitsJSON = unitExamples; 
+		parseUnitsInfo(unitExamples);
 	}
+}
+
+function parseUnitsInfo(unitsJSON){
 	
 	Object.keys(unitsJSON).forEach(function (unitKey) {
 	   
@@ -171,37 +213,60 @@ function getUnitsInfo(){
 	   if(unit){
 		   // If Unit Exists Update It
 		   updateUnitFromJSON(unit, unitKey, unitJSON);
-	   }else{
-		   // Else Create a new one
-		   var coordinates = [unitJSON.locLong, unitJSON.locLat];
-    	   unit = addNewUnit(unitKey, 'marker', coordinates, unitJSON.batteryLevel, unitJSON.status, unitJSON.timestamp);
-		   var marker = addNewUnitMarker(unit);
-		   unit.marker = marker;		   
-		   showAllUnits();
+	   }else{		
+		   addNewUnit(unitKey, unitJSON);
 	   }
 	   
 	   // TODO : Remove Units if they no longer exist
 	   
 	});
 	
-	// Redraw Map
-	map.getSource('markers').setData(markers);
-	
 	// Redraw UI
 	updateUnitUI();
 	
 }
 
-// Recall Units
+function addNewUnit(unitKey, unitJSON){
+	
+	// Create new Unit Object	
+	var unit = new Unit(unitKey);
+	updateUnitFromJSON(unit, unitKey, unitJSON);	
+	units.push(unit);
+	
+	// Add to Map
+	addNewUnitMapLayer(unit);
+	
+	// Add controls
+	addNewUnitControls(unit);
+
+	updateUnitFeatureCollections()
+	showAllUnits();
+}
+
 
 function recallUnits(){
-	
-		var xmlHttpAssignSearchAreas = new XMLHttpRequest();
-		var urlString = "http://localhost:8081/RecallUnits";
-	    xmlHttpAssignSearchAreas.open( "GET", urlString, false );
-	    xmlHttpAssignSearchAreas.send( null );
+		
+		var xmlHttpRecall = new XMLHttpRequest();
+	    	xmlHttpRecall.open( "GET", "http://localhost:8081/RecallUnits", true ); // true for asynchronous request
+						
+			xmlHttpRecall.onload = function (e) {
+				ShowNewMessage('Drone Recall Succesful', '', 'success');
+			};
+			xmlHttpRecall.onerror = function (e) {
+				console.error(xmlHttpRecall.statusText);
+				ShowNewMessage('Drone Recall Error', 'Unable to Recall Drones', 'high');
+			};
+			xmlHttpRecall.send(null);	
 	
 }
+
+
+
+
+
+
+
+
 
 //////////////////////
 // SEARCH AREA CODE //
@@ -232,7 +297,6 @@ function cancelSearchAreaCreation(){
 		svg.selectAll('#SearchArea-Marker-'+currentSearchArea.id).remove();
 		svg.selectAll('#SearchArea-Text-'+currentSearchArea.id).remove();    
 		searchAreaArray.pop();
-		console.log(searchAreaArray);
 		currentSearchArea = null;
 		editingSearchArea = false;
 		updateMap();
@@ -266,46 +330,37 @@ function assignSearchAreas(){
 			
 			if(searchArea.assignedDrones.length == 0){	
 				
-				var xmlHttpAssignSearchAreas = new XMLHttpRequest();
 				var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat
 								+"&longitude="+searchArea.center.lng
 								+"&numberRequested="+searchArea.requestedDrones
 								+"&radius="+searchArea.radius;
-				xmlHttpAssignSearchAreas.open( "GET", urlString, false ); // false for synchronous request
-				xmlHttpAssignSearchAreas.send( null );
 				
-				ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request', '', 'success');
+				var xmlHttpAssignSearchAreas = new XMLHttpRequest();
 				
-				// Responds with the drone uids assigned to this search area 
-				console.log(xmlHttpAssignSearchAreas.responseText)
-				var searchAreaResponse = JSON.parse(xmlHttpAssignSearchAreas.responseText);
-				
-				if (searchAreaResponse.length > 0){
-					// Succesfully assigned > 1 drone
-					// Get Drones by UID
-					
-					searchAreaResponse.forEach(function(droneID) {
-						
-						var unit = getByAttr(units, 'id', droneID);
-						if(!unit){
-							ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
-						}else{
-							searchArea.assignedDrones.push(unit);
-						}					
-						
-					}, this);
-					
-				}
+					xmlHttpAssignSearchAreas.open( "GET", urlString, true ); // true for asynchronous request
+								
+					xmlHttpAssignSearchAreas.onload = function (e) {
+						if (xmlHttpAssignSearchAreas.readyState === 4) {
+							if (xmlHttpAssignSearchAreas.status === 200) {
+								parseSearchAreaAssignmentResponse(JSON.parse(xmlHttpAssignSearchAreas.responseText), searchArea);
+							} else {
+								console.error(xmlHttpAssignSearchAreas.statusText);
+								ShowNewMessage('Search Area Assignment Error', 'Unable to Recall Drones', 'high');
+							}
+						}
+					};
+					xmlHttpAssignSearchAreas.onerror = function (e) {
+						console.error(xmlHttpAssignSearchAreas.statusText);
+						ShowNewMessage('Search Area Assignment Error', 'Unable to connect to C2', 'high');
+					};
+					xmlHttpAssignSearchAreas.send(null);				
 				
 			}
 		
 		}else{
 			
-			ShowNewMessage('Succesfully Sent Search Area '+searchArea.id+' Assignment Request (OFFLINE)', '', 'success');
-			
-			var searchUnit = units[1];
-			searchArea.assignedDrones = [searchUnit];
-			
+			ShowNewMessage('Search Area Assignment Error', 'Cannot to connect to C2', 'medium');
+						
 		}
 		
 		
@@ -315,7 +370,55 @@ function assignSearchAreas(){
 	
 }
 
-// Delete all Search Areas
+function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
+	
+	if (searchAreaResponse.length > 0){
+		searchAreaResponse.forEach(function(droneID) {
+			
+			var unit = getByAttr(units, 'id', droneID);
+			if(!unit){
+				ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
+			}else{
+				ShowNewMessage('Succesfully Assigned Drone', unit.name+' assigned to search area '+searchArea.id+'.', 'success');
+				searchArea.assignedDrones.push(unit);
+				searchArea.hasBeenAssignedDrones = true;
+				removeUnasignedSearchAreas(unit, searchArea);
+			}					
+			
+		}, this);
+		
+	}
+}
+
+function removeUnasignedSearchAreas(assignedUnit, assignedSearchArea){
+
+	// Remove Search Areas which previously had this unit assigned and now have none
+	// Loop backwards through array to enable removal
+
+	for (var i = searchAreaArray.length - 1; i >= 0; i--) {
+
+		var searchArea = searchAreaArray[i];
+
+		// Skip if its the just assigned Search Area
+		if(searchArea == assignedSearchArea || searchArea.assignedDrones.length == 0) continue;
+
+		// Loop backwards through array to enable removal
+		for (var d = searchArea.assignedDrones.length - 1; d >= 0; d--) {
+			var unit = searchArea.assignedDrones[d];
+			if(unit == assignedUnit){
+				console.log('unit reassigned')
+				// This Search Area had the now re-assigned drone, so remove from its assigned drones
+				searchArea.assignedDrones.splice(d, 1);
+			}
+
+		}
+
+		if(searchArea.assignedDrones.length == 0){
+			deleteSearchArea(searchArea);
+		}	
+
+	}
+}
 
 function deleteAllSearchAreas(){
     
@@ -326,118 +429,259 @@ function deleteAllSearchAreas(){
 		searchAreaArray = [];
 	}else{
 		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
-	}
-    
+	}    
+	
+	redrawSearchAreasUI();
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ///////////////
 // SCAN CODE //
 ///////////////
 
 var scanAreas = [];
+var lastTimestamp = new Date('1900-11-25 10:11:55');
+
+ Date.prototype.timestampFormat = function() {
+   var yyyy = this.getFullYear().toString();
+   var MM   = (this.getMonth()+1).toString(); // getMonth() is zero-based
+   var dd   = this.getUTCDate().toString();
+   var HH   = this.getHours().toString();
+   var mm   = this.getMinutes().toString();
+   var ss   = this.getSeconds().toString();
+   var dateString =  yyyy+'-'+(MM < 10 ? '0': '')+MM+'-'+(dd < 10 ? '0': '')+dd+'_'+(HH < 10 ? '0': '')+HH+'-'+(mm < 10 ? '0': '')+mm+'-'+(ss < 10 ? '0': '')+ss;
+   return dateString;
+ };
 
 function getScanInfo(){
-	
 	var scanAreasJSON;
 	
 	if(ONLINE){
 		
-		var knownScans = '';
-		scanAreas.forEach(function(scanArea) {
-			knownScans += scanArea.id+',';
-		}, this);
-		
 		var xmlHttpScans = new XMLHttpRequest();
-	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?known_scans="+knownScans, false ); // false for synchronous request
-	    	xmlHttpScans.send( null );
-	    
-		// Parse JSON
-		scanAreasJSON = JSON.parse(xmlHttpScans.responseText);
+	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?last_timestamp="+lastTimestamp.timestampFormat(), true ); // false for synchronous request
+			
+			xmlHttpScans.onload = function (e) {
+				if (xmlHttpScans.readyState === 4) {
+					if (xmlHttpScans.status === 200) {
+						parseScanAreaResponse(JSON.parse(xmlHttpScans.responseText));
+					} else {
+						console.error(xmlHttpScans.statusText);
+					}
+				}
+			};
+			xmlHttpScans.onerror = function (e) {
+				console.error(xmlHttpScans.statusText);
+			};
+			xmlHttpScans.send(null);	
+			
 	}else{
-		scanAreasJSON = scanTestData;
+		parseScanAreaResponse(scanTestData);
 	}
 	
+}
+
+function parseScanAreaResponse(scanAreasJSON){
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
-		   
-		   var scanJSON = scanAreasJSON[scanKey];
-		   
-		   var scan;
-		   scanAreas.forEach(function(existingScan) {
-			   if(existingScan.id == scanKey){
-				   scan = existingScan;
-			   }
-		   }, this);
-		   
-		   if(scan){
-			   
-		   }else{
-			   // Else Create a new one
-			   
-			   var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [ConvertCoordinatesTo2DArray(scanJSON.distanceReadings)])
-			   scanData.features.push(scanArea);
-			  
-			   // Redraw Map
-			   map.getSource('ScanAreaData').setData(scanData);
-			   
-		   }		   
-		});	
+		
+		var scanJSON = scanAreasJSON[scanKey];
+		
+		var subsampleRate = 1;
+		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
+			
+		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received);
+		scanJSON.id = scanKey;
+
+		var overlaps = [];
+		for (var i = 0; i < scanData.features.length; i ++) {
+			if (polygonsIntersect(scanArea, scanData.features[i])) {
+				overlaps.push(i);
+			}
+		}
+		if (overlaps.length == 0) {
+			scanData.features.push(scanArea);
+		} else {
+			// Combine polygons
+			var combinedPolygon = scanArea;
+			for (var i = 0; i < overlaps.length; i ++) {
+				var index = overlaps[i];
+				combinedPolygon = combinePolygons(combinedPolygon, scanData.features[index], scanJSON);
+			}
+			// Remove now-combined shapes
+			for (var i = overlaps.length - 1; i >= 0; i--) {
+				scanData.features.splice(overlaps[i], 1);
+			}
+			// Add the fully combined shape
+			combinedPolygon.center = [scanJSON.locLat, scanJSON.locLong]; // TODO change this to make it work :)
+			scanData.features.push(combinedPolygon);
+		}
+
+		if(scanArea.timestamp > lastTimestamp){
+			lastTimestamp = scanArea.timestamp;
+		}
+		
+	});		
+		
+	// Redraw Map
+	map.getSource('ScanAreaData').setData(scanData);
 }
 
-///////////////
-// PATH CODE //
-///////////////
-
-var pathExamples = {
-	"path1":
-	{"points":[ [ 53.965099,-1.083076 ], 
-	 			[53.964935,-1.082089 ],
-				[53.964594,-1.081188 ], 
-				[53.964026,-1.080201 ], 
-				[53.963408,-1.079063 ], 
-				[53.962827,-1.07784],
-				[53.962209,-1.076639],
-				[53.961552,-1.075523],
-				[53.961401,-1.074536],
-				[53.961211,-1.073678],
-				[53.960795,-1.073184],
-				[53.960378,-1.07269],
-				[53.959961,-1.072197],
-				[53.959482,-1.071811],
-				[53.959002,-1.071424]],
-	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
-	 
+function polygonsIntersect(scanArea1, scanArea2) {
+	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
+		if (isPointInPoly(scanArea1.geometry.coordinates[0][i], scanArea2.geometry.coordinates[0])) {
+			return true;
+		}
+	}
+	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+		if (isPointInPoly(scanArea2.geometry.coordinates[0][i], scanArea1.geometry.coordinates[0])) {
+			return true;
+		}
+	}
+	return false;
 }
 
-var unitPaths = [];
-
-function newPath(){
-	
-	var pathsJSON = pathExamples;
-	
-	Object.keys(pathsJSON).forEach(function (pathKey) {
-		   
-	   var pathJSON = pathsJSON[pathKey];
-	   
-	   var unitPath;
-	   unitPaths.forEach(function(existingPath) {
-		   if(existingPath.id == pathKey){
-			   unitPath = existingPath;
-		   }
-	   }, this);
-	   
-	   if(unitPath){
-		   
-	   }else{
-		   // Else Create a new one
-		   
-		   var unitPath = new UnitPath();
-		   	   unitPath.id = pathKey;
-			   unitPath.gpsPoints = pathJSON.points;
-			   // unitPath.polyData is generated dynamically for redrawing
-		   
-		   unitPaths.push(unitPath);
-	   }		   
-	});	
-	
+function isPointInPoly(pt, poly){
+	// from http://jsfromhell.com/math/is-point-in-poly
+	for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
+		((poly[i][1] <= pt[1] && pt[1] < poly[j][1]) || (poly[j][1] <= pt[1] && pt[1] < poly[i][1]))
+		&& (pt[0] < (poly[j][0] - poly[i][0]) * (pt[1] - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0])
+		&& (c = !c);
+	return c;
 }
+
+function combinePolygons(scanArea1, scanArea2, scanJSON) {
+	var poly1 = toClipperPolygon(scanArea1);
+	var poly2 = toClipperPolygon(scanArea2);
+	var solution = new ClipperLib.PolyTree();
+	var c = new ClipperLib.Clipper();
+	c.AddPaths(poly1, ClipperLib.PolyType.ptSubject, true);
+	c.AddPaths(poly2, ClipperLib.PolyType.ptClip, true);
+	c.Execute(ClipperLib.ClipType.ctUnion, solution);
+	var combinedPolygon = toScanArea(solution, scanJSON);
+	return combinedPolygon;
+}
+
+const CLIPPER_SCALE = 1000000000;
+
+function toClipperPolygon(scanArea) {
+	var list = [];
+	for (var i = 0; i < scanArea.geometry.coordinates[0].length; i ++) {
+		var point = scanArea.geometry.coordinates[0][i];
+		list.push( {X: Math.floor(point[0] * CLIPPER_SCALE), Y: Math.floor(point[1] * CLIPPER_SCALE)} );
+	}
+	return [list];
+}
+
+function toScanArea(clipperPolygon, scanJSON) {
+	if (clipperPolygon.isArray) {
+		clipperPolygon = clipperPolygon[0];
+	} else { // assume it's a PolyTree
+		clipperPolygon = clipperPolygon.m_AllPolys[0].m_polygon;
+	}
+	var list = [];
+	for (var i = 0; i < clipperPolygon.length; i ++) {
+		var point = clipperPolygon[i];
+		list.push( [point.X / CLIPPER_SCALE, point.Y / CLIPPER_SCALE] );
+	}
+	var scanarea = new ScanArea(scanJSON.id, scanJSON.depth, scanJSON.flowRate, [list], scanJSON.received);
+	return scanarea;
+}
+
+// function combinePolygons(scanArea1, scanArea2, scanJSON) {
+// 	// TODO: combine the polyons
+// 	// EITHER: find a library with this functionality
+// 	//     OR: go through each edge, find the intersection, add that as a new point of the shape,
+// 	//         and then remove any points inside the other shape.
+// 	//         (http://stackoverflow.com/questions/7915734/intersection-and-union-of-polygons)
+// 	var newScanDataPoints = [];
+// 	var intersectionPoints = getIntersectingPoints(scanArea1, scanArea2);
+// 	var uselessPoints = getOverlappingPoints(scanArea1, scanArea2);
+// 	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
+// 		if (uselessPoints[0].indexOf(i) == -1) {
+// 			newScanDataPoints.push(scanArea1.geometry.coordinates[0][i]);
+// 		}
+// 	}
+// 	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+// 		if (uselessPoints[1].indexOf(i) == -1) {
+// 			newScanDataPoints.push(scanArea2.geometry.coordinates[0][i]);
+// 		}
+// 	}
+// 	for (var i = 0; i < intersectionPoints.length; i++) {
+// 		newScanDataPoints.push(intersectionPoints[i]);
+// 	}
+
+// 	return new ScanArea(scanArea1.id, scanJSON.depth, scanJSON.flowRate, [newScanDataPoints], scanJSON.received);
+// }
+
+// function getOverlappingPoints(scanArea1, scanArea2) {
+// 	var outcome = [[], []];
+// 	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
+// 		console.log(scanArea1.geometry.coordinates[0][i]);
+// 		if (isPointInPoly(scanArea1.geometry.coordinates[0][i], scanArea2.geometry.coordinates[0])) {
+// 			outcome[0].push[i];
+// 		}
+// 	}
+// 	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+// 		if (isPointInPoly(scanArea2.geometry.coordinates[0][i], scanArea1.geometry.coordinates[0])) {
+// 			outcome[1].push[i];
+// 		}
+// 	}
+// 	return outcome;
+// }
+
+// function getIntersectingPoints(scanArea1, scanArea2) {
+// 	var outcome = [];
+// 	for (var j = 0; j < scanArea1.geometry.coordinates[0].length; j ++) {
+// 		var x1 = scanArea1.geometry.coordinates[0][j][0];
+// 		var y1 = scanArea1.geometry.coordinates[0][j][1];
+// 		var x2, y2;
+// 		if (j == scanArea1.geometry.coordinates[0].length - 1) {
+// 			x2 = scanArea1.geometry.coordinates[0][0][0];
+// 			y2 = scanArea1.geometry.coordinates[0][0][1];
+// 		} else {
+// 			x2 = scanArea1.geometry.coordinates[0][j + 1][0];
+// 			y2 = scanArea1.geometry.coordinates[0][j + 1][1];
+// 		}
+// 		for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+// 			var x3 = scanArea2.geometry.coordinates[0][i][0];
+// 			var y3 = scanArea2.geometry.coordinates[0][i][1];
+// 			var x4, y4;
+// 			if (i == scanArea2.geometry.coordinates[0].length - 1) {
+// 				x4 = scanArea2.geometry.coordinates[0][0][0];
+// 				y4 = scanArea2.geometry.coordinates[0][0][1];
+// 			} else {
+// 				x4 = scanArea2.geometry.coordinates[0][i + 1][0];
+// 				y4 = scanArea2.geometry.coordinates[0][i + 1][1];
+// 			}
+// 			var intersection = edgeIntersection(x1, y1, x2, y2, x3, y3, x4, y4);
+// 			if (intersection != null) {
+// 				outcome.push(intersection);
+// 			}
+// 		}
+// 	}
+// 	return outcome;
+// }
+
+// function edgeIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+// 	const EPSILON = 0.001;
+// 	var denom = ((x1- x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+// 	if (Math.abs(denom) < EPSILON) { return null; }
+// 	var px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / denom;
+// 	var py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / denom;
+// 	return [px, py];
+// }
