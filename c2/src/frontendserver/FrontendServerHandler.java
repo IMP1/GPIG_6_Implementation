@@ -95,7 +95,6 @@ public class FrontendServerHandler implements Runnable{
 			Double locLat = drones.get("c2").getLocLat();
 			Double locLong = drones.get("c2").getLocLong();
 			for (String key : drones.keySet()){
-				System.out.println(key);
 				if(key != "c2"){
 					MoveCommand command = new MoveCommand(key,LocalDateTime.now(), locLat, locLong, 0);
 					Broadcast.broadcast(command.toString());
@@ -110,7 +109,6 @@ public class FrontendServerHandler implements Runnable{
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 			LocalDateTime dateTime = LocalDateTime.parse(known_scans_string, formatter);
 			dateTime = dateTime.plusSeconds(1);
-			System.out.println(dateTime);
 			String data = getScanData(dateTime);
 //			System.err.println(data);
 			reply(data);
@@ -151,7 +149,6 @@ public class FrontendServerHandler implements Runnable{
 	        } catch (JAXBException e) {
 	            e.printStackTrace();
 	        }
-	        System.out.println(sw.toString());
 			reply("TEST"+sw.toString());
 		}
 	}

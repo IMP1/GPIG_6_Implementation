@@ -52,7 +52,6 @@ public class DroneServerHandler implements Runnable {
 				
 			}else{
 				//otherwise create it and chuck it in the datastore.
-				System.out.println("Creating new drone "+statusdata.id);
 				Drone drone = new Drone(statusdata.batteryStatus, statusdata.latitude, statusdata.longitude, statusdata.status, statusdata.timestamp);
 				datastore.addDrone(statusdata.id, drone);
 			}

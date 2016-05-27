@@ -24,7 +24,7 @@ public class Datastore {
 		drones = new HashMap<String,Drone>();
 		scans = new HashMap<String, Scan>();
 		gson = new GsonBuilder().disableHtmlEscaping().create();
-		Drone c2 = new Drone(1.0,53.9461765, -1.0306976, DroneState.IDLE, LocalDateTime.now());
+		Drone c2 = new Drone(100.0,53.9461765, -1.0306976, DroneState.IDLE, LocalDateTime.now());
 		drones.put("c2", c2);
 	}
 	
@@ -39,6 +39,10 @@ public class Datastore {
 		return drones.get(id);
 	}
 	public synchronized void addDrone(String id, Drone drone){
+		if(drones.containsKey(id)){
+			return;
+		}
+		System.out.println("Creating new drone "+id);
 		drones.put(id, drone);
 	}
 	
