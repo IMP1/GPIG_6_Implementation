@@ -496,16 +496,18 @@ function getScanInfo(){
 	
 }
 
+var scanInfoArray = [];
+
 function parseScanAreaResponse(scanAreasJSON){
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		
-		var scanJSON = scanAreasJSON[scanKey];
+		var scanJSON           = scanAreasJSON[scanKey];
+			scanJSON.id        = scanKey;
 		
-		var subsampleRate = 1;
+		var subsampleRate      = .1; //ie 36/360 available points
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
-			
-		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received);
-		scanJSON.id = scanKey;
+		
+		var scanArea           = new ScanArea(scanJSON.id, [polygonCoordinates], scanJSON.received);		
 
 		var overlaps = [];
 		for (var i = 0; i < scanData.features.length; i ++) {
@@ -527,13 +529,20 @@ function parseScanAreaResponse(scanAreasJSON){
 				scanData.features.splice(overlaps[i], 1);
 			}
 			// Add the fully combined shape
-			combinedPolygon.center = [scanJSON.locLat, scanJSON.locLong]; // TODO change this to make it work :)
 			scanData.features.push(combinedPolygon);
 		}
 
 		if(scanArea.timestamp > lastTimestamp){
 			lastTimestamp = scanArea.timestamp;
 		}
+
+		// Create ScanData for each input ScanAre
+		// This is used for showing information popups
+
+		var scanCenter = [scanJSON.locLat, scanJSON.locLong]; 
+		var scanInfo   = new ScanInfo(scanJSON.id, scanJSON.depth, scanJSON.flowRate, scanCenter, scanJSON.received);
+		scanInfoArray.push(scanInfo);
+			
 		
 	});		
 		
@@ -598,90 +607,6 @@ function toScanArea(clipperPolygon, scanJSON) {
 		var point = clipperPolygon[i];
 		list.push( [point.X / CLIPPER_SCALE, point.Y / CLIPPER_SCALE] );
 	}
-	var scanarea = new ScanArea(scanJSON.id, scanJSON.depth, scanJSON.flowRate, [list], scanJSON.received);
+	var scanarea = new ScanArea(scanJSON.id, [list], scanJSON.received);
 	return scanarea;
 }
-
-// function combinePolygons(scanArea1, scanArea2, scanJSON) {
-// 	// TODO: combine the polyons
-// 	// EITHER: find a library with this functionality
-// 	//     OR: go through each edge, find the intersection, add that as a new point of the shape,
-// 	//         and then remove any points inside the other shape.
-// 	//         (http://stackoverflow.com/questions/7915734/intersection-and-union-of-polygons)
-// 	var newScanDataPoints = [];
-// 	var intersectionPoints = getIntersectingPoints(scanArea1, scanArea2);
-// 	var uselessPoints = getOverlappingPoints(scanArea1, scanArea2);
-// 	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
-// 		if (uselessPoints[0].indexOf(i) == -1) {
-// 			newScanDataPoints.push(scanArea1.geometry.coordinates[0][i]);
-// 		}
-// 	}
-// 	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
-// 		if (uselessPoints[1].indexOf(i) == -1) {
-// 			newScanDataPoints.push(scanArea2.geometry.coordinates[0][i]);
-// 		}
-// 	}
-// 	for (var i = 0; i < intersectionPoints.length; i++) {
-// 		newScanDataPoints.push(intersectionPoints[i]);
-// 	}
-
-// 	return new ScanArea(scanArea1.id, scanJSON.depth, scanJSON.flowRate, [newScanDataPoints], scanJSON.received);
-// }
-
-// function getOverlappingPoints(scanArea1, scanArea2) {
-// 	var outcome = [[], []];
-// 	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
-// 		console.log(scanArea1.geometry.coordinates[0][i]);
-// 		if (isPointInPoly(scanArea1.geometry.coordinates[0][i], scanArea2.geometry.coordinates[0])) {
-// 			outcome[0].push[i];
-// 		}
-// 	}
-// 	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
-// 		if (isPointInPoly(scanArea2.geometry.coordinates[0][i], scanArea1.geometry.coordinates[0])) {
-// 			outcome[1].push[i];
-// 		}
-// 	}
-// 	return outcome;
-// }
-
-// function getIntersectingPoints(scanArea1, scanArea2) {
-// 	var outcome = [];
-// 	for (var j = 0; j < scanArea1.geometry.coordinates[0].length; j ++) {
-// 		var x1 = scanArea1.geometry.coordinates[0][j][0];
-// 		var y1 = scanArea1.geometry.coordinates[0][j][1];
-// 		var x2, y2;
-// 		if (j == scanArea1.geometry.coordinates[0].length - 1) {
-// 			x2 = scanArea1.geometry.coordinates[0][0][0];
-// 			y2 = scanArea1.geometry.coordinates[0][0][1];
-// 		} else {
-// 			x2 = scanArea1.geometry.coordinates[0][j + 1][0];
-// 			y2 = scanArea1.geometry.coordinates[0][j + 1][1];
-// 		}
-// 		for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
-// 			var x3 = scanArea2.geometry.coordinates[0][i][0];
-// 			var y3 = scanArea2.geometry.coordinates[0][i][1];
-// 			var x4, y4;
-// 			if (i == scanArea2.geometry.coordinates[0].length - 1) {
-// 				x4 = scanArea2.geometry.coordinates[0][0][0];
-// 				y4 = scanArea2.geometry.coordinates[0][0][1];
-// 			} else {
-// 				x4 = scanArea2.geometry.coordinates[0][i + 1][0];
-// 				y4 = scanArea2.geometry.coordinates[0][i + 1][1];
-// 			}
-// 			var intersection = edgeIntersection(x1, y1, x2, y2, x3, y3, x4, y4);
-// 			if (intersection != null) {
-// 				outcome.push(intersection);
-// 			}
-// 		}
-// 	}
-// 	return outcome;
-// }
-
-// function edgeIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
-// 	const EPSILON = 0.001;
-// 	var denom = ((x1- x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
-// 	if (Math.abs(denom) < EPSILON) { return null; }
-// 	var px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / denom;
-// 	var py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / denom;
-// 	return [px, py];
-// }

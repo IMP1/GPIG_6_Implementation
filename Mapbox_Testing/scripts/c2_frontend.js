@@ -507,23 +507,22 @@ function roundToDecimalPlaces(num, dp){
 }
 
 function addNewPopups(){
-    return;
     // Go from last scan data
     if(map.getZoom() > zoomLevel_popups){
-        for(var i = lastDataScanned; i < scanData.features.length; i+= subsampleScans){
+        for(var i = lastDataScanned; i < scanInfoArray.length; i+= subsampleScans){
             addNewPopupIfRequired(i);
         }
-        lastDataScanned = scanData.features.length;
+        lastDataScanned = scanInfoArray.length;
     }
 }
 
 function addNewPopupIfRequired(i){
-    var scan         = scanData.features[i];
-    var centerLngLat = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
+    var scan           = scanInfoArray[i];
+    var centerLngLat   = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
     
     // Check if there's a tooltip within n metres        
-    var tooltip_radius = 40;
-    var within_radius = false;
+    var tooltip_radius = 60;
+    var within_radius  = false;
     
     infoPopups.forEach(function(tooltip) {
         

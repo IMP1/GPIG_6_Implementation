@@ -60,7 +60,7 @@ public class DroneServerHandler implements Runnable {
 			id = scandata.id;
 			dt = scandata.timestamp;
 			String ident = scandata.id+scandata.timestamp;
-			System.out.println("Receiving scandata"+ident);
+			//System.out.println("Receiving scandata"+ident);
 			if(!datastore.scanExists(ident)){
 //				System.out.println("Adding new scan data"+scandata.id+scandata.timestamp);
 				double lat = scandata.latitude;
