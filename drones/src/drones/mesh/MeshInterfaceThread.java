@@ -122,14 +122,20 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void tick() {
-		for (String commandID : paths.keySet()) {
-			if (paths.get(commandID).isDone()) {
-				try {
-					broadcastRouteData(commandID, paths.get(commandID).get());
-					paths.remove(commandID);
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
+		synchronized (paths) {
+			ArrayList<String> finishedPaths = new ArrayList<String>();
+			for (String commandID : paths.keySet()) {
+				if (paths.get(commandID).isDone()) {
+					try {
+						broadcastRouteData(commandID, paths.get(commandID).get());
+						finishedPaths.add(commandID);
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
 				}
+			}
+			for (String commandID : finishedPaths) {
+				paths.remove(commandID);
 			}
 		}
 
