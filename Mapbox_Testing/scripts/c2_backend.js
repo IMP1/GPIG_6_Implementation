@@ -103,7 +103,7 @@ function setupAPICalls(){
 	getScanInfo();
 	
 	setInterval(getUnitsInfo, refreshRate);
-	// setInterval(getScanInfo, refreshRate);
+	setInterval(getScanInfo, refreshRate);
 	
 }
 
@@ -213,7 +213,7 @@ function parseUnitsInfo(unitsJSON){
 	   if(unit){
 		   // If Unit Exists Update It
 		   updateUnitFromJSON(unit, unitKey, unitJSON);
-	   }else{		   
+	   }else{		
 		   addNewUnit(unitKey, unitJSON);
 	   }
 	   
@@ -238,6 +238,9 @@ function addNewUnit(unitKey, unitJSON){
 	
 	// Add controls
 	addNewUnitControls(unit);
+
+	updateUnitFeatureCollections()
+	showAllUnits();
 }
 
 
@@ -247,9 +250,7 @@ function recallUnits(){
 	    	xmlHttpRecall.open( "GET", "http://localhost:8081/RecallUnits", true ); // true for asynchronous request
 						
 			xmlHttpRecall.onload = function (e) {
-				if (xmlHttpRecall.readyState === 4) {
-					ShowNewMessage('Drone Recall Succesful', '', 'success');
-				}
+				ShowNewMessage('Drone Recall Succesful', '', 'success');
 			};
 			xmlHttpRecall.onerror = function (e) {
 				console.error(xmlHttpRecall.statusText);
@@ -429,6 +430,8 @@ function deleteAllSearchAreas(){
 	}else{
 		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
 	}    
+	
+	redrawSearchAreasUI();
     
 }
 
@@ -515,8 +518,4 @@ function parseScanAreaResponse(scanAreasJSON){
 		
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
-	
-	
-    
-    addClosePopups()    
 }

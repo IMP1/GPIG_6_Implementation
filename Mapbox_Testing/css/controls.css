@@ -104,7 +104,7 @@
         line-height: 130%; }
       #filter-group .unit .info .unit-name {
         float: left;
-        font-size: 10px;
+        font-size: 13px;
         height: 30%;
         width: 100%;
         color: #1bc6e2;
@@ -126,6 +126,9 @@
         #filter-group .unit .stats .stat .text {
           float: left;
           height: 20px; }
+        #filter-group .unit .stats .stat .warning {
+          color: #ff2f19;
+          font-weight: 600; }
 
 #search-areas {
   width: 100%;
