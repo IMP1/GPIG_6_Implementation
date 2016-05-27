@@ -505,33 +505,27 @@ function parseScanAreaResponse(scanAreasJSON){
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 			
 		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received);
-			scanJSON.id = scanKey;
+		scanJSON.id = scanKey;
 
 		var overlaps = [];
-
 		for (var i = 0; i < scanData.features.length; i ++) {
 			if (polygonsIntersect(scanArea, scanData.features[i])) {
 				overlaps.push(i);
 			}
 		}
 		if (overlaps.length == 0) {
-
 			scanData.features.push(scanArea);
-
 		} else {
-			console.log("Combining Polygons...");
-
 			// Combine polygons
 			var combinedPolygon = scanArea;
-			for (var index in overlaps) {
+			for (var i = 0; i < overlaps.length; i ++) {
+				var index = overlaps[i];
 				combinedPolygon = combinePolygons(combinedPolygon, scanData.features[index], scanJSON);
 			}
-
 			// Remove now-combined shapes
-			for (var index in overlaps) {
-				scanData.features.splice(index, 1);
+			for (var i = overlaps.length - 1; i >= 0; i--) {
+				scanData.features.splice(overlaps[i], 1);
 			}
-			
 			// Add the fully combined shape
 			combinedPolygon.center = [scanJSON.locLat, scanJSON.locLong]; // TODO change this to make it work :)
 			scanData.features.push(combinedPolygon);
@@ -571,27 +565,14 @@ function isPointInPoly(pt, poly){
 }
 
 function combinePolygons(scanArea1, scanArea2, scanJSON) {
-
-	console.log("scan area 1");
-	console.log(scanArea1);
-
-	var poly1    = toClipperPolygon(scanArea1);
-	var poly2    = toClipperPolygon(scanArea2);
+	var poly1 = toClipperPolygon(scanArea1);
+	var poly2 = toClipperPolygon(scanArea2);
 	var solution = new ClipperLib.PolyTree();
-	var c        = new ClipperLib.Clipper();
-
+	var c = new ClipperLib.Clipper();
 	c.AddPaths(poly1, ClipperLib.PolyType.ptSubject, true);
 	c.AddPaths(poly2, ClipperLib.PolyType.ptClip, true);
 	c.Execute(ClipperLib.ClipType.ctUnion, solution);
-
-	console.log("solution:");
-	console.log(solution);
-
 	var combinedPolygon = toScanArea(solution, scanJSON);
-
-	console.log("scan area for combined polygon");
-	console.log(combinedPolygon);
-
 	return combinedPolygon;
 }
 
@@ -607,20 +588,16 @@ function toClipperPolygon(scanArea) {
 }
 
 function toScanArea(clipperPolygon, scanJSON) {
-
 	if (clipperPolygon.isArray) {
 		clipperPolygon = clipperPolygon[0];
-	} else { 
-		// assume it's a PolyTree
+	} else { // assume it's a PolyTree
 		clipperPolygon = clipperPolygon.m_AllPolys[0].m_polygon;
 	}
-
 	var list = [];
 	for (var i = 0; i < clipperPolygon.length; i ++) {
 		var point = clipperPolygon[i];
 		list.push( [point.X / CLIPPER_SCALE, point.Y / CLIPPER_SCALE] );
 	}
-
 	var scanarea = new ScanArea(scanJSON.id, scanJSON.depth, scanJSON.flowRate, [list], scanJSON.received);
 	return scanarea;
 }
