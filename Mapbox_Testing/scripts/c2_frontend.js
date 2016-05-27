@@ -210,15 +210,21 @@ var map_overlays = document.getElementById('map_overlays');
 ///////////////////
 
 function showAllUnits(){  
-    if(markers.features.length >= 2){
 
-        console.log(markers.features);  
+          
         var bounds = new mapboxgl.LngLatBounds();
+
         markers.features.forEach(function(feature) {
             bounds.extend(feature.geometry.coordinates);
         });
-        map.fitBounds(bounds, { padding: '100' });    
-    }
+
+        // Check Units aren't in same place
+        if(bounds._ne.lat == bounds._sw.lat || bounds._ne.lng == bounds._sw.lng){
+
+        }else{
+            map.fitBounds(bounds, { padding: '100' });   
+        }
+         
 }
 
 function updateMap(){
@@ -501,6 +507,7 @@ function roundToDecimalPlaces(num, dp){
 }
 
 function addNewPopups(){
+    return;
     // Go from last scan data
     if(map.getZoom() > zoomLevel_popups){
         for(var i = lastDataScanned; i < scanData.features.length; i+= subsampleScans){

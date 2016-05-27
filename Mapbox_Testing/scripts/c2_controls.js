@@ -256,7 +256,6 @@ function addNewSearchAreaControls(searchArea){
 }
 
 function redrawSearchAreasUI(){
-    console.log(searchAreaArray.length)
     var searchAreasEmpty = document.getElementById('search-areas-empty');
         searchAreasEmpty.hidden = searchAreaArray.length > 0;
 }
