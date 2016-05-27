@@ -250,11 +250,11 @@ function recallUnits(){
 	    	xmlHttpRecall.open( "GET", "http://localhost:8081/RecallUnits", true ); // true for asynchronous request
 						
 			xmlHttpRecall.onload = function (e) {
-				ShowNewMessage('Drone Recall Succesful', '', 'success');
+				ShowNewMessage('Drone Recall Succesful', '', 'success', '');
 			};
 			xmlHttpRecall.onerror = function (e) {
 				console.error(xmlHttpRecall.statusText);
-				ShowNewMessage('Drone Recall Error', 'Unable to Recall Drones', 'high');
+				ShowNewMessage('Drone Recall Error', 'Unable to Recall Drones', 'high', '');
 			};
 			xmlHttpRecall.send(null);	
 	
@@ -278,10 +278,10 @@ var searchAreaArray = [];
 function changeDroneAssignmentForSearchArea(inc, searchArea){    
 	
 	if(searchArea.requestedDrones == 1 && inc == -1){
-		ShowNewMessage('Drone Assignment Error', 'Cannot assign less than one drone', 'medium');
+		ShowNewMessage('Drone Assignment Error', 'Cannot assign less than one drone', 'medium', '');
 		return;
 	}else if(searchArea.requestedDrones == units.length && inc == 1){
-		ShowNewMessage('Drone Assignment Error', 'Cannot assign more Drones than exist', 'medium');
+		ShowNewMessage('Drone Assignment Error', 'Cannot assign more Drones than exist', 'medium', '');
 		return;
 	}
 		
@@ -308,17 +308,17 @@ var currentlyAssigningSearchAreas;
 function assignSearchAreas(){
 	
 	if(units.length == 0){
-		ShowNewMessage('Search Area Assignment Error', 'No Search Units in network to assign search areas.', 'high');
+		ShowNewMessage('Search Area Assignment Error', 'No Search Units in network to assign search areas.', 'high', '');
 		return;
 	}
 	
 	if(searchAreaArray.length == 0){
-		ShowNewMessage('Search Area Assignment Error', 'No Search Areas created, cannot assign to units.', 'high');
+		ShowNewMessage('Search Area Assignment Error', 'No Search Areas created, cannot assign to units.', 'high', '');
 		return;
 	}	
 	
 	if(currentlyAssigningSearchAreas){
-		ShowNewMessage('Search Area Assignment Error', 'Already in the process of assigning search areas.', 'high');
+		ShowNewMessage('Search Area Assignment Error', 'Already in the process of assigning search areas.', 'high', '');
 		return;
 	}
 	
@@ -345,13 +345,13 @@ function assignSearchAreas(){
 								parseSearchAreaAssignmentResponse(JSON.parse(xmlHttpAssignSearchAreas.responseText), searchArea);
 							} else {
 								console.error(xmlHttpAssignSearchAreas.statusText);
-								ShowNewMessage('Search Area Assignment Error', 'Unable to Recall Drones', 'high');
+								ShowNewMessage('Search Area Assignment Error', 'Unable to Recall Drones', 'high', '');
 							}
 						}
 					};
 					xmlHttpAssignSearchAreas.onerror = function (e) {
 						console.error(xmlHttpAssignSearchAreas.statusText);
-						ShowNewMessage('Search Area Assignment Error', 'Unable to connect to C2', 'high');
+						ShowNewMessage('Search Area Assignment Error', 'Unable to connect to C2', 'high', '');
 					};
 					xmlHttpAssignSearchAreas.send(null);				
 				
@@ -359,7 +359,7 @@ function assignSearchAreas(){
 		
 		}else{
 			
-			ShowNewMessage('Search Area Assignment Error', 'Cannot to connect to C2', 'medium');
+			ShowNewMessage('Search Area Assignment Error', 'Cannot to connect to C2', 'medium', '');
 						
 		}
 		
@@ -377,9 +377,9 @@ function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
 			
 			var unit = getByAttr(units, 'id', droneID);
 			if(!unit){
-				ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
+				ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high', '');
 			}else{
-				ShowNewMessage('Succesfully Assigned Drone', unit.name+' assigned to search area '+searchArea.id+'.', 'success');
+				ShowNewMessage('Succesfully Assigned Drone', unit.name+' assigned to search area '+searchArea.id+'.', 'success', '');
 				searchArea.assignedDrones.push(unit);
 				searchArea.hasBeenAssignedDrones = true;
 				removeUnasignedSearchAreas(unit, searchArea);
@@ -406,7 +406,6 @@ function removeUnasignedSearchAreas(assignedUnit, assignedSearchArea){
 		for (var d = searchArea.assignedDrones.length - 1; d >= 0; d--) {
 			var unit = searchArea.assignedDrones[d];
 			if(unit == assignedUnit){
-				console.log('unit reassigned')
 				// This Search Area had the now re-assigned drone, so remove from its assigned drones
 				searchArea.assignedDrones.splice(d, 1);
 			}
@@ -428,7 +427,7 @@ function deleteAllSearchAreas(){
 		});
 		searchAreaArray = [];
 	}else{
-		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
+		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium', '');
 	}    
 	
 	redrawSearchAreasUI();

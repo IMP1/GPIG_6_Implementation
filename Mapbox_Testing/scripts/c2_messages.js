@@ -3,15 +3,16 @@ var MessageSeverity = Object.freeze({"high":1, "medium":2, "normal":3, "success"
 MessageID = 0;
 MaxMessages = 20;
 
-var Message = function(header, body, style){
-	this.id = MessageID++;
-	this.header = header;
-	this.body = body;
-	this.style = style;	
+var Message = function(header, body, style, clickFunction){
+	this.id       = MessageID++;
+	this.header   = header;
+	this.body     = body;
+	this.style    = style;
+	this.clickFunction = clickFunction;	
 }
 
-function ShowNewMessage(header, body, style){
-	var msg = new Message(header, body, style);
+function ShowNewMessage(header, body, style, clickFunction){
+	var msg = new Message(header, body, style, clickFunction);
 	showMessage(msg);
 }
 
@@ -31,6 +32,13 @@ function showMessage(message){
 		var message_element_body = document.createElement('p');
 	    	message_element_body.textContent = message.body;
 	        message_element.appendChild(message_element_body);
+
+	if (typeof message.clickFunction === "function") {      
+		message_element.classList.add("clickable"); 
+	    message_element.addEventListener('click', function(e) {            
+	        message.clickFunction();
+	    });
+	}
 			
 	clearOldMessages();
 	

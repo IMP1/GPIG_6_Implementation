@@ -86,6 +86,10 @@
 			font-weight:300;
 		}
 	}
+
+	.clickable{
+		cursor: pointer;
+	}
 	
 	.high{			
 		background-image:linear-gradient(rgba($message-high-level-1,$message_opacity), rgba($message-high-level-2,$message_opacity));

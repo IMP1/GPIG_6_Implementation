@@ -27,7 +27,7 @@ public class Datastore {
 		scans = new HashMap<String, Scan>();
 		externalData = new ArrayList<GISPosition>();
 		gson = new GsonBuilder().disableHtmlEscaping().create();
-		Drone c2 = new Drone(100.0,53.9461765, -1.0306976, DroneState.IDLE, LocalDateTime.now());
+		Drone c2 = new Drone(100.0, 53.95457672001171, -1.0792994499206543, DroneState.IDLE, LocalDateTime.now());
 		drones.put("c2", c2);
 	}
 	

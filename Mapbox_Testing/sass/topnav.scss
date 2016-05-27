@@ -71,6 +71,7 @@
 		line-height:$top_nav_height;
 		
 		button{
+			cursor: pointer;
 			background:rgba(0,0,0, .15);
 			color:white;
 			border:none;
@@ -82,8 +83,11 @@
 			font-size:13px;
 			font-weight: 600;
 			min-width:200px;
-			:hover{
-				background:rgba($highlight_color, .5);
+			&:hover{
+				background:rgba(0,0,0, .3);
+			}
+			&:active{
+				background:rgba(0,0,0, .5);
 			}
 		}
 		

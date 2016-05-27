@@ -162,7 +162,7 @@ map.on('load', function () {
     enableSearchAreaDrawing();
     
     // Mapbox Elements
-    map.addControl(new mapboxgl.Navigation());
+    map.addControl(new mapboxgl.Navigation({position: 'top-left'}));
     var toRemove = document.getElementsByClassName('mapboxgl-ctrl-bottom-right')[0];
     toRemove.parentNode.removeChild(toRemove); 
 
@@ -172,15 +172,26 @@ map.on("render", function() {
     redrawSearchAreas()
 })
 
-var zoomLevel_popups = 17;
+var last_zoomlevel = 0;
+var zoomLevel_popups_max_detail = 16.5;
+var zoomLevel_popups_min_detail = 15.8;
 
 map.on('move', function(e) {
     var z = e.target.getZoom();
-    if (z < zoomLevel_popups) {
+    
+
+    if(last_zoomlevel != z){
+        removeAllPopups();
+    }
+
+    if (z < zoomLevel_popups_min_detail) {
         removeAllPopups();
     }else{
         addNewPopups();
     }
+
+    last_zoomlevel = z;
+
 });
 
 
@@ -259,6 +270,17 @@ function toggleFloodOutline(){
     
 }
 
+function flyToUnit(unit){
+    map.flyTo({
+        center: offsetCoordinates(unit.coordinates),
+        zoom: defaultZoom,        
+        speed: 2, 
+        curve: 1,         
+        easing: function (t) {
+            return t;
+        }
+    });    
+}
 
 
 
@@ -342,9 +364,9 @@ function enableSearchAreaDrawing(){
                 currentSearchArea = null;
                 editingSearchArea = false;
             }else if(currentSearchArea.radius >= maxRadius){
-                ShowNewMessage('Search Area Creation Error', 'Search Area exceeds maximum radius of '+maxRadius+'m ('+Math.round(currentSearchArea.radius)+'m)', 'medium');
+                ShowNewMessage('Search Area Creation Error', 'Search Area exceeds maximum radius of '+maxRadius+'m ('+Math.round(currentSearchArea.radius)+'m)', 'medium', '');
             }else if(currentSearchArea.radius <= minRadius){
-                ShowNewMessage('Search Area Creation Error', 'Search Area under minimum radius of '+minRadius+'m ('+Math.round(currentSearchArea.radius)+'m)', 'medium');
+                ShowNewMessage('Search Area Creation Error', 'Search Area under minimum radius of '+minRadius+'m ('+Math.round(currentSearchArea.radius)+'m)', 'medium', '');
             }
         }
         
@@ -499,7 +521,10 @@ function redrawSearchAreas(){
 
 var infoPopups = [];
 var lastDataScanned = 0;
-var subsampleScans = 5; // Use every nth scan for center;
+var subsampleScans; // Use every nth scan for center;
+
+// var zoomLevel_popups_max_detail = 17;
+// var zoomLevel_popups_min_detail = 14;
 
 function roundToDecimalPlaces(num, dp){
     var mult = Math.pow(10, dp);
@@ -508,7 +533,8 @@ function roundToDecimalPlaces(num, dp){
 
 function addNewPopups(){
     // Go from last scan data
-    if(map.getZoom() > zoomLevel_popups){
+    console.log(map.getZoom())
+    if(map.getZoom() > zoomLevel_popups_min_detail){
         for(var i = lastDataScanned; i < scanInfoArray.length; i+= subsampleScans){
             addNewPopupIfRequired(i);
         }
@@ -519,9 +545,20 @@ function addNewPopups(){
 function addNewPopupIfRequired(i){
     var scan           = scanInfoArray[i];
     var centerLngLat   = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
+
+    var tooltip_radius;
+
+    if(map.getZoom() >= zoomLevel_popups_max_detail){
+        console.log('max detail')
+        tooltip_radius = 60;
+        subsampleScans = 5;
+    }else if(map.getZoom() >= zoomLevel_popups_min_detail){
+        console.log('min detail')
+        tooltip_radius = 150;
+        subsampleScans = 15;
+    }
     
-    // Check if there's a tooltip within n metres        
-    var tooltip_radius = 60;
+    // Check if there's a tooltip within n metres 
     var within_radius  = false;
     
     infoPopups.forEach(function(tooltip) {
@@ -547,8 +584,6 @@ function addNewPopupIfRequired(i){
         var warnings        = getWarnings(depth_severity, flow_severity);
         
         var html_string     = '';
-        
-        console.log(depth_severity, flow_severity)
 
         warnings.forEach(function(warning) {
             html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning[0]+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning[1]+'</div></div>   </div>'
@@ -557,7 +592,7 @@ function addNewPopupIfRequired(i){
         html_string        += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
         html_string        += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
 
-        var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
+        var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false, anchor:'bottom'})
             .setLngLat([scan.center[1], scan.center[0]])
             .setHTML(html_string)
             .addTo(map);
@@ -642,20 +677,44 @@ var faultDisplayed = false;
 function showUnitFault(){
     
     if(!faultDisplayed){        
-        ShowNewMessage('Major Drone Fault', 'There is an unexpected fault with Drone. Please attend unit.', 'high');    
+        ShowNewMessage('Major Drone Fault', 'There is an unexpected fault with Drone. Please attend unit.', 'high', '');    
         faultDisplayed = true;    
     }
 }
 
-function addUnitBatteryFault(unit){
-    
+function addUnitBatteryFault(unit){    
     if(!unit.batteryFaultDisplayed){     
         console.log(unit);
-        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+unit.batteryLevel+'%. Please recall to C2.', 'medium');    
+        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+unit.batteryLevel+'%. Please recall to C2.', 'medium', '');    
         unit.batteryFaultDisplayed = true;    
     }
 }
 
 function removeUnitBatteryFault(unit){
+    unit.batteryFaultDisplayed = false;  
+}
+
+function showUnitUnseenFault(unit, timeUnseenSeconds){
+    if(!unit.unseenFaultDisplayed){ 
+        //Show msg + add marker
+        unit.unseenFaultDisplayed = true;
+        var func = function(){ return flyToUnit(unit) }
+        ShowNewMessage(unit.name+' Major Fault', unit.name+' has not relayed information in '+timeUnseenSeconds+' seconds. Please investigate last known location of search unit. Click here to go to Search Unit.', 'high', func);    
+
+        //Tooltip
+        var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
+            .setLngLat(unit.coordinates)
+            .setHTML('Major Unit Fault')
+            .addTo(map);
+
+        unit.unseenFaultTooltip = tooltip;
+    }
+}
+
+function removeUnitUnseenFault(unit){
+    if(unit.unseenFaultDisplayed){
+        unit.unseenFaultDisplayed = false; 
+        unit.unseenFaultTooltip.remove(); 
+    }
     
 }
