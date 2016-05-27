@@ -538,34 +538,37 @@ function combinePolygons(scanArea1, scanArea2, scanJSON) {
 	console.log("scan area 1");
 	console.log(scanArea1);
 	var poly1 = toClipperPolygon(scanArea1);
-	console.log("polygon for scan area 1");
-	console.log(poly1);
 	var poly2 = toClipperPolygon(scanArea2);
-	var solution = new ClipperLib.Paths();
+	var solution = new ClipperLib.PolyTree();
 	var c = new ClipperLib.Clipper();
 	c.AddPaths(poly1, ClipperLib.PolyType.ptSubject, true);
 	c.AddPaths(poly2, ClipperLib.PolyType.ptClip, true);
 	c.Execute(ClipperLib.ClipType.ctUnion, solution);
-	console.log("combined polygon");
+	console.log("solution:");
 	console.log(solution);
 	var combinedPolygon = toScanArea(solution, scanJSON);
-	console.log("scan area for combined polygon")
+	console.log("scan area for combined polygon");
 	console.log(combinedPolygon);
 	return combinedPolygon;
 }
 
-const CLIPPER_SCALE = 10000;
+const CLIPPER_SCALE = 1000000000;
 
 function toClipperPolygon(scanArea) {
 	var list = [];
 	for (var i = 0; i < scanArea.geometry.coordinates[0].length; i ++) {
 		var point = scanArea.geometry.coordinates[0][i];
-		list.push( {X: point[0] * CLIPPER_SCALE, Y: point[1] * CLIPPER_SCALE} );
+		list.push( {X: Math.floor(point[0] * CLIPPER_SCALE), Y: Math.floor(point[1] * CLIPPER_SCALE)} );
 	}
 	return [list];
 }
 
 function toScanArea(clipperPolygon, scanJSON) {
+	if (clipperPolygon.isArray) {
+		clipperPolygon = clipperPolygon[0];
+	} else { // assume it's a PolyTree
+		clipperPolygon = clipperPolygon.m_AllPolys[0].m_polygon;
+	}
 	var list = [];
 	for (var i = 0; i < clipperPolygon.length; i ++) {
 		var point = clipperPolygon[i];
