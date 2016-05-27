@@ -36,6 +36,10 @@ public class Datastore {
 		drones.put("c2", c2);
 	}
 	
+	public synchronized HashMap<String, Scan> getScans(){
+		return (HashMap<String, Scan>) scans.clone();
+	}
+	
 	public synchronized void addExternalData(ArrayList<GISPosition> positions){
 		externalData = positions;
 	}
