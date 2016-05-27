@@ -2,12 +2,10 @@ package drones.mesh;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.NetworkInterface;
 
 import network.*;
 
@@ -64,16 +62,7 @@ public class MeshNetworkingThread extends Thread {
 		try {
     		groupAddress = InetAddress.getByName(Message.MESH_GROUP_ADDRESS);
     		socket = new MulticastSocket(Message.MESH_PORT);
-			Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
-			NetworkInterface eth0 = null;
-			while (enumeration.hasMoreElements()) {
-			    eth0 = enumeration.nextElement();
-			    if (eth0.getName().equals("eth0")) {
-			        //there is probably a better way to find ethernet interface
-			        break;
-			    }
-			}
-			socket.setNetworkInterface(eth0);
+    		socket.setTimeToLive(2);
     		socket.joinGroup(groupAddress);
 		} catch (IOException e) {
 			e.printStackTrace();

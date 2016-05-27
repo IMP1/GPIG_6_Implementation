@@ -34,10 +34,13 @@ public class DroneServer implements Runnable {
 			    eth0 = enumeration.nextElement();
 			    if (eth0.getName().equals("p3p1")) {
 			        //there is probably a better way to find ethernet interface
+			    	
+			    	// We are in the hardware lab.
+					serverSocket.setNetworkInterface(eth0);
 			        break;
 			    }
 			}
-			serverSocket.setNetworkInterface(eth0);
+			serverSocket.setTimeToLive(2);
 			serverSocket.joinGroup(InetAddress.getByName(Message.MESH_GROUP_ADDRESS));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

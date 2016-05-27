@@ -22,10 +22,14 @@ public class Broadcast {
 			    eth0 = enumeration.nextElement();
 			    if (eth0.getName().equals("p3p1")) {
 			        //there is probably a better way to find ethernet interface
+			    	
+			    	// We are in the hardware lab
+					socket.setNetworkInterface(eth0);
 			        break;
 			    }
 			}
-			socket.setNetworkInterface(eth0);
+
+			socket.setTimeToLive(2);
     		socket.joinGroup(groupAddress);
     		socket.send(packet);
 		} catch (Exception e) {
