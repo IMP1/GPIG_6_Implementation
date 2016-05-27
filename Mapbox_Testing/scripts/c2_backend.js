@@ -497,7 +497,6 @@ function getScanInfo(){
 }
 
 function parseScanAreaResponse(scanAreasJSON){
-	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		
 		var scanJSON = scanAreasJSON[scanKey];
@@ -505,17 +504,190 @@ function parseScanAreaResponse(scanAreasJSON){
 		var subsampleRate = 1;
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 			
-		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received)
-			scanArea.center = [scanJSON.locLat, scanJSON.locLong];
-		scanData.features.push(scanArea);
+		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received);
+		scanJSON.id = scanKey;
+		var overlaps = [];
+
+		for (var i = 0; i < scanData.features.length; i ++) {
+			if (polygonsIntersect(scanArea, scanData.features[i])) {
+				overlaps.push(i);
+			}
+		}
+		if (overlaps.length == 0) {
+			scanData.features.push(scanArea);
+		} else {
+			console.log("Combining Polygons...");
+			// Combine polygons
+			var combinedPolygon = scanArea;
+			for (var index in overlaps) {
+				combinedPolygon = combinePolygons(combinedPolygon, scanData.features[index], scanJSON);
+			}
+			// Remove now-combined shapes
+			for (var index in overlaps) {
+				scanData.features.splice(index, 1);
+			}
+			// Add the fully combined shape
+			combinedPolygon.center = [scanJSON.locLat, scanJSON.locLong]; // TODO change this to make it work :)
+			scanData.features.push(combinedPolygon);
+		}
 
 		if(scanArea.timestamp > lastTimestamp){
 			lastTimestamp = scanArea.timestamp;
-		}		
-		
+		}
 		
 	});		
 		
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
 }
+
+function polygonsIntersect(scanArea1, scanArea2) {
+	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
+		if (isPointInPoly(scanArea1.geometry.coordinates[0][i], scanArea2.geometry.coordinates[0])) {
+			return true;
+		}
+	}
+	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+		if (isPointInPoly(scanArea2.geometry.coordinates[0][i], scanArea1.geometry.coordinates[0])) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function isPointInPoly(pt, poly){
+	// from http://jsfromhell.com/math/is-point-in-poly
+	for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
+		((poly[i][1] <= pt[1] && pt[1] < poly[j][1]) || (poly[j][1] <= pt[1] && pt[1] < poly[i][1]))
+		&& (pt[0] < (poly[j][0] - poly[i][0]) * (pt[1] - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0])
+		&& (c = !c);
+	return c;
+}
+
+function combinePolygons(scanArea1, scanArea2, scanJSON) {
+	console.log("scan area 1");
+	console.log(scanArea1);
+	var poly1 = toClipperPolygon(scanArea1);
+	var poly2 = toClipperPolygon(scanArea2);
+	var solution = new ClipperLib.PolyTree();
+	var c = new ClipperLib.Clipper();
+	c.AddPaths(poly1, ClipperLib.PolyType.ptSubject, true);
+	c.AddPaths(poly2, ClipperLib.PolyType.ptClip, true);
+	c.Execute(ClipperLib.ClipType.ctUnion, solution);
+	console.log("solution:");
+	console.log(solution);
+	var combinedPolygon = toScanArea(solution, scanJSON);
+	console.log("scan area for combined polygon");
+	console.log(combinedPolygon);
+	return combinedPolygon;
+}
+
+const CLIPPER_SCALE = 1000000000;
+
+function toClipperPolygon(scanArea) {
+	var list = [];
+	for (var i = 0; i < scanArea.geometry.coordinates[0].length; i ++) {
+		var point = scanArea.geometry.coordinates[0][i];
+		list.push( {X: Math.floor(point[0] * CLIPPER_SCALE), Y: Math.floor(point[1] * CLIPPER_SCALE)} );
+	}
+	return [list];
+}
+
+function toScanArea(clipperPolygon, scanJSON) {
+	if (clipperPolygon.isArray) {
+		clipperPolygon = clipperPolygon[0];
+	} else { // assume it's a PolyTree
+		clipperPolygon = clipperPolygon.m_AllPolys[0].m_polygon;
+	}
+	var list = [];
+	for (var i = 0; i < clipperPolygon.length; i ++) {
+		var point = clipperPolygon[i];
+		list.push( [point.X / CLIPPER_SCALE, point.Y / CLIPPER_SCALE] );
+	}
+	var scanarea = new ScanArea(scanJSON.id, scanJSON.depth, scanJSON.flowRate, [list], scanJSON.received);
+	return scanarea;
+}
+
+// function combinePolygons(scanArea1, scanArea2, scanJSON) {
+// 	// TODO: combine the polyons
+// 	// EITHER: find a library with this functionality
+// 	//     OR: go through each edge, find the intersection, add that as a new point of the shape,
+// 	//         and then remove any points inside the other shape.
+// 	//         (http://stackoverflow.com/questions/7915734/intersection-and-union-of-polygons)
+// 	var newScanDataPoints = [];
+// 	var intersectionPoints = getIntersectingPoints(scanArea1, scanArea2);
+// 	var uselessPoints = getOverlappingPoints(scanArea1, scanArea2);
+// 	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
+// 		if (uselessPoints[0].indexOf(i) == -1) {
+// 			newScanDataPoints.push(scanArea1.geometry.coordinates[0][i]);
+// 		}
+// 	}
+// 	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+// 		if (uselessPoints[1].indexOf(i) == -1) {
+// 			newScanDataPoints.push(scanArea2.geometry.coordinates[0][i]);
+// 		}
+// 	}
+// 	for (var i = 0; i < intersectionPoints.length; i++) {
+// 		newScanDataPoints.push(intersectionPoints[i]);
+// 	}
+
+// 	return new ScanArea(scanArea1.id, scanJSON.depth, scanJSON.flowRate, [newScanDataPoints], scanJSON.received);
+// }
+
+// function getOverlappingPoints(scanArea1, scanArea2) {
+// 	var outcome = [[], []];
+// 	for (var i = 0; i < scanArea1.geometry.coordinates[0].length; i ++) {
+// 		console.log(scanArea1.geometry.coordinates[0][i]);
+// 		if (isPointInPoly(scanArea1.geometry.coordinates[0][i], scanArea2.geometry.coordinates[0])) {
+// 			outcome[0].push[i];
+// 		}
+// 	}
+// 	for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+// 		if (isPointInPoly(scanArea2.geometry.coordinates[0][i], scanArea1.geometry.coordinates[0])) {
+// 			outcome[1].push[i];
+// 		}
+// 	}
+// 	return outcome;
+// }
+
+// function getIntersectingPoints(scanArea1, scanArea2) {
+// 	var outcome = [];
+// 	for (var j = 0; j < scanArea1.geometry.coordinates[0].length; j ++) {
+// 		var x1 = scanArea1.geometry.coordinates[0][j][0];
+// 		var y1 = scanArea1.geometry.coordinates[0][j][1];
+// 		var x2, y2;
+// 		if (j == scanArea1.geometry.coordinates[0].length - 1) {
+// 			x2 = scanArea1.geometry.coordinates[0][0][0];
+// 			y2 = scanArea1.geometry.coordinates[0][0][1];
+// 		} else {
+// 			x2 = scanArea1.geometry.coordinates[0][j + 1][0];
+// 			y2 = scanArea1.geometry.coordinates[0][j + 1][1];
+// 		}
+// 		for (var i = 0; i < scanArea2.geometry.coordinates[0].length; i ++) {
+// 			var x3 = scanArea2.geometry.coordinates[0][i][0];
+// 			var y3 = scanArea2.geometry.coordinates[0][i][1];
+// 			var x4, y4;
+// 			if (i == scanArea2.geometry.coordinates[0].length - 1) {
+// 				x4 = scanArea2.geometry.coordinates[0][0][0];
+// 				y4 = scanArea2.geometry.coordinates[0][0][1];
+// 			} else {
+// 				x4 = scanArea2.geometry.coordinates[0][i + 1][0];
+// 				y4 = scanArea2.geometry.coordinates[0][i + 1][1];
+// 			}
+// 			var intersection = edgeIntersection(x1, y1, x2, y2, x3, y3, x4, y4);
+// 			if (intersection != null) {
+// 				outcome.push(intersection);
+// 			}
+// 		}
+// 	}
+// 	return outcome;
+// }
+
+// function edgeIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+// 	const EPSILON = 0.001;
+// 	var denom = ((x1- x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+// 	if (Math.abs(denom) < EPSILON) { return null; }
+// 	var px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / denom;
+// 	var py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / denom;
+// 	return [px, py];
+// }
