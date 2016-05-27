@@ -2,6 +2,7 @@ package c2;
 
 import datastore.Datastore;
 import droneserver.DroneServer;
+import externalPoll.ExternalPollThread;
 import frontendserver.FrontendServer;
 import network.Message;
 
@@ -19,6 +20,8 @@ public class C2 {
 		new Thread(droneserver).start();
 		FrontendServer frontendserver = new FrontendServer(FRONTEND_PORT, datastore);
 		new Thread(frontendserver).start();
+		ExternalPollThread externalpoll = new ExternalPollThread();
+		new Thread(externalpoll).start();
 	}
 
 }
