@@ -19,7 +19,11 @@ var Unit = function(id){
     this.marker = new UnitMarker(this);
     
     // Init coordinates
-    this.coordinates = [0, 0];
+    this.coordinates = [0, 0];    
+    
+    // Faults
+    this.warningBatteryLevel = 10;
+    this.batteryFaultDisplayed = false;
     
     UnitCount++;
     return this;
@@ -52,7 +56,7 @@ function updateUnitFromJSON(unit, unitID, unitJSON){
 	unit.batteryLevel    = unitJSON.batteryLevel;
 	unit.coordinates[1]  = unitJSON.locLat;
 	unit.coordinates[0]  = unitJSON.locLong;
-	unit.status          = unitJSON.status;
+	unit.status          = unitJSON.status.toLowerCase();
     
     unit.marker.geometry.coordinates = unit.coordinates;
     
@@ -64,5 +68,9 @@ function updateUnitFromJSON(unit, unitID, unitJSON){
     }
     
     unit.lastUpdated = dateFromJSON(unitJSON.timestamp);
+ 
 }
 
+String.prototype.capitalizeFirstLetter = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}

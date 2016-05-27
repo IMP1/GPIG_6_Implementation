@@ -28,19 +28,22 @@ function distance(ll0, ll1) {
 }
 
 
+
+
+
 ///////////////////
 // Constant Vars //
 ///////////////////
 
 var mapCenter  = [-1.0873, 53.9600];
-var defaultZoom = 15;
+var defaultZoom = 18;
 var latOffset  = 0;
 var longOffset = 0;
 
 //// Global Vars
 var editingSearchArea = false;
 var refreshRate = 100; //ms
-
+var floodOutlineVisible = true;
 
 
 
@@ -65,7 +68,9 @@ document.getElementById('btn-see-all').addEventListener('click', function(e) {
     showAllUnits();
 });
 
-
+document.getElementById('btn-show-flood-outline').addEventListener('click', function(e) {            
+    toggleFloodOutline();
+});
 
 
 
@@ -159,7 +164,7 @@ map.on('load', function () {
     // Mapbox Elements
     map.addControl(new mapboxgl.Navigation());
     var toRemove = document.getElementsByClassName('mapboxgl-ctrl-bottom-right')[0];
-    toRemove.parentNode.removeChild(toRemove);
+    toRemove.parentNode.removeChild(toRemove); 
 
 });
 
@@ -167,7 +172,16 @@ map.on("render", function() {
     redrawSearchAreas()
 })
 
+var zoomLevel_popups = 17;
 
+map.on('move', function(e) {
+    var z = e.target.getZoom();
+    if (z < zoomLevel_popups) {
+        removeAllPopups();
+    }else{
+        addNewPopups();
+    }
+});
 
 
 
@@ -195,12 +209,16 @@ var map_overlays = document.getElementById('map_overlays');
 // Map Functions //
 ///////////////////
 
-function showAllUnits(){    
-    var bounds = new mapboxgl.LngLatBounds();
-    markers.features.forEach(function(feature) {
-        bounds.extend(feature.geometry.coordinates);
-    });
-    map.fitBounds(bounds, { padding: '100' });    
+function showAllUnits(){  
+    if(markers.features.length >= 2){
+
+        console.log(markers.features);  
+        var bounds = new mapboxgl.LngLatBounds();
+        markers.features.forEach(function(feature) {
+            bounds.extend(feature.geometry.coordinates);
+        });
+        map.fitBounds(bounds, { padding: '100' });    
+    }
 }
 
 function updateMap(){
@@ -222,8 +240,22 @@ function addNewUnitMapLayer(unit){
             "icon-image": unit.symbol + "-15",
             "icon-allow-overlap": true
         }
-    });
+    });   
 }
+
+function toggleFloodOutline(){
+    floodOutlineVisible = !floodOutlineVisible;
+    if(!floodOutlineVisible){
+        map.setLayoutProperty('sensor-edge', 'visibility', 'none');
+    }else{
+        map.setLayoutProperty('sensor-edge', 'visibility', 'visible');
+    }
+    
+}
+
+
+
+
 
 ////////////////
 // Refresh UI //
@@ -266,7 +298,7 @@ function updateUnitFeatureCollections(){
 /////////////////////////
 
 var mouseDownCoords;
-var minRadius = 20;
+var minRadius = 5;
 var maxRadius = 500;//metres
 
 function enableSearchAreaDrawing(){
@@ -444,5 +476,180 @@ function redrawSearchAreas(){
         }
         
     });
+    
+}
+
+
+
+
+
+
+
+
+
+////////////////
+// Flood Info //
+////////////////
+
+var infoPopups = [];
+var lastDataScanned = 0;
+var subsampleScans = 5; // Use every nth scan for center;
+
+function roundToDecimalPlaces(num, dp){
+    var mult = Math.pow(10, dp);
+    return Math.round(num * mult) / mult
+}
+
+function addNewPopups(){
+    // Go from last scan data
+    if(map.getZoom() > zoomLevel_popups){
+        for(var i = lastDataScanned; i < scanData.features.length; i+= subsampleScans){
+            addNewPopupIfRequired(i);
+        }
+        lastDataScanned = scanData.features.length;
+    }
+}
+
+function addNewPopupIfRequired(i){
+    var scan         = scanData.features[i];
+    var centerLngLat = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
+    
+    // Check if there's a tooltip within n metres        
+    var tooltip_radius = 40;
+    var within_radius = false;
+    
+    infoPopups.forEach(function(tooltip) {
+        
+        var dist = unprojectedDistance(tooltip._lngLat, centerLngLat);
+        if(dist < tooltip_radius){
+            within_radius = true;
+        }            
+        
+    }, this);
+    
+    if(!within_radius){
+    
+        var depth_string    = roundToDecimalPlaces(scan.depth, 2)   +'m';
+        var flowrate_string = roundToDecimalPlaces(scan.flowrate, 2)+'m/s';
+        
+        var depth_severity = getDepthSeverity(scan.depth);
+        var flow_severity  = getFlowSeverity(scan.flowrate);
+
+        var depth_class     = 'severity-'+depth_severity;
+        var flow_class      = 'severity-'+flow_severity;
+        
+        var warnings        = getWarnings(depth_severity, flow_severity);
+        
+        var html_string     = '';
+        
+        console.log(depth_severity, flow_severity)
+
+        warnings.forEach(function(warning) {
+            html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning[0]+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning[1]+'</div></div>   </div>'
+        }, this);
+
+        html_string        += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
+        html_string        += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
+
+        var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
+            .setLngLat([scan.center[1], scan.center[0]])
+            .setHTML(html_string)
+            .addTo(map);
+            
+        infoPopups.push(tooltip);
+    }  
+}
+
+function getWarnings(depth_severity, flow_severity){
+    var warnings = [];
+    
+    // Warnings of form 'icon', 'text' (2 Lines)
+    
+    if(depth_severity >= 6){
+        warnings.push(['boat', 'Boat Required']);
+    }
+    
+    if(depth_severity >= 4){
+        warnings.push(['boat', 'Rapid Water']);
+    }
+    
+    return warnings;
+}
+
+function getDepthSeverity(depth){
+    if(depth > 5){
+        return 7;
+    }else if(depth > 4){
+        return 6;
+    }else if(depth > 3){
+        return 5;
+    }else if(depth > 2){
+        return 4;
+    }else if(depth > 1){
+        return 3;
+    }else if(depth > .5){
+        return 2;
+    }else{
+        return 1;
+    }
+}
+
+function getFlowSeverity(flow){
+    if(flow > 2){
+        return 7;
+    }else if(flow > 1.6){
+        return 6;
+    }else if(flow > 1.3){
+        return 5;
+    }else if(flow > .9){
+        return 4;
+    }else if(flow > .7){
+        return 3;
+    }else if(flow > .4){
+        return 2;
+    }else{
+        return 1;
+    }
+}
+
+function removeAllPopups(){
+    infoPopups.forEach(function(tooltip) {
+        tooltip.remove();
+    }, this);
+    lastDataScanned = 0;
+    infoPopups = [];
+}
+
+
+
+
+
+
+
+
+////////////
+// Faults //
+////////////
+
+var faultDisplayed = false;
+
+function showUnitFault(){
+    
+    if(!faultDisplayed){        
+        ShowNewMessage('Major Drone Fault', 'There is an unexpected fault with Drone. Please attend unit.', 'high');    
+        faultDisplayed = true;    
+    }
+}
+
+function addUnitBatteryFault(unit){
+    
+    if(!unit.batteryFaultDisplayed){     
+        console.log(unit);
+        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+unit.batteryLevel+'%. Please recall to C2.', 'medium');    
+        unit.batteryFaultDisplayed = true;    
+    }
+}
+
+function removeUnitBatteryFault(unit){
     
 }

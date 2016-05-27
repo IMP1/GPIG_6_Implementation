@@ -51,7 +51,7 @@ public final class StatusData extends Data {
 	
 	public StatusData(final String rawMessage) {
 		super(rawMessage);
-		final String message = super.strip(rawMessage);
+		final String message = Data.strip(rawMessage);
 		if (!message.startsWith(STATUS_DATA_PREFIX)) throw new RuntimeException("A Data Type {SCAN, STATUS, PATH} needs to be supplied.");
 		final String statusMessage = message.substring(STATUS_DATA_PREFIX.length() + 1);
 		String data[] = statusMessage.split(SEPARATOR);

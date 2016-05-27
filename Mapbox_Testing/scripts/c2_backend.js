@@ -213,7 +213,7 @@ function parseUnitsInfo(unitsJSON){
 	   if(unit){
 		   // If Unit Exists Update It
 		   updateUnitFromJSON(unit, unitKey, unitJSON);
-	   }else{		   
+	   }else{		
 		   addNewUnit(unitKey, unitJSON);
 	   }
 	   
@@ -238,6 +238,9 @@ function addNewUnit(unitKey, unitJSON){
 	
 	// Add controls
 	addNewUnitControls(unit);
+
+	updateUnitFeatureCollections()
+	showAllUnits();
 }
 
 
@@ -247,9 +250,7 @@ function recallUnits(){
 	    	xmlHttpRecall.open( "GET", "http://localhost:8081/RecallUnits", true ); // true for asynchronous request
 						
 			xmlHttpRecall.onload = function (e) {
-				if (xmlHttpRecall.readyState === 4) {
-					ShowNewMessage('Drone Recall Succesful', '', 'success');
-				}
+				ShowNewMessage('Drone Recall Succesful', '', 'success');
 			};
 			xmlHttpRecall.onerror = function (e) {
 				console.error(xmlHttpRecall.statusText);
@@ -378,11 +379,44 @@ function parseSearchAreaAssignmentResponse(searchAreaResponse, searchArea){
 			if(!unit){
 				ShowNewMessage('Drone Assignment Error', 'Assigned Drone ID ('+droneID+') does not exist.', 'high');
 			}else{
+				ShowNewMessage('Succesfully Assigned Drone', unit.name+' assigned to search area '+searchArea.id+'.', 'success');
 				searchArea.assignedDrones.push(unit);
+				searchArea.hasBeenAssignedDrones = true;
+				removeUnasignedSearchAreas(unit, searchArea);
 			}					
 			
 		}, this);
 		
+	}
+}
+
+function removeUnasignedSearchAreas(assignedUnit, assignedSearchArea){
+
+	// Remove Search Areas which previously had this unit assigned and now have none
+	// Loop backwards through array to enable removal
+
+	for (var i = searchAreaArray.length - 1; i >= 0; i--) {
+
+		var searchArea = searchAreaArray[i];
+
+		// Skip if its the just assigned Search Area
+		if(searchArea == assignedSearchArea || searchArea.assignedDrones.length == 0) continue;
+
+		// Loop backwards through array to enable removal
+		for (var d = searchArea.assignedDrones.length - 1; d >= 0; d--) {
+			var unit = searchArea.assignedDrones[d];
+			if(unit == assignedUnit){
+				console.log('unit reassigned')
+				// This Search Area had the now re-assigned drone, so remove from its assigned drones
+				searchArea.assignedDrones.splice(d, 1);
+			}
+
+		}
+
+		if(searchArea.assignedDrones.length == 0){
+			deleteSearchArea(searchArea);
+		}	
+
 	}
 }
 
@@ -395,13 +429,11 @@ function deleteAllSearchAreas(){
 		searchAreaArray = [];
 	}else{
 		ShowNewMessage('Search Area Clearance Error', 'Cannot clear whilst creating new search area.', 'medium');
-	}
-    
+	}    
+	
+	redrawSearchAreasUI();
     
 }
-
-
-
 
 
 
@@ -466,8 +498,6 @@ function getScanInfo(){
 
 function parseScanAreaResponse(scanAreasJSON){
 	
-	console.log(scanAreasJSON);
-	
 	Object.keys(scanAreasJSON).forEach(function (scanKey) {
 		
 		var scanJSON = scanAreasJSON[scanKey];
@@ -476,6 +506,7 @@ function parseScanAreaResponse(scanAreasJSON){
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 			
 		var scanArea = new ScanArea(scanKey, scanJSON.depth, scanJSON.flowRate, [polygonCoordinates], scanJSON.received)
+			scanArea.center = [scanJSON.locLat, scanJSON.locLong];
 		scanData.features.push(scanArea);
 
 		if(scanArea.timestamp > lastTimestamp){

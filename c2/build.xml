@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="c2">
+    <property environment="env"/>
+    <property name="drones.location" value="../drones"/>
+    <property name="network.location" value="../network"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="network.classpath">
+        <pathelement location="${network.location}/bin"/>
+    </path>
+    <path id="c2.classpath">
+        <pathelement location="bin"/>
+        <path refid="network.classpath"/>
+        <pathelement location="lib/gson-2.6.2.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${network.location}" inheritAll="false" target="clean"/>
+    </target>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${network.location}" inheritAll="false" target="build-project"/>
+    </target>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="c2.classpath"/>
+            <compilerarg value="-Xlint"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build.xml" dir="${drones.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${drones.location}" inheritAll="false" target="build"/>
+    </target>
+    <target name="C2">
+        <java classname="c2.C2" failonerror="true" fork="yes">
+            <classpath refid="c2.classpath"/>
+        </java>
+    </target>
+</project>

@@ -2,7 +2,7 @@
 var searchAreaID = 0;
 
 function SearchArea(){
-    this.id = searchAreaID++;
+    this.id = searchAreaID++;;
     this.center = [];
     this.outer  = [];
     this.radius = 0;
@@ -12,9 +12,11 @@ function SearchArea(){
     
     // Assignment
     this.assignedDrones = [];
+    this.hasBeenAssignedDrones = false;
 }
 
 function deleteSearchArea(searchArea){        
     deleteSearchAreaView(searchArea);    
-    removeByAttr(searchAreaArray, 'id', searchArea.id);
+    removeByAttr(searchAreaArray, 'id', searchArea.id);    
+    redrawSearchAreasUI();
 }

@@ -20,6 +20,7 @@ import com.google.gson.JsonParser;
 import drones.Drone;
 import drones.util.MapObjectDeserialiser;
 import drones.util.MapObject;
+import drones.util.Position;
 
 
 /**
@@ -70,30 +71,43 @@ public abstract class SensorInterface {
 		gpsLng = lng;
 	}
 	
-	private static double lastTime = System.nanoTime() / 1_000_000_000.0; 
+	/**
+	 * DEMO FUNCTION FOR USE TO REPLICATE LOW BATTERY ONLY.
+	 * Lowers the current battery percentage by 50.
+	 */
+	@Deprecated
+	public static void setBatteryLow() {
+		batteryLevel -= 50;
+	}
+	
+	private static double lastTime = System.nanoTime() / 1_000_000_000.0;
+	private static double batteryLevel = 70 + Math.random() * (100 - 70);
+	/**
+	 * 
+	 * @return the battery level of this drone as a percentage (0-100).
+	 */
 	public static double getBatteryLevel() {
-		final float battery_per_second = 0.01f;
+		final float batteryPerSecond = 0.015f;
 		double currentTime = System.nanoTime() / 1_000_000_000.0;
 		double dt = currentTime - lastTime;
 		lastTime = currentTime;
-		return 70 - dt * battery_per_second;
+		batteryLevel -= dt * batteryPerSecond;
+		return batteryLevel; 
 	}
 	
 	public static boolean isBatteryTooLow() {
 		//XXX: some function of distance from the C2? 
-		return SensorInterface.getBatteryLevel() < 0.4;
+		return SensorInterface.getBatteryLevel() < 50;
 	}
-	
-	
-	// TODO: Set GPS via 'Navigation'
 
-	// TODO: Create and read in pre-defined sonar, depth and flow data
 	public static ScanData getDataForPoint(double lat, double lon){
 
 		double[] output = new double[360];
 		ScanData outputs = null;
 		Collection<MapObject> edgeList = null;
 		
+		double depth = 0.0;
+		double flow = 0.0;
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.registerTypeAdapter(MapObject.class, new MapObjectDeserialiser());
@@ -123,6 +137,9 @@ public abstract class SensorInterface {
 					}
 			}
 		}
+
+		// Indicator for if we ever encounter a polygon
+		boolean onWater = false;
 				
 		for(int i = 0; i < 360; i++){
 
@@ -144,7 +161,8 @@ public abstract class SensorInterface {
 			// We know the hyp. and angle. So, dx = cos(theta) * hyp and dy = sin(theta) * hyp
 			// Then, calculate x2,y2 by adding dx and dy to lat and lon respectively.
 			
-			double hyp = mToD(MAX_DIST);
+			double hyp = Position.mToD(MAX_DIST);
+			double mindist = Double.MAX_VALUE;
 
 			double rad = Math.toRadians(i);
 			double dx = Math.cos(rad) * hyp;
@@ -169,23 +187,19 @@ public abstract class SensorInterface {
 				int[] alat = new int[edge.lat.size()];
 				int[] alng = new int[edge.lng.size()];
 				for(int c = 0; c < edge.lat.size(); c++){
-					alat[c] = dtoM(edge.lat.get(c));
-					alng[c] = dtoM(edge.lng.get(c));
+					alat[c] = Position.dtoM(edge.lat.get(c));
+					alng[c] = Position.dtoM(edge.lng.get(c));
 				}
 				Polygon p = new Polygon(alat, alng, edge.lat.size());
 				
-				if(p.contains(dtoM(x1), dtoM(y1)) && p.contains(dtoM(x2), dtoM(y2))){
-					// The max scan range of the drone is within the flood polygon, so we 
-					// can't find the edge of it.
-					output[i] = MAX_DIST;
-				}
-				if(p.contains(dtoM(x1), dtoM(y1)) && !p.contains(dtoM(x2), dtoM(y2))){
-									
+				if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) /*&& !p.contains(dtoM(x2), dtoM(y2))*/){
 					// We know that the sonar can find the edge of the water polygon.
 					// We now need to calculate the second from a set of two points
 					// x3,y3 shall be the points at the counter. 
 					// x4,y4 shall be the points at the counter + 1. Since this is a polygon, we 
 					// wrap around at the end.
+					onWater = true;
+					
 					
 					for(int j = 0; j < edge.lat.size(); j++){
 						
@@ -223,60 +237,46 @@ public abstract class SensorInterface {
 							dy = y1 - py;
 							
 							// Convert back to metres
-							double distm = latLongDiffInMeters(dx, dy);
-							output[i] = distm;
-
+							double distm = Position.latLongDiffInMeters(dx, dy);
+							
+							// In the case of two lines possibly being intersecting the ray from the drone, we
+							// want the closer of the two.
+							if(distm < mindist){
+								output[i] = distm;
+								mindist = distm;
 							}
+						}
+						// Finally, if both the drone and the max scanning distance are within the water polygon,
+						// we check that any intersection point is over the scanning distance before plotting it.
+						if(p.contains(Position.dtoM(x1), Position.dtoM(y1)) && p.contains(Position.dtoM(x2), Position.dtoM(y2)) && mindist > MAX_DIST){
+							output[i] = MAX_DIST;
+						}
 					}		
 				}
-		
 			}
-				
-				
-			
-			
-
 		}
-		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, 1.0, 1.0, output);
-				
+		
+		if (!onWater) {
+			return null;
+		}
+		
+		// Determine depth / flow rate based on longitude
+		if(lon < -1.0745){
+			// All hard constants; sets peak depths at Ouse and Foss, peak flow at Foss.
+			// Max depth 8m, min depth 0m
+			depth = 0 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 4);
+			// Max flow 4m/s, min flow 0.5m/s
+			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 1.75);
+		} else {
+			// Linear increase/decrease in depth/flow moving east
+			// Max depth 0.4m, min depth 0.1m
+			depth = 0.1 + (((lon + 1.072090) / 0.004696) * 0.3);
+			// Max flow 2m/s, min flow 0.5m/s
+			flow = 2 - (((lon + 1.072090) / 0.004696) * 1.5);
+		}
+		
+		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
+		
 		return outputs;
 	}
-	
-	
-	// Earth's radius in meters for distance calculation
-	// For reference, 1m is roughly 0.0000085 (8.5e^-6) degrees
-	private static final int EARTH_RADIUS = 6731000;
-	/**
-	 * Convert meters to degrees
-	 * @param m Meters distance
-	 * @return Degrees (ignoring curvature of earth
-	 */
-	public static double mToD(double m) {
-		double deg = Math.toDegrees(m / EARTH_RADIUS);
-		return deg;
-	}
-	
-	/**
-	 * Convert degrees to metres
-	 * @param d Degrees distance
-	 * @return Metres (ignoring curvature of earth
-	 */
-	public static int dtoM(double d) {
-		int met = (int) (Math.toRadians(d) * EARTH_RADIUS);
-		return met;
-	}
-	
-	/**
-	 * Private helper for naively calculating distance in metres, ignores curvature of earth.
-	 * @param latDiff Latitude difference in degrees
-	 * @param longDiff Longitude difference in degrees
-	 * @return Absolute difference in metres
-	 */
-	public static double latLongDiffInMeters(double latDiff, double longDiff) {
-		double latDiffM = Math.toRadians(latDiff) * EARTH_RADIUS;
-		double longDiffM = Math.toRadians(longDiff) * EARTH_RADIUS;
-		double dist = Math.sqrt(Math.pow(latDiffM, 2) + Math.pow(longDiffM, 2));
-		return dist;
-	}
-	
 }

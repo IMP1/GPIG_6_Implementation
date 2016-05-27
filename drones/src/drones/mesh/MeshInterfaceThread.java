@@ -242,7 +242,9 @@ public class MeshInterfaceThread extends Thread {
 	}
 	
 	private void requestRouteCalculation(String commandID, double latitude, double longitude, double radius) {
-		paths.put(commandID, router.calculate(latitude, longitude, radius));
+		synchronized (paths) {
+			paths.put(commandID, router.calculate(latitude, longitude, radius));
+		}
 	}
 	
 	private void requestRouteNavigation(double latitude, double longitude, double radius) {

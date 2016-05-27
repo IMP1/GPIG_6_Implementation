@@ -1,0 +1,66 @@
+/*$popup_height:45px;*/
+.mapboxgl-popup-content {
+  width: 100px;
+  /*height:$popup_height;*/
+  background: rgba(255, 255, 255, 0.5);
+  padding: 5px; }
+
+.mapboxgl-popup-tip {
+  border-top-color: rgba(255, 255, 255, 0.5); }
+
+.mapboxgl-popup {
+  overflow: hidden;
+  /*.left{
+  	background:red;
+  }
+  .right{
+  	background:blue;
+  }*/ }
+  .mapboxgl-popup .warning {
+    height: 46px;
+    padding-bottom: 5px; }
+    .mapboxgl-popup .warning .icon, .mapboxgl-popup .warning .warning_text {
+      float: left;
+      height: 100%;
+      text-align: center; }
+    .mapboxgl-popup .warning .icon {
+      width: 40%; }
+      .mapboxgl-popup .warning .icon img {
+        width: 100%;
+        height: 100%; }
+    .mapboxgl-popup .warning .warning_text {
+      width: 60%; }
+      .mapboxgl-popup .warning .warning_text .inner {
+        font-weight: 600;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%); }
+  .mapboxgl-popup .left, .mapboxgl-popup .right {
+    float: left;
+    width: 50%; }
+    .mapboxgl-popup .left .text, .mapboxgl-popup .left .img, .mapboxgl-popup .right .text, .mapboxgl-popup .right .img {
+      float: left;
+      width: 100%;
+      height: 50%;
+      line-height: 23px;
+      text-align: center;
+      font-weight: 600;
+      height: 23px; }
+    .mapboxgl-popup .left .img, .mapboxgl-popup .right .img {
+      font-size: 18px; }
+    .mapboxgl-popup .left .text, .mapboxgl-popup .right .text {
+      font-size: 13px; }
+    .mapboxgl-popup .left .severity-7, .mapboxgl-popup .right .severity-7 {
+      color: red; }
+    .mapboxgl-popup .left .severity-6, .mapboxgl-popup .right .severity-6 {
+      color: orange; }
+    .mapboxgl-popup .left .severity-5, .mapboxgl-popup .right .severity-5 {
+      color: pink; }
+    .mapboxgl-popup .left .severity-4, .mapboxgl-popup .right .severity-4 {
+      color: purple; }
+    .mapboxgl-popup .left .severity-3, .mapboxgl-popup .right .severity-3 {
+      color: orange; }
+    .mapboxgl-popup .left .severity-2, .mapboxgl-popup .right .severity-2 {
+      color: blue; }
+    .mapboxgl-popup .left .severity-1, .mapboxgl-popup .right .severity-1 {
+      color: rgba(0, 0, 0, 0.8); }
