@@ -142,7 +142,7 @@ public class MeshInterfaceThread extends Thread {
 		for (Command command : getCommands()) {
 			if (command instanceof PathCommand) {
 				PathCommand pathCommand = (PathCommand)command;
-				if (Drone.state() != DroneState.IDLE) {
+				if (Drone.state() == DroneState.RETURNING || Drone.state() == DroneState.FAULT) {
 					broadcastUndoableRoute(pathCommand.id);
 				} else {
 					requestRouteCalculation(pathCommand.id, pathCommand.latitude, pathCommand.longitude, 0);
