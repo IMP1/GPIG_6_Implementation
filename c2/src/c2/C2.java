@@ -20,7 +20,7 @@ public class C2 {
 		new Thread(droneserver).start();
 		FrontendServer frontendserver = new FrontendServer(FRONTEND_PORT, datastore);
 		new Thread(frontendserver).start();
-		ExternalPollThread externalpoll = new ExternalPollThread();
+		ExternalPollThread externalpoll = new ExternalPollThread(datastore);
 		new Thread(externalpoll).start();
 	}
 
