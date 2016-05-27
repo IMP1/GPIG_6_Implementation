@@ -66,7 +66,9 @@ public class Drone {
 	public static void main(String[] args) {
 		// Configure shared routing
 		map = new GraphHopper().forDesktop();
-		// File locations relative to working dir
+		
+		// Handle arguments
+		// Read in map file
 		if ((args.length < 1) || !(new File(args[0]).exists())) {
 			map.setOSMFile("../york.osm");
 			MapHelper.initialise("york");
@@ -74,9 +76,10 @@ public class Drone {
 			map.setOSMFile(args[0]);
 			MapHelper.initialise(args[0]);
 		}
-		map.setGraphHopperLocation("graph"); // Graph data storage
+		
 		
 		// Enable unrestricted movement and load graph
+		map.setGraphHopperLocation("graph"); // Graph data storage
 		map.setEncodingManager(new EncodingManager("foot"));
 		map.importOrLoad();
 		System.out.println("Map loaded.");
@@ -93,24 +96,32 @@ public class Drone {
 		navThread.start();
 		System.out.println("Navigation Thread started.");
 		
-		int argOffset = 0;
-		if (args.length >= 3) argOffset ++;
-		if (args[argOffset].equals("-fault")) {
-			try {
-				Thread.sleep(4 * 1000);
-				if (args[argOffset + 1].equals("battery")) {
-					System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
-					SensorInterface.setBatteryLow();
-				} else if (args[argOffset + 1].equals("engine")) {
-					System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
-					Drone.setState(network.StatusData.DroneState.FAULT);
-				} else if (args[argOffset + 1].equals("dead")) {
-					System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
-					System.exit(0);
+		// Create Faults for demo
+		handleDemoFaults(args);
+	}
+	
+	@Deprecated
+	private static void handleDemoFaults(String[] args) {
+		// Setup Demo Fault Variables
+		if (args.length < 2) return;
+		try {
+			Thread.sleep(4 * 1000);
+			for (int i = 0; i < args.length; i ++) {
+				if (args[i].equals("-fault") && i < args.length - 1) {
+					if (args[i+1].equals("battery")) {
+						System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
+						SensorInterface.setBatteryLow();
+					} else if (args[i+1].equals("engine")) {
+						System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
+						Drone.setState(network.StatusData.DroneState.FAULT);
+					} else if (args[i+1].equals("dead")) {
+						System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
+						System.exit(0);
+					}
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 	
