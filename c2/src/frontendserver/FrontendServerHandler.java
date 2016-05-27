@@ -101,6 +101,7 @@ public class FrontendServerHandler implements Runnable{
 				}
 
 			}
+			reply("Success!");
 		}
 		if(request.contains("GetScanInfo")){
 //			System.out.println(request);
