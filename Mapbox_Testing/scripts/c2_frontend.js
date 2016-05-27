@@ -699,7 +699,7 @@ function showUnitUnseenFault(unit, timeUnseenSeconds){
         //Show msg + add marker
         unit.unseenFaultDisplayed = true;
         var func = function(){ return flyToUnit(unit) }
-        ShowNewMessage(unit.name+' Major Fault', unit.name+' has not relayed information in '+timeUnseenSeconds+' seconds. Please investigate last known location of search unit. Click here to go to Search Unit.', 'high', func);    
+        ShowNewMessage(unit.name+' Unresponsive', unit.name+' has not relayed information in '+timeUnseenSeconds+' seconds. Please investigate last known location of search unit. Click here to see last broadcast location.', 'high', func);    
 
         //Tooltip
         var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
