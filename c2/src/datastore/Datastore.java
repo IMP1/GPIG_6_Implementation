@@ -16,6 +16,7 @@ import gpig.all.schema.Polar;
 import gpig.all.schema.datatypes.Blockage;
 import gpig.all.schema.datatypes.Delivery;
 import gpig.all.schema.datatypes.StrandedPerson;
+import network.Message;
 import network.StatusData.DroneState;
 import sun.management.Sensor;
 
@@ -33,7 +34,7 @@ public class Datastore {
 		externalData = new ArrayList<GISPosition>();
 		gson = new GsonBuilder().disableHtmlEscaping().create();
 		Drone c2 = new Drone(100.0, 53.95457672001171, -1.0792994499206543, DroneState.IDLE, LocalDateTime.now());
-		drones.put("c2", c2);
+		drones.put(Message.C2_ID, c2);
 	}
 	
 	public synchronized HashMap<String, Scan> getScans(){
