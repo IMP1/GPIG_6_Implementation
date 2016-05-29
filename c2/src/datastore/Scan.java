@@ -3,10 +3,10 @@ package datastore;
 import java.time.LocalDateTime;
 
 public class Scan {
-	private double locLat;
-	private double locLong;
-	private double depth;
-	private double flowRate;
+	public double locLat;
+	public double locLong;
+	public double depth;
+	public double flowRate;
 	public double[] distanceReadings;
 	public double[] rawDistanceReadings;
 	public LocalDateTime received;

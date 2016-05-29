@@ -22,6 +22,7 @@ import javax.xml.bind.Marshaller;
 import broadcast.Broadcast;
 import datastore.Datastore;
 import datastore.Drone;
+import datastore.Scan;
 import gpig.all.schema.BoundingBox;
 import gpig.all.schema.Coord;
 import gpig.all.schema.GISPosition;
@@ -29,6 +30,8 @@ import gpig.all.schema.GPIGData;
 import gpig.all.schema.Point;
 import gpig.all.schema.Poly;
 import gpig.all.schema.Timestamp;
+import gpig.all.schema.datatypes.Depth;
+import gpig.all.schema.datatypes.Flow;
 import gpig.all.schema.datatypes.WaterEdge;
 import network.MoveCommand;
 import network.PathCommand;
@@ -101,6 +104,7 @@ public class FrontendServerHandler implements Runnable{
 				}
 
 			}
+			reply("Success!");
 		}
 		if(request.contains("GetScanInfo")){
 //			System.out.println(request);
@@ -119,8 +123,7 @@ public class FrontendServerHandler implements Runnable{
 		}
 		if(request.contains("ExternalEndpoint")){
 	        StringWriter sw = new StringWriter();
-//			StringWriter data = new StringWriter();
-			
+	        
 			Timestamp ts = new Timestamp();
 	        ts.date = new Date();
 	        
@@ -135,14 +138,40 @@ public class FrontendServerHandler implements Runnable{
 		        WaterEdge wateredge = new WaterEdge();
 		        
 
-		        GISPosition gis = new GISPosition();
-		        gis.position = poly;
-		        gis.timestamp = ts;
-		        gis.payload = wateredge;
-		        data.positions.add(gis);
+		        GISPosition gisedge = new GISPosition();
+		        gisedge.position = poly;
+		        gisedge.timestamp = ts;
+		        gisedge.payload = wateredge;
+		        data.positions.add(gisedge);
 	        }
-	        //TODO: Depth, flow.
-	          
+	        HashMap<String, Scan> scans = datastore.getScans();
+	        for(final String key:scans.keySet()){
+	        	Scan scan = scans.get(key);
+	        	Point point = new Point();
+	        	Coord coord = new Coord();
+	        	coord.latitude = (float) scan.locLat;
+	        	coord.longitude = (float) scan.locLong;
+	        	point.coord = coord;
+	        	
+	        	Depth depth = new Depth();
+	        	depth.depth = (float) scan.depth;
+	        	
+	        	GISPosition position = new GISPosition();
+	        	position.position = point;
+	        	position.timestamp = ts;
+	        	position.payload = depth;
+	        	
+	        	data.positions.add(position);
+	        	
+	        	Flow flow = new Flow();
+	        	flow.flow = (float) scan.flowRate;
+	        	GISPosition flowposition = new GISPosition();
+	        	flowposition.position = point;
+	        	flowposition.timestamp = ts;
+	        	flowposition.payload = flow;
+	        	
+	        	data.positions.add(flowposition);
+	        }
 	        JAXBContext jaxbContext = null;
 	        try {
 	            jaxbContext = JAXBContext.newInstance(GPIGData.class);

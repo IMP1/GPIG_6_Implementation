@@ -61,24 +61,41 @@ public class ExternalPollThread implements Runnable {
 	}
 
 	private void do_poll() throws IOException {
-		StringBuilder result = new StringBuilder();
-		URL url = new URL(endpoints.get(0));
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.addRequestProperty("User-Agent", "Mozilla/4.76");
-		conn.setRequestMethod("GET");
-		BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		String line;
-		while ((line = rd.readLine()) != null) {
-			result.append(line);
+		ArrayList<GISPosition> positions = new ArrayList<GISPosition>();
+		for(String endpoint:endpoints){
+			StringBuilder result = new StringBuilder();
+			URL url = new URL(endpoint);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.addRequestProperty("User-Agent", "Mozilla/4.76");
+			conn.setRequestMethod("GET");
+			BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			String line;
+			while ((line = rd.readLine()) != null) {
+				result.append(line);
+			}
+			rd.close();
+			JAXBContext jc;
+			try {
+				jc = JAXBContext.newInstance(GPIGData.class);
+				Unmarshaller u = jc.createUnmarshaller();
+				GPIGData data = (GPIGData) u.unmarshal(new StringReader(result.toString()));
+				for(GISPosition position: data.positions){
+					positions.add(position);
+				}
+			}catch(Exception e){
+				System.err.println(e.getStackTrace());
+			}
 		}
-		rd.close();
-		JAXBContext jc;
-		try {
-			jc = JAXBContext.newInstance(GPIGData.class);
-			Unmarshaller u = jc.createUnmarshaller();
-			GPIGData data = (GPIGData) u.unmarshal(new StringReader(result.toString()));
-			GISPosition position = data.positions.iterator().next();
+		datastore.addExternalData(positions);
+		
+		
+		
+		
+		
 //			datastore.addExternalData(position);
+			
+			
+			
 //			if (position.position instanceof Polar) {
 //				Polar point = (Polar) position.position;
 //				if (position.payload instanceof Delivery) {
@@ -104,10 +121,6 @@ public class ExternalPollThread implements Runnable {
 //				}
 //			}
 //			System.out.println(data.positions.iterator().next().position);
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
 
