@@ -16,6 +16,7 @@ public class Broadcast {
 			socket = new MulticastSocket(network.Message.MESH_PORT);
     		socket.joinGroup(groupAddress);
     		socket.send(packet);
+    		socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
