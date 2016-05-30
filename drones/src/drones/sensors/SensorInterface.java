@@ -100,7 +100,7 @@ public abstract class SensorInterface {
 		return SensorInterface.getBatteryLevel() < 50;
 	}
 
-	public static ScanData getDataForPoint(double lat, double lon){
+	public static ScanData getDataForPoint(double lat, double lon, String droneid){
 
 		double[] output = new double[360];
 		ScanData outputs = null;
@@ -275,7 +275,7 @@ public abstract class SensorInterface {
 			flow = 2 - (((lon + 1.072090) / 0.004696) * 1.5);
 		}
 		
-		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
+		outputs = new ScanData(droneid, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
 		
 		return outputs;
 	}

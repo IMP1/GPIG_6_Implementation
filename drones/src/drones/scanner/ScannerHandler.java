@@ -16,7 +16,7 @@ public class ScannerHandler implements Runnable {
 	@Override
 	public void run() {
 		ScanData scan = SensorInterface.getDataForPoint
-				(SensorInterface.getGPSLatitude(), SensorInterface.getGPSLongitude());
+				(SensorInterface.getGPSLatitude(), SensorInterface.getGPSLongitude(),Drone.ID);
 		if (scan != null) {
 			Drone.mesh().addScan(scan);
 		}

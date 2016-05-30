@@ -406,7 +406,7 @@ public class MovementThread implements Runnable {
 				drone.setLocLong(loclong);
 				broadcastLocation(loclat,loclong);
 				//Do it like a drone
-				ScanData scandata = SensorInterface.getDataForPoint(loclat, loclong);
+				ScanData scandata = SensorInterface.getDataForPoint(loclat, loclong, "c2");
 				try{
 					Broadcast.broadcast(scandata.toString());
 				}catch(Exception e){
