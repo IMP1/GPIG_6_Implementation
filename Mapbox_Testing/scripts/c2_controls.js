@@ -42,15 +42,15 @@ function addNewUnitControls(unit){
         for(var i = 0; i < unit_element_ids.length; i++){
             addUnitStat(unit_element_stats, unit, i);   
         }
-    }    
 
-    var unit_element_close  = document.createElement('div');
-        unit_element_close.className = 'button fa fa-close';
-    unit_element.appendChild(unit_element_close);   
+        var unit_element_close  = document.createElement('div');
+            unit_element_close.className = 'button fa fa-close';
+        unit_element.appendChild(unit_element_close);   
 
-    unit_element_close.addEventListener('click', function(e) {            
-        removeUnit(unit);
-    });
+        unit_element_close.addEventListener('click', function(e) {            
+            removeUnit(unit);
+        });
+    }       
     
     // On click go to unit coordinates
     unit_element.addEventListener('click', function(e) {            

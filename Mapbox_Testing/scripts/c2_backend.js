@@ -259,7 +259,7 @@ function removeUnit(unit){
 				if (xmlHttpRemoveDrone.status === 200) {
 					removeByAttr(units, 'id', unit.id);
 					removeUnitUI(unit)
-					ShowNewMessage(unit.name+' Succesfully Removed', 'success', '');
+					ShowNewMessage(unit.name+' Succesfully Removed', '', 'success');
 				} else {
 					ShowNewMessage('Error Removing '+unit.name, 'Unable to remove Search Unit', 'high', '');
 				}

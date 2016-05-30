@@ -11,6 +11,7 @@
         <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>   
         <script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
         <script src="scripts/clipper.js"></script>
+        <script src="scripts/lib/moment.js"></script>
         
         <!--Lib CSS-->
         <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
@@ -112,21 +113,11 @@
             </div>
             
             <!--Notifications-->
-            <h1>Messages</h2>
-            <div id='messages' class='panel'>
-<!--                <div id='message' class='message high-level'>
-                    <h3>High Level Message</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum feugiat purus et massa viverra posuere. </p>
-                </div>
-                <div id='message' class='message standard'>
-                    <h3>Standard Message</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum feugiat purus et massa viverra posuere.</p>
-                </div>
-                <div id='message' class='message success'>
-                    <h3>Success Message</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum feugiat purus et massa viverra posuere.</p>
-                </div>-->
+            <div class='alt-header'>
+                <h1>Messages</h1>
+                <a id='btn-download-messages'>Download Log</a>
             </div>
+            <div id='messages' class='panel'></div>
             
         </div>        
         

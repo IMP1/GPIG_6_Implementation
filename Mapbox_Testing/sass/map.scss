@@ -21,11 +21,15 @@
 	border-radius:$border_radius/4;
 	overflow:hidden;
 
+	$background_opacity:.8;
+	background-image: linear-gradient(rgba($background_light_color,$background_opacity), rgba($background_dark_color,$background_opacity));
+
 	h2{
-		margin:0 0 5px 0;
+		margin:0 0 10px 0;
 		font-size:18px;
-		padding:5px 0 5px 0;
+		padding:10px 0 10px 0;
 		border-bottom: 1px solid rgba(0,0,0,.2);
+		color:white;
 	}
 
 	button{
@@ -37,10 +41,10 @@
 		border-radius:$border_radius/2;
 		padding:10px;
 		$margin:5px;
-		margin:0 $margin 5px $margin;
+		margin:0 $margin 10px $margin;
 		outline:none;
 		font-size:13px;
-		font-weight: 600;
+		font-weight: 400;
 		width:90%;
 		&:hover{
 			background:rgba(0,0,0, .3);

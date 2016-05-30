@@ -85,6 +85,9 @@ document.getElementById('btn-toggle-flood-info').addEventListener('click', funct
     toggleTooltips();
 });
 
+document.getElementById('btn-download-messages').addEventListener('click', function(e) {            
+    downloadMessageLog();
+});
 
 
 

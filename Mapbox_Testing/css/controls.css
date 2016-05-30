@@ -6,17 +6,39 @@
   height: calc(100% - $top_nav_height);
   color: #c0c8d2;
   background-image: linear-gradient(rgba(65, 72, 82, 0.95), rgba(54, 62, 72, 0.95)); }
-  #controls h1 {
+  #controls h1, #controls .alt-header {
     background: rgba(54, 62, 72, 0.12);
     height: 50px;
     margin: 0;
-    padding-left: 10px;
     text-align: left;
     color: white;
     line-height: 50px;
     font-size: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     font-weight: 500; }
+  #controls h1 {
+    padding-left: 10px; }
+  #controls .alt-header h1 {
+    float: left;
+    padding-left: 10px;
+    padding-right: 300px; }
+  #controls .alt-header a {
+    text-decoration: none;
+    margin-left: 10px;
+    background: rgba(255, 255, 255, 0);
+    float: left;
+    position: relative;
+    height: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 20px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px; }
+    #controls .alt-header a:hover {
+      background: rgba(255, 255, 255, 0.4); }
   #controls .panel {
     position: relative;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -54,6 +76,10 @@
     #messages .message p {
       margin: 0;
       font-weight: 300; }
+    #messages .message .date {
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 200;
+      font-size: 12px; }
   #messages .clickable {
     cursor: pointer; }
   #messages .high {

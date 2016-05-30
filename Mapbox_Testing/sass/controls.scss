@@ -14,11 +14,10 @@
 	$background_opacity:.95;
 	background-image: linear-gradient(rgba($background_light_color,$background_opacity), rgba($background_dark_color,$background_opacity));
 	
-	h1{
+	h1, .alt-header{
 		background:rgba($background_dark_color, .12);
 		height:$control_header_height;
-		margin:0;
-		padding-left:$left_padding;
+		margin:0;		
 		text-align:left;
 		color:white;
 		line-height:$control_header_height;
@@ -26,6 +25,38 @@
 		border-bottom: 1px solid $border_color;
 		font-weight:500;
 	}
+
+	h1{
+		padding-left:$left_padding;
+	}
+
+	.alt-header{
+		h1{
+			float:left;
+			padding-left:$left_padding;
+			padding-right:300px;
+		}
+
+	 	a{
+	 		text-decoration: none;
+	 		margin-left:10px;
+	 		background:rgba(white, 0);
+	 		float:left;
+	 		position: relative;
+	 		height:20px;
+			top: 50%;
+			transform: translateY(-50%);
+			line-height:20px;
+			padding:5px;
+			border-radius:5px;
+			border: 1px solid rgba(255,255,255,.2);
+			color:rgba(white, .7);
+			font-size:12px;
+			&:hover{
+				background:rgba(white, .4)
+			}
+	 	}
+	 }
 	
 	.panel{
 		
@@ -84,6 +115,12 @@
 		p{
 			margin:0;
 			font-weight:300;
+		}
+
+		.date{
+			color:rgba(white, .6);
+			font-weight:200;
+			font-size:12px;
 		}
 	}
 
