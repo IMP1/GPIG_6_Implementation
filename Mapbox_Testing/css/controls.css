@@ -32,11 +32,9 @@
   from {
     opacity: 0;
     transform: scale(0.9, 0.9); }
-
   to {
     opacity: 1;
     transform: scale(1, 1); } }
-
 #messages {
   height: 200px;
   width: 100%; }
@@ -56,6 +54,8 @@
     #messages .message p {
       margin: 0;
       font-weight: 300; }
+  #messages .clickable {
+    cursor: pointer; }
   #messages .high {
     background-image: linear-gradient(rgba(255, 47, 25, 0.8), rgba(255, 47, 25, 0.8)); }
   #messages .medium {
@@ -127,7 +127,7 @@
           float: left;
           height: 20px; }
         #filter-group .unit .stats .stat .warning {
-          color: #ff2f19;
+          color: #FF2F19;
           font-weight: 600; }
 
 #search-areas {
@@ -205,3 +205,5 @@
   text-align: center;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   overflow: scroll; }
+
+/*# sourceMappingURL=controls.css.map */

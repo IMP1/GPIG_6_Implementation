@@ -16,14 +16,16 @@ var Unit = function(id){
     }
     
     // Create visual map marker  
-    this.marker = new UnitMarker(this);
+    this.marker                = new UnitMarker(this);
     
     // Init coordinates
-    this.coordinates = [0, 0];    
+    this.coordinates           = [0, 0];    
     
     // Faults
-    this.warningBatteryLevel = 10;
+    this.warningBatteryLevel   = 10;
     this.batteryFaultDisplayed = false;
+    this.unseenFaultDisplayed  = false;
+    this.unseenFaultTooltip;
     
     UnitCount++;
     return this;

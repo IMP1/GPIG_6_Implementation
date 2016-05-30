@@ -1,9 +1,6 @@
 // ScanArea Class
-var ScanArea = function(id, depth, flowrate, coordinates, timestamp){
+var ScanArea = function(id, coordinates, timestamp){
 	this.type = 'Feature';
-	this.center = [];
-	this.depth = depth;
-	this.flowrate = flowrate;
 	this.id = id;
 	if(timestamp){
 		this.timestamp = dateFromJSON(timestamp);

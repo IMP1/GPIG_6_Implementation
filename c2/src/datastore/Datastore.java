@@ -11,6 +11,12 @@ import drones.sensors.SensorInterface;
 import frontendserver.SearchArea;
 import gpig.all.schema.Coord;
 import gpig.all.schema.GISPosition;
+import gpig.all.schema.Point;
+import gpig.all.schema.Polar;
+import gpig.all.schema.datatypes.Blockage;
+import gpig.all.schema.datatypes.Delivery;
+import gpig.all.schema.datatypes.StrandedPerson;
+import network.Message;
 import network.StatusData.DroneState;
 import sun.management.Sensor;
 
@@ -27,15 +33,56 @@ public class Datastore {
 		scans = new HashMap<String, Scan>();
 		externalData = new ArrayList<GISPosition>();
 		gson = new GsonBuilder().disableHtmlEscaping().create();
-		Drone c2 = new Drone(100.0,53.9461765, -1.0306976, DroneState.IDLE, LocalDateTime.now());
-		drones.put("c2", c2);
+		Drone c2 = new Drone(100.0, 53.95457672001171, -1.0792994499206543, DroneState.IDLE, LocalDateTime.now());
+		drones.put(Message.C2_ID, c2);
+	}
+	
+	public synchronized HashMap<String, Scan> getScans(){
+		return (HashMap<String, Scan>) scans.clone();
 	}
 	
 	public synchronized void addExternalData(ArrayList<GISPosition> positions){
 		externalData = positions;
 	}
 	public synchronized String getExternalDataAsJson(){
-		return gson.toJson(externalData);
+		ArrayList<GISPosition> dataclone = (ArrayList<GISPosition>) externalData.clone();
+		ArrayList<ExternalData> returndata = new ArrayList<ExternalData>();
+		for(GISPosition position : dataclone){
+			double loclat = 0.0;
+			double loclong = 0.0;
+			String type = "";
+			if (position.position instanceof Polar) {
+				Polar point = (Polar) position.position;
+				loclat = point.point.latitude;
+				loclong = point.point.longitude;
+				if (position.payload instanceof Delivery) {
+					type = "Delivery";
+				}
+				if (position.payload instanceof StrandedPerson) {
+					type = "StrandedPerson";
+				}
+				if (position.payload instanceof Blockage) {
+					type = "Blockage";	
+				}
+			}
+			if (position.position instanceof Point) {
+				Point point = (Point) position.position;
+				loclat = point.coord.latitude;
+				loclong = point.coord.longitude;
+				if (position.payload instanceof Delivery) {
+					type = "Delivery";
+				}
+				if (position.payload instanceof StrandedPerson) {
+					type = "StrandedPerson";
+				}
+				if (position.payload instanceof Blockage) {
+					type = "Blockage";
+				}
+			}
+			ExternalData data = new ExternalData(loclat, loclong, type);
+			returndata.add(data);
+		}
+		return gson.toJson(returndata);
 	}
 	public synchronized HashMap<String, Drone> getDrones(){
 		return drones;

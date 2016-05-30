@@ -3,6 +3,7 @@ package example;
 import gpig.all.schema.*;
 import gpig.all.schema.datatypes.Blockage;
 import gpig.all.schema.datatypes.Delivery;
+import gpig.all.schema.datatypes.StrandedPerson;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -16,14 +17,15 @@ import java.util.HashSet;
  */
 public class ExampleMarshalling {
     public static void main(String[] args) {
-        exampleCoord();
-        exampleTimestamp();
-        examplePoint();
-        exampleBoundingBox();
-
-        exampleBlockageInBoundingBox();
-
-        exampleDeliveryInArea();
+//        exampleCoord();
+//        exampleTimestamp();
+//        examplePoint();
+//        exampleBoundingBox();
+//
+//        exampleBlockageInBoundingBox();
+//
+//        exampleDeliveryInArea();
+    	exampleStrandedPerson();
 
     }
 
@@ -127,6 +129,53 @@ public class ExampleMarshalling {
 
 
         Delivery del = new Delivery();
+
+        GISPosition gis = new GISPosition();
+        gis.position = pos;
+        gis.timestamp = ts;
+        gis.payload = del;
+
+        GPIGData data = new GPIGData();
+        data.positions = new HashSet<>();
+        data.positions.add(gis);
+
+
+        JAXBContext jaxbContext = null;
+        try {
+            jaxbContext = JAXBContext.newInstance(GPIGData.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+            // output pretty printed
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+            jaxbMarshaller.marshal(data, sw);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(sw);
+    }
+
+    private static void exampleStrandedPerson() {
+        StringWriter sw = new StringWriter();
+
+
+        Timestamp ts = new Timestamp();
+        ts.date = new Date();
+
+        Coord coord = new Coord();
+        coord.latitude = 12.3f;
+        coord.longitude = 4.56f;
+
+        Coord coord1 = new Coord();
+        coord1.latitude = 7.8f;
+        coord1.longitude = 9.0f;
+
+        Point pos = new Point();
+        pos.coord = coord;
+
+
+        StrandedPerson del = new StrandedPerson();
 
         GISPosition gis = new GISPosition();
         gis.position = pos;

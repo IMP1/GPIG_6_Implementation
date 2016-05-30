@@ -190,8 +190,8 @@ public class NavigationThread extends Thread {
 					double lngMv = Math.cos(angle) * mToD(MOVE_DISTANCE);
 					SensorInterface.setGPS(currLat + latMv, currLng + lngMv);
 				}
-				System.err.println("LAT: " + SensorInterface.getGPSLatitude() 
-					+ ", LONG: " + SensorInterface.getGPSLongitude());
+//				System.err.println("LAT: " + SensorInterface.getGPSLatitude() 
+//					+ ", LONG: " + SensorInterface.getGPSLongitude());
 
 				// Wait
 				try {

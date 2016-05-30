@@ -55,15 +55,7 @@ function addNewUnitControls(unit){
     
     // On click go to unit coordinates
     unit_element.addEventListener('click', function(e) {            
-        map.flyTo({
-            center: offsetCoordinates(unit.coordinates),
-            zoom: defaultZoom,        
-            speed: 2, 
-            curve: 1,         
-            easing: function (t) {
-                return t;
-            }
-        });            
+        flyToUnit(unit);
     });
     
 }
@@ -175,9 +167,11 @@ function updateTimeLastSeen(unit){
     if(timeDifSecs > warningSecs){
         element_lastseen_icon.classList.add("warning");
         element_lastseen.classList.add("warning");
+        showUnitUnseenFault(unit, timeDifSecs);
     }else{
         element_lastseen.classList.remove("warning");
         element_lastseen_icon.classList.remove("warning");
+        removeUnitUnseenFault(unit);
     }
         
     element_lastseen.textContent = 'Last seen '+usedTimeDif+timeUnit+' ago';
@@ -256,7 +250,6 @@ function addNewSearchAreaControls(searchArea){
 }
 
 function redrawSearchAreasUI(){
-    console.log(searchAreaArray.length)
     var searchAreasEmpty = document.getElementById('search-areas-empty');
         searchAreasEmpty.hidden = searchAreaArray.length > 0;
 }
