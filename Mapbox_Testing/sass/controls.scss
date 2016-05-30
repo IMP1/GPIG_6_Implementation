@@ -139,6 +139,22 @@
 		outline: 1px solid rgba(255,255,255,.2);		
 		display: inline-block;
 		cursor: pointer;
+		position: relative;
+
+		.button{
+			position:absolute;
+			top:7px;
+			right:7px;
+			height:20px;
+			width:20px;
+			line-height:20px;
+			border-radius:5px;
+			border: 1px solid rgba(255,255,255,.2);
+			font-size:20px;
+			&:hover{
+				color:$message-high-level-1;
+			}
+		}
 		
 		.info{
 			float:left;
@@ -282,10 +298,10 @@
 				position:absolute;
 				top:0;
 				left:0;
-				height:$searchareaheight/2;
+				height:$searchareaheight;
 				width:100%;
-				line-height:$searchareaheight/2;
-				font-size:30px;
+				line-height:$searchareaheight;
+				font-size:25px;
 				border-bottom: 1px solid rgba(255,255,255,.2);
 			}
 		}

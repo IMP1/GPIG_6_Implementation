@@ -89,7 +89,20 @@
     height: 100px;
     outline: 1px solid rgba(255, 255, 255, 0.2);
     display: inline-block;
-    cursor: pointer; }
+    cursor: pointer;
+    position: relative; }
+    #filter-group .unit .button {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      height: 20px;
+      width: 20px;
+      line-height: 20px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 20px; }
+      #filter-group .unit .button:hover {
+        color: #FF2F19; }
     #filter-group .unit .info {
       float: left;
       width: 30%;
@@ -192,10 +205,10 @@
         position: absolute;
         top: 0;
         left: 0;
-        height: 35px;
+        height: 70px;
         width: 100%;
-        line-height: 35px;
-        font-size: 30px;
+        line-height: 70px;
+        font-size: 25px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
 
 .additional-controls {

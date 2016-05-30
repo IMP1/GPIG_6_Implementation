@@ -615,3 +615,36 @@ function toScanArea(clipperPolygon, scanJSON) {
 	var scanarea = new ScanArea(scanJSON.id, [list], scanJSON.received);
 	return scanarea;
 }
+
+
+
+
+//////////////////
+// Unit Removal //
+//////////////////
+
+function removeUnit(unit){
+
+	var urlString = "http://localhost:8081/RemoveDrone?id="+unit.id;
+				
+	var xmlHttpRemoveDrone = new XMLHttpRequest();
+	
+		xmlHttpRemoveDrone.open( "GET", urlString, true ); // true for asynchronous request
+					
+		xmlHttpRemoveDrone.onload = function (e) {
+			if (xmlHttpRemoveDrone.readyState === 4) {
+				if (xmlHttpRemoveDrone.status === 200) {
+					removeUnitUI(unit)
+					ShowNewMessage(unit.name+' Succesfully Removed', 'success', '');
+				} else {
+					ShowNewMessage('Error Removing '+unit.name, 'Unable to remove Search Unit', 'high', '');
+				}
+			}
+		};
+		xmlHttpRemoveDrone.onerror = function (e) {
+			ShowNewMessage('Error Removing '+unit.name, 'Unable to remove Search Unit', 'high', '');
+		};
+		xmlHttpRemoveDrone.send(null);	
+
+    
+}
