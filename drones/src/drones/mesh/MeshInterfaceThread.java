@@ -42,6 +42,7 @@ public class MeshInterfaceThread extends Thread {
 	private ArrayList<Command> commandBuffer = new ArrayList<>();
 	private ArrayList<ScanData> scanBuffer = new ArrayList<>();
 	private DronePosition c2Position = null;
+	private Object positionMonitor = new Object();
 	
 	/**
 	 * Constructor for the Mesh Interface. 
@@ -54,13 +55,13 @@ public class MeshInterfaceThread extends Thread {
 	}
 
 	private DronePosition getC2Position() {
-		synchronized (c2Position) {
+		synchronized (positionMonitor) {
 			return c2Position;
 		}
 	}
 	
 	private void setC2Position(StatusData status) {
-		synchronized (c2Position) {
+		synchronized (positionMonitor) {
 			if (c2Position == null || c2Position.time.isBefore(status.timestamp)) {
 				c2Position = new DronePosition(status.timestamp, status.latitude, status.longitude);
 			}
