@@ -1,5 +1,6 @@
 // Debug Vars
 var ONLINE = true;
+var API_URL = "http://localhost:8081/";
 
 ///////////////////////
 // Utility Functions //
@@ -140,63 +141,27 @@ function setupKeypresses(){
 // SEARCH UNIT CODE //
 //////////////////////
 
-var unitExamples = {
-	"c2":
-	{"batteryLevel":1,
-	 "locLat":53.959,
-	 "locLong":-1.09369,
-	 "status":"Moving",
-	 "timestamp":{"date":{"year":2016,"month":5,"day":17},"time":{"hour":16,"minute":30,"second":13,"nano":269000000}}}
-	 
-	 ,"Drone 1":
-	{"batteryLevel":1,
-	 "locLat":53.95566264825,
-	 "locLong":-1.07909046359,
-	 "status":"Navigating",
-	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
-	 
-	 ,"Drone 2":
-	{"batteryLevel":1,
-	 "locLat":53.967,
-	 "locLong":-1.080262,
-	 "status":"Stationary",
-	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
-	 
-	 ,"Drone 3":
-	{"batteryLevel":1,
-	 "locLat":53.963,
-	 "locLong":-1.086676,
-	 "status":"Scanning",
-	 "timestamp":{"date":{"year":2016,"month":5,"day":12},"time":{"hour":17,"minute":31,"second":13,"nano":269000000}}}
-	 
-}
-
 var units = [];
 
 function getUnitsInfo(){
 	
-	if(ONLINE){
-	
-		var xmlHttpUnits = new XMLHttpRequest();
-	    	xmlHttpUnits.open( "GET", "http://localhost:8081/GetDroneInfo", true ); // true for asynchronous request
-						
-			xmlHttpUnits.onload = function (e) {
-				if (xmlHttpUnits.readyState === 4) {
-					if (xmlHttpUnits.status === 200) {
-						parseUnitsInfo(JSON.parse(xmlHttpUnits.responseText));
-					} else {
-						console.error(xmlHttpUnits.statusText);
-					}
+	var xmlHttpUnits = new XMLHttpRequest();
+    	xmlHttpUnits.open( "GET", API_URL+"GetDroneInfo", true ); // true for asynchronous request
+					
+		xmlHttpUnits.onload = function (e) {
+			if (xmlHttpUnits.readyState === 4) {
+				if (xmlHttpUnits.status === 200) {
+					parseUnitsInfo(JSON.parse(xmlHttpUnits.responseText));
+				} else {
+					console.error(xmlHttpUnits.statusText);
 				}
-			};
-			xmlHttpUnits.onerror = function (e) {
-				console.error(xmlHttpUnits.statusText);
-			};
-			xmlHttpUnits.send(null);		
-	
-	}else{
-		parseUnitsInfo(unitExamples);
-	}
+			}
+		};
+		xmlHttpUnits.onerror = function (e) {
+			console.error(xmlHttpUnits.statusText);
+		};
+		xmlHttpUnits.send(null);		
+
 }
 
 function parseUnitsInfo(unitsJSON){
@@ -248,7 +213,7 @@ function addNewUnit(unitKey, unitJSON){
 
 function removeUnit(unit){
 
-	var urlString = "http://localhost:8081/RemoveDrone?id="+unit.id;
+	var urlString = API_URL+"RemoveDrone?id="+unit.id;
 				
 	var xmlHttpRemoveDrone = new XMLHttpRequest();
 	
@@ -276,7 +241,7 @@ function removeUnit(unit){
 function recallUnits(){
 		
 	var xmlHttpRecall = new XMLHttpRequest();
-    	xmlHttpRecall.open( "GET", "http://localhost:8081/RecallUnits", true ); // true for asynchronous request
+    	xmlHttpRecall.open( "GET", API_URL+"RecallUnits", true ); // true for asynchronous request
 					
 		xmlHttpRecall.onload = function (e) {
 			ShowNewMessage('Drone Recall Succesful', '', 'success', '');
@@ -359,7 +324,7 @@ function assignSearchAreas(){
 			
 			if(searchArea.assignedDrones.length == 0){	
 				
-				var urlString = "http://localhost:8081/AssignSearchAreas?latitude="+searchArea.center.lat
+				var urlString = API_URL+"AssignSearchAreas?latitude="+searchArea.center.lat
 								+"&longitude="+searchArea.center.lng
 								+"&numberRequested="+searchArea.requestedDrones
 								+"&radius="+searchArea.radius;
@@ -502,7 +467,7 @@ function getScanInfo(){
 	if(ONLINE){
 		
 		var xmlHttpScans = new XMLHttpRequest();
-	    	xmlHttpScans.open( "GET", "http://localhost:8081/GetScanInfo?last_timestamp="+lastTimestamp.timestampFormat(), true ); // false for synchronous request
+	    	xmlHttpScans.open( "GET", API_URL+"GetScanInfo?last_timestamp="+lastTimestamp.timestampFormat(), true ); // false for synchronous request
 			
 			xmlHttpScans.onload = function (e) {
 				if (xmlHttpScans.readyState === 4) {
