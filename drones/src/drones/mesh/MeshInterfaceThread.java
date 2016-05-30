@@ -163,10 +163,13 @@ public class MeshInterfaceThread extends Thread {
 					requestRouteCalculation(pathCommand.id, pathCommand.latitude, pathCommand.longitude, 0);
 				}
 			} else if (command instanceof MoveCommand) {
-				if (Drone.state() == StatusData.DroneState.RETURNING) return;
-				if (Drone.state() == StatusData.DroneState.FAULT) return;
-				MoveCommand moveCommand = (MoveCommand)command;
-				requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
+				if (Drone.state() == StatusData.DroneState.RETURNING || Drone.state() == StatusData.DroneState.FAULT) {
+					if (MeshNetworkingThread.DEBUG_MESSAGES) System.out.println("[Mesh] Ignoring Move command.");
+					return;
+				} else {
+					MoveCommand moveCommand = (MoveCommand)command;
+					requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
+				}
 			}
 		}
 
