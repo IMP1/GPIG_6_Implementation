@@ -73,7 +73,7 @@ public class SearchAreaWaiter {
 	        System.err.println("Locked?"+datastore.getDroneById(key).isLocked());
 	        System.err.println("eta "+value);
 	        if (value <= minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.MOVING) && !datastore.getDroneById(key).isLocked() && 
-	        		!datastore.getDroneById(key).getStatus().equals(DroneState.FAULT)) {
+	        		!datastore.getDroneById(key).getStatus().equals(DroneState.FAULT) && !datastore.getDroneById(key).getStatus().equals(DroneState.RETURNING)) {
 	        	minValue = value;
 	            minKey = key;
 	        }
@@ -81,7 +81,8 @@ public class SearchAreaWaiter {
 		if(minValue == Double.MAX_VALUE){
 			for (String key : etas.keySet()) {
 		        Double value = etas.get(key);
-		        if (value <= minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.FAULT) && !datastore.getDroneById(key).isLocked()) {
+		        if (value <= minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.FAULT) && !datastore.getDroneById(key).isLocked() && 
+		        		!datastore.getDroneById(key).getStatus().equals(DroneState.RETURNING)) {
 		            minValue = value;
 		            minKey = key;
 		        }
