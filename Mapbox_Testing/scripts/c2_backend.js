@@ -78,7 +78,10 @@ function ConvertCoordinatesTo2DArray(JSONCoordinates, subsampleRate){
 	return data;
 }
 
-
+function roundToDecimalPlaces(num, dp){
+    var mult = Math.pow(10, dp);
+    return Math.round(num * mult) / mult
+}
 
 
 
@@ -545,6 +548,8 @@ function parseScanAreaResponse(scanAreasJSON){
 		// Assign Drones Last depth to most recent scan info
 		var unit            = getByAttr(units, 'id', scanJSON.droneid);
 		unit.lastKnownDepth = scanJSON.depth;
+
+		console.log(scanJSON)
 			
 		
 	});		

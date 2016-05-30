@@ -526,11 +526,6 @@ var subsampleScans; // Use every nth scan for center;
 // var zoomLevel_popups_max_detail = 17;
 // var zoomLevel_popups_min_detail = 14;
 
-function roundToDecimalPlaces(num, dp){
-    var mult = Math.pow(10, dp);
-    return Math.round(num * mult) / mult
-}
-
 function addNewPopups(){
     // Go from last scan data
     if(map.getZoom() > zoomLevel_popups_min_detail){

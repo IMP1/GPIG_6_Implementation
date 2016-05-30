@@ -90,8 +90,9 @@ function updateUnitUI(){
         }        
         
         // Depth
+        var depth = roundToDecimalPlaces(unit.lastKnownDepth, 2);
         var element_depth = document.getElementById(unit.id+'-'+unit_element_ids[3]);
-            element_depth.textContent = 'Depth : '+unit.lastKnownDepth+'m';
+            element_depth.textContent = 'Depth : '+depth+'m';
        
        
    }, this);
