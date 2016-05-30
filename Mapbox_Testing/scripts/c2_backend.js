@@ -541,6 +541,10 @@ function parseScanAreaResponse(scanAreasJSON){
 		var scanCenter = [scanJSON.locLat, scanJSON.locLong]; 
 		var scanInfo   = new ScanInfo(scanJSON.id, scanJSON.depth, scanJSON.flowRate, scanCenter, scanJSON.received);
 		scanInfoArray.push(scanInfo);
+
+		// Assign Drones Last depth to most recent scan info
+		var unit            = getByAttr(units, 'id', scanJSON.droneid);
+		unit.lastKnownDepth = scanJSON.depth;
 			
 		
 	});		

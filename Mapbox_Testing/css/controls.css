@@ -110,10 +110,12 @@
         color: #1bc6e2;
         font-weight: 600; }
     #filter-group .unit .stats {
-      padding-top: 10px;
       float: left;
       width: 70%;
-      height: 100%; }
+      height: auto;
+      position: relative;
+      top: 50%;
+      transform: translateY(-50%); }
       #filter-group .unit .stats .stat {
         float: left;
         width: 100%;

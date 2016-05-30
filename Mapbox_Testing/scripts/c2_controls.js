@@ -3,7 +3,8 @@
 /////////////
 
 // Needed for updates
-var unit_element_ids   = ['battery', 'state', 'lastseen', 'depth'];
+var unit_element_ids = ['battery', 'state', 'lastseen', 'depth'];
+var unit_icons       = ['fa-battery-4', 'fa-info-circle', 'fa-clock-o', 'fa-sort-amount-asc'];
 
 function addNewUnitControls(unit){
     
@@ -31,33 +32,39 @@ function addNewUnitControls(unit){
         
     var unit_element_stats       = document.createElement('div');
     unit_element_stats.className = 'stats';        
-    unit_element.appendChild(unit_element_stats);
+    unit_element.appendChild(unit_element_stats);   
     
-    var unit_icons = ['fa-battery-4', 'fa-info-circle', 'fa-clock-o', 'fa-sort-amount-asc'];
-    
-    for(var i = 0; i<unit_element_ids.length; i++){
-    
-        var unit_element_stats_stat       = document.createElement('div');
-        unit_element_stats_stat.className = 'stat';
-        unit_element_stats.appendChild(unit_element_stats_stat);
-        
-            var unit_element_stats_stat_icon       = document.createElement('div');
-            unit_element_stats_stat_icon.className = 'icon fa '+unit_icons[i];
-            unit_element_stats_stat_icon.id        = layerID+'-icon-'+unit_element_ids[i];
-            unit_element_stats_stat.appendChild(unit_element_stats_stat_icon);
-            
-            var unit_element_stats_stat_text       = document.createElement('div');
-            unit_element_stats_stat_text.className = 'text';
-            unit_element_stats_stat_text.id        = layerID+'-'+unit_element_ids[i];
-            unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
-            
-    }
+    if(unit.id == 'c2'){
+        // Only show battery and depth for C2
+        addUnitStat(unit_element_stats, unit, 0);   
+        addUnitStat(unit_element_stats, unit, 3);   
+    }else{
+        for(var i = 0; i < unit_element_ids.length; i++){
+            addUnitStat(unit_element_stats, unit, i);   
+        }
+    }    
     
     // On click go to unit coordinates
     unit_element.addEventListener('click', function(e) {            
         flyToUnit(unit);
     });
     
+}
+
+function addUnitStat(unit_element_stats, unit, i){
+    var unit_element_stats_stat       = document.createElement('div');
+        unit_element_stats_stat.className = 'stat';
+        unit_element_stats.appendChild(unit_element_stats_stat);
+        
+            var unit_element_stats_stat_icon       = document.createElement('div');
+            unit_element_stats_stat_icon.className = 'icon fa '+unit_icons[i];
+            unit_element_stats_stat_icon.id        = unit.id+'-icon-'+unit_element_ids[i];
+            unit_element_stats_stat.appendChild(unit_element_stats_stat_icon);
+            
+            var unit_element_stats_stat_text       = document.createElement('div');
+            unit_element_stats_stat_text.className = 'text';
+            unit_element_stats_stat_text.id        = unit.id+'-'+unit_element_ids[i];
+            unit_element_stats_stat.appendChild(unit_element_stats_stat_text);
 }
 
 function updateUnitUI(){
@@ -74,15 +81,17 @@ function updateUnitUI(){
         // Battery
         updateBatteryLevelUI(unit);
         
-        // State
-        updateStatus(unit);
-        
-        // Time
-        updateTimeLastSeen(unit);
+        if(unit.id != 'c2'){
+            // State
+            updateStatus(unit);
+            
+            // Time
+            updateTimeLastSeen(unit);
+        }        
         
         // Depth
         var element_depth = document.getElementById(unit.id+'-'+unit_element_ids[3]);
-            element_depth.textContent = 'Depth : 20m';
+            element_depth.textContent = 'Depth : '+unit.lastKnownDepth+'m';
        
        
    }, this);

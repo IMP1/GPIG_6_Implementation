@@ -533,7 +533,6 @@ function roundToDecimalPlaces(num, dp){
 
 function addNewPopups(){
     // Go from last scan data
-    console.log(map.getZoom())
     if(map.getZoom() > zoomLevel_popups_min_detail){
         for(var i = lastDataScanned; i < scanInfoArray.length; i+= subsampleScans){
             addNewPopupIfRequired(i);
@@ -549,11 +548,9 @@ function addNewPopupIfRequired(i){
     var tooltip_radius;
 
     if(map.getZoom() >= zoomLevel_popups_max_detail){
-        console.log('max detail')
         tooltip_radius = 60;
         subsampleScans = 5;
     }else if(map.getZoom() >= zoomLevel_popups_min_detail){
-        console.log('min detail')
         tooltip_radius = 150;
         subsampleScans = 15;
     }

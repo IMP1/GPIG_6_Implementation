@@ -27,6 +27,9 @@ var Unit = function(id){
     this.unseenFaultDisplayed  = false;
     this.unseenFaultTooltip;
     
+    // Depth
+    this.lastKnownDepth = 0;
+
     UnitCount++;
     return this;
 }
