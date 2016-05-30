@@ -623,16 +623,18 @@ function toScanArea(clipperPolygon, scanJSON) {
 ///////////////////
 
 function getExternalData(){
-	var urlString = API_URL+"getExternalData";
+	var urlString = API_URL+"GetExternalData";
 				
 	var xmlHttpExternalData = new XMLHttpRequest();
 	
 		xmlHttpExternalData.open( "GET", urlString, true ); // true for asynchronous request
 					
+		// [{"loclat":53.95905685424805,"loclong":-1.081536054611206,"type":"StrandedPerson"},{...}]
+
 		xmlHttpExternalData.onload = function (e) {
 			if (xmlHttpExternalData.readyState === 4) {
 				if (xmlHttpExternalData.status === 200) {
-					console.log(xmlHttpExternalData.responseText)
+					parseExternalData(JSON.parse(xmlHttpExternalData.responseText));
 				} else {
 					ShowNewMessage('External Data Access Error', 'Unable to access External Data from C2', 'medium', '');
 				}
@@ -644,3 +646,8 @@ function getExternalData(){
 		xmlHttpExternalData.send(null);
 }
 
+function parseExternalData(externalDataJSONArray){
+	externalDataJSONArray.forEach(function(externalDataJSON) {
+	   console.log(externalDataJSON)
+    }, this);
+}
