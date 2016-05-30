@@ -116,12 +116,19 @@ var markers = {
 ///////////////
     
 mapboxgl.accessToken = 'pk.eyJ1IjoiY29ybWFja2FsaSIsImEiOiJjaW55dTRtMmUwMHJxdmZtMjMyajI0ZHNtIn0.crRNON_GYqYZDSWraRTfBw';
+// 54.002357, -1.156809 - top left
+// 53.923080, -1.014330
+var bounds = [
+    [-1.014330, 54.002357], // Southwest coordinates
+    [-1.156809, 53.923080]  // Northeast coordinates
+];
 
 var map = new mapboxgl.Map({
     container: 'map', 
     style: 'mapbox://styles/cormackali/cinyvygoz0004cbm9atdy33h5', 
     center: offsetCoordinates(mapCenter), 
-    zoom: defaultZoom
+    zoom: defaultZoom,
+    maxBounds: bounds
 })
 
 map.on('load', function () {
