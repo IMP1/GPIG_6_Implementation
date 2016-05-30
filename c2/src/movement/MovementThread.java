@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import broadcast.Broadcast;
 import datastore.Datastore;
 import datastore.Drone;
+import drones.sensors.SensorInterface;
 import gpig.all.schema.Coord;
 import network.Message;
+import network.ScanData;
 import network.StatusData;
 import network.StatusData.DroneState;
 
@@ -403,6 +405,15 @@ public class MovementThread implements Runnable {
 				drone.setLocLat(loclat);
 				drone.setLocLong(loclong);
 				broadcastLocation(loclat,loclong);
+				//Do it like a drone
+				ScanData scandata = SensorInterface.getDataForPoint(loclat, loclong);
+				try{
+					Broadcast.broadcast(scandata.toString());
+				}catch(Exception e){
+					System.out.println(e.getMessage());
+				}
+				
+				//Do it like a dude 
 				Thread.sleep(4000);
 				i++;
 				if (i == positions.length){
