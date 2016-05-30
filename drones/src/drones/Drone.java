@@ -106,22 +106,28 @@ public class Drone {
 	private static void handleDemoFaults(String[] args) {
 		// Setup Demo Fault Variables
 		if (args.length < 2) return;
-		try {
-			Thread.sleep(4 * 1000);
-			for (int i = 0; i < args.length; i ++) {
-				if (args[i].equals("-fault") && i < args.length - 1) {
-					if (args[i+1].equals("battery")) {
-						System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
-						SensorInterface.setBatteryLow();
-					} else if (args[i+1].equals("engine")) {
-						System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
-						Drone.setState(network.StatusData.DroneState.FAULT);
-					} else if (args[i+1].equals("dead")) {
-						System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
-						System.exit(0);
-					}
+		for (int i = 0; i < args.length; i ++) {
+			if (args[i].equals("-fault") && i < args.length - 1) {
+				if (args[i+1].equals("battery")) {
+					System.out.println("\n\n--------------\nLow Battery\n--------------\n\n");
+					SensorInterface.setBatteryLow();
+				} else if (args[i+1].equals("engine")) {
+					delayFault();
+					System.out.println("\n\n--------------\nEngine Failure\n--------------\n\n");
+					Drone.setState(network.StatusData.DroneState.FAULT);
+				} else if (args[i+1].equals("dead")) {
+					delayFault();
+					System.out.println("\n\n--------------\nDead Battery\n--------------\n\n");
+					System.exit(0);
 				}
 			}
+		}
+	}
+	
+	private static void delayFault() {
+		try {
+			Thread.sleep(4 * 1000);
+			Thread.sleep((long)(Math.random() * 1000));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
