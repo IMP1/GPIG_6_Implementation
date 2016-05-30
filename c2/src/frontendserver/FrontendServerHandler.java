@@ -93,6 +93,7 @@ public class FrontendServerHandler implements Runnable{
 		if(request.contains("RemoveDrone")){
 			HTTPRequest reqObj = new HTTPRequest(request);
 			String droneid = reqObj.params.get("id");
+			if(droneid.equals("c2")){return;}
 			if(datastore.removeDrone(droneid)){
 				reply("Success!");
 			}
