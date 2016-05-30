@@ -5,8 +5,40 @@
   left: 500px;
   width: calc(100% - 500px); }
 
-#map_overlays {
-  pointer-events: none; }
+#layer-controls {
+  position: absolute;
+  right: 20px;
+  top: 70px;
+  width: 200px;
+  height: auto;
+  background: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  border-radius: 5px;
+  overflow: hidden; }
+  #layer-controls h2 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    padding: 5px 0 5px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2); }
+  #layer-controls button {
+    cursor: pointer;
+    margin: 0 0 5px 0;
+    background: rgba(0, 0, 0, 0.15);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 0 5px 5px 5px;
+    outline: none;
+    font-size: 13px;
+    font-weight: 600;
+    width: 90%; }
+    #layer-controls button:hover {
+      background: rgba(0, 0, 0, 0.3); }
+    #layer-controls button:active {
+      background: rgba(0, 0, 0, 0.5); }
+  #layer-controls .on {
+    background: #1bc6e2; }
 
 svg {
   position: absolute;

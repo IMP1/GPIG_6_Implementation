@@ -35,17 +35,18 @@ function distance(ll0, ll1) {
 // Constant Vars //
 ///////////////////
 
-var mapCenter  = [-1.0873, 53.9600];
+var mapCenter   = [-1.0873, 53.9600];
 var defaultZoom = 18;
-var latOffset  = 0;
-var longOffset = 0;
+var latOffset   = 0;
+var longOffset  = 0;
 
 //// Global Vars
-var editingSearchArea = false;
-var refreshRate = 100; //ms
-var floodOutlineVisible = true;
-
-
+var editingSearchArea    = false;
+var refreshRate          = 100; //ms
+var floodOutlineVisible  = false;
+var showingTooltips      = false;
+var envDataVisible       = false;
+var showingLayerControls = false;
 
 
 ///////////////////
@@ -68,9 +69,24 @@ document.getElementById('btn-see-all').addEventListener('click', function(e) {
     showAllUnits();
 });
 
-document.getElementById('btn-show-flood-outline').addEventListener('click', function(e) {            
+document.getElementById('btn-show-layer-controls').addEventListener('click', function(e) {            
+    toggleLayerControls();
+});
+
+document.getElementById('btn-toggle-flood-outline').addEventListener('click', function(e) {            
     toggleFloodOutline();
 });
+
+document.getElementById('btn-toggle-env-data').addEventListener('click', function(e) {            
+    toggleEnvData();
+});
+
+document.getElementById('btn-toggle-flood-info').addEventListener('click', function(e) {            
+    toggleTooltips();
+});
+
+
+
 
 
 
@@ -166,6 +182,16 @@ map.on('load', function () {
     var toRemove = document.getElementsByClassName('mapboxgl-ctrl-bottom-right')[0];
     toRemove.parentNode.removeChild(toRemove); 
 
+    // Set to opposite of desired (bit hacky)
+    floodOutlineVisible  = true;
+    showingTooltips      = false;
+    envDataVisible       = true;
+    showingLayerControls = true;
+    toggleLayerControls();       
+    toggleFloodOutline();        
+    toggleEnvData();           
+    toggleTooltips();
+
 });
 
 map.on("render", function() {
@@ -260,6 +286,55 @@ function addNewUnitMapLayer(unit){
     });   
 }
 
+
+function toggleTooltips(){
+    showingTooltips = !showingTooltips;
+
+    var btnElement = document.getElementById('btn-toggle-flood-info');
+    if(showingTooltips){
+        addNewPopups();
+        btnElement.classList.add("on");
+    }else{
+        removeAllPopups();
+        btnElement.classList.remove("on");
+    }
+}
+
+function toggleLayerControls(){
+    showingLayerControls = !showingLayerControls;
+
+    var layerControls  = document.getElementById('layer-controls');
+        layerControls.style.display  = showingLayerControls ? '' : 'none';
+
+    var btnElement = document.getElementById('btn-show-layer-controls');
+    if(showingLayerControls){
+        btnElement.textContent = 'Hide Layer Controls';
+    }else{
+        btnElement.textContent = 'Show Layer Controls';
+    }
+}
+
+function toggleEnvData(){
+    envDataVisible = !envDataVisible;
+    if(!envDataVisible){
+        map.setLayoutProperty('york_flood_1', 'visibility', 'none');
+        map.setLayoutProperty('york_flood_2', 'visibility', 'none');
+        map.setLayoutProperty('york_flood_3', 'visibility', 'none');
+        map.setLayoutProperty('york_flood_4', 'visibility', 'none');
+    }else{
+        map.setLayoutProperty('york_flood_1', 'visibility', 'visible');
+        map.setLayoutProperty('york_flood_2', 'visibility', 'visible');
+        map.setLayoutProperty('york_flood_3', 'visibility', 'visible');
+        map.setLayoutProperty('york_flood_4', 'visibility', 'visible');
+    }
+    var btnElement = document.getElementById('btn-toggle-env-data');
+    if(envDataVisible){
+        btnElement.classList.add("on");
+    }else{
+        btnElement.classList.remove("on");
+    }
+}
+
 function toggleFloodOutline(){
     floodOutlineVisible = !floodOutlineVisible;
     if(!floodOutlineVisible){
@@ -267,7 +342,12 @@ function toggleFloodOutline(){
     }else{
         map.setLayoutProperty('sensor-edge', 'visibility', 'visible');
     }
-    
+    var btnElement = document.getElementById('btn-toggle-flood-outline');
+    if(floodOutlineVisible){
+        btnElement.classList.add("on");
+    }else{
+        btnElement.classList.remove("on");
+    }
 }
 
 function flyToUnit(unit){
@@ -528,7 +608,7 @@ var subsampleScans; // Use every nth scan for center;
 
 function addNewPopups(){
     // Go from last scan data
-    if(map.getZoom() > zoomLevel_popups_min_detail){
+    if(map.getZoom() > zoomLevel_popups_min_detail && showingTooltips){
         for(var i = lastDataScanned; i < scanInfoArray.length; i+= subsampleScans){
             addNewPopupIfRequired(i);
         }
@@ -677,7 +757,7 @@ function showUnitFault(){
 function addUnitBatteryFault(unit){    
     if(!unit.batteryFaultDisplayed){     
         console.log(unit);
-        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+unit.batteryLevel+'%. Please recall to C2.', 'medium', '');    
+        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+unit.batteryLevel+'%. It has been automatically recalled to C2.', 'medium', '');    
         unit.batteryFaultDisplayed = true;    
     }
 }

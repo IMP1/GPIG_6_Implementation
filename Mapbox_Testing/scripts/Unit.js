@@ -22,7 +22,7 @@ var Unit = function(id){
     this.coordinates           = [0, 0];    
     
     // Faults
-    this.warningBatteryLevel   = 10;
+    this.warningBatteryLevel   = 20;
     this.batteryFaultDisplayed = false;
     this.unseenFaultDisplayed  = false;
     this.unseenFaultTooltip;

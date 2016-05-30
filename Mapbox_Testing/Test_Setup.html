@@ -37,7 +37,18 @@
     
         <!--Map-->
         <div id='map'></div>
-        <div id='map_overlays'></div>
+        <div id='layer-controls'>
+            <h2>Toggle Layers</h2>
+            <button id="btn-toggle-env-data">
+                Env. Agency Data
+            </button>
+            <button id="btn-toggle-flood-info">
+                Flood Information
+            </button>
+            <button id="btn-toggle-flood-outline">
+                Debug Flood Outlines
+            </button>
+        </div>
             
         <!--Top Nav-->
         <div id='top-nav'>
@@ -59,8 +70,8 @@
                     <button id="btn-recall-all">
                         Recall All Search Units
                     </button>
-                    <button id="btn-show-flood-outline">
-                        Show Flood Outlines
+                    <button id="btn-show-layer-controls">
+                        Show Layer Controls
                     </button>
                     <button id="btn-see-all">
                         See All Units

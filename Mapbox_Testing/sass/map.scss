@@ -9,8 +9,50 @@
       width:calc(100% - 500px); 
 }
 
-#map_overlays{
-      pointer-events: none;
+#layer-controls{
+	position:absolute;
+	$layer_spacing:20px;
+	right:$layer_spacing;
+	top:$layer_spacing+$control_header_height;
+	width:200px;
+	height:auto;
+	background:rgba(white, .5);
+	text-align:center;
+	border-radius:$border_radius/4;
+	overflow:hidden;
+
+	h2{
+		margin:0 0 5px 0;
+		font-size:18px;
+		padding:5px 0 5px 0;
+		border-bottom: 1px solid rgba(0,0,0,.2);
+	}
+
+	button{
+		cursor: pointer;
+		margin:0 0 5px 0;
+		background:rgba(0,0,0, .15);
+		color:white;
+		border:none;
+		border-radius:$border_radius/2;
+		padding:10px;
+		$margin:5px;
+		margin:0 $margin 5px $margin;
+		outline:none;
+		font-size:13px;
+		font-weight: 600;
+		width:90%;
+		&:hover{
+			background:rgba(0,0,0, .3);
+		}
+		&:active{
+			background:rgba(0,0,0, .5);
+		}
+	}
+
+	.on{
+		background:$highlight_color;
+	}
 }
 
 svg {
