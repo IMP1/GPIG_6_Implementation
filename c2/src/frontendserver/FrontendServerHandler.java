@@ -90,6 +90,13 @@ public class FrontendServerHandler implements Runnable{
 			String[] result = waiter.doWait();
 			reply(datastore.gson.toJson(result));
 		}
+		if(request.contains("RemoveDrone")){
+			HTTPRequest reqObj = new HTTPRequest(request);
+			String droneid = reqObj.params.get("id");
+			if(datastore.removeDrone(droneid)){
+				reply("Success!");
+			}
+		}
 		if(request.contains("ClearSearchAreas")){
 			//TODO - More clever things.
 		}

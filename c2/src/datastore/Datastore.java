@@ -101,6 +101,14 @@ public class Datastore {
 		drones.put(id, drone);
 	}
 	
+	public synchronized boolean removeDrone(String id){
+		if(drones.containsKey(id)){
+			drones.remove(id);
+			return true;
+		}
+		return false;
+	}
+	
 	public synchronized boolean scanExists(String id){
 		return scans.containsKey(id);
 	}
