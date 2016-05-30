@@ -33,6 +33,7 @@ import gpig.all.schema.Timestamp;
 import gpig.all.schema.datatypes.Depth;
 import gpig.all.schema.datatypes.Flow;
 import gpig.all.schema.datatypes.WaterEdge;
+import network.Message;
 import network.MoveCommand;
 import network.PathCommand;
 
@@ -93,7 +94,7 @@ public class FrontendServerHandler implements Runnable{
 		if(request.contains("RemoveDrone")){
 			HTTPRequest reqObj = new HTTPRequest(request);
 			String droneid = reqObj.params.get("id");
-			if(droneid.equals("c2")){return;}
+			if(droneid.equals(Message.C2_ID)){return;}
 			if(datastore.removeDrone(droneid)){
 				reply("Success!");
 			}
@@ -103,10 +104,10 @@ public class FrontendServerHandler implements Runnable{
 		}
 		if(request.contains("RecallUnits")){
 			HashMap<String,Drone> drones= datastore.getDrones();
-			Double locLat = drones.get("c2").getLocLat();
-			Double locLong = drones.get("c2").getLocLong();
+			Double locLat = drones.get(Message.C2_ID).getLocLat();
+			Double locLong = drones.get(Message.C2_ID).getLocLong();
 			for (String key : drones.keySet()){
-				if(key != "c2"){
+				if(!key.equals(Message.C2_ID)){
 					MoveCommand command = new MoveCommand(key,LocalDateTime.now(), locLat, locLong, 0);
 					Broadcast.broadcast(command.toString());
 				}
