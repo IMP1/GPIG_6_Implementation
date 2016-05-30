@@ -77,7 +77,7 @@ public abstract class SensorInterface {
 	 */
 	@Deprecated
 	public static void setBatteryLow() {
-		batteryLevel -= 50;
+		batteryLevel -= 60;
 	}
 	
 	private static double lastTime = System.nanoTime() / 1_000_000_000.0;
@@ -97,7 +97,7 @@ public abstract class SensorInterface {
 	
 	public static boolean isBatteryTooLow() {
 		//XXX: some function of distance from the C2? 
-		return SensorInterface.getBatteryLevel() < 50;
+		return SensorInterface.getBatteryLevel() < 20;
 	}
 
 	public static ScanData getDataForPoint(double lat, double lon){
