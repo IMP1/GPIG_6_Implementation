@@ -46,6 +46,8 @@ public class Drone {
 	
 	public static void setState(DroneState state) {
 		synchronized (Drone.state) {
+			if (Drone.state == DroneState.FAULT) return;
+			if (Drone.state == DroneState.RETURNING) return;
 			if (!SensorInterface.isBatteryTooLow() || state == DroneState.RETURNING) {
 				Drone.state = state;
 			}
