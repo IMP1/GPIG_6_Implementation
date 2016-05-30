@@ -268,12 +268,7 @@ function removeUnit(unit){
 		xmlHttpRemoveDrone.onerror = function (e) {
 			ShowNewMessage('Error Removing '+unit.name, 'Unable to remove Search Unit', 'high', '');
 		};
-		xmlHttpRemoveDrone.send(null);	
-
-		console.log(units)
-		removeByAttr(units, 'id', unit.id);
-		removeUnitUI(unit)
-		console.log(units)
+		xmlHttpRemoveDrone.send(null);
     
 }
 
