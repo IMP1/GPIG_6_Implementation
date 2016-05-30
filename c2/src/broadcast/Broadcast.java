@@ -7,7 +7,7 @@ import java.net.MulticastSocket;
 public class Broadcast {
 	private static InetAddress groupAddress;
 	private static MulticastSocket socket;
-	private static Object lock;
+	private static Object lock = new Object();
 	public static void broadcast(String message){
 		synchronized(lock){
 			byte[] sendData = new byte[1024]; 
