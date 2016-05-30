@@ -105,9 +105,11 @@ function setupAPICalls(){
 	
 	getUnitsInfo();
 	getScanInfo();
+	getExternalData();
 	
 	setInterval(getUnitsInfo, refreshRate);
 	setInterval(getScanInfo, refreshRate);
+	setInterval(getExternalData, refreshRate);
 	
 }
 
@@ -606,3 +608,39 @@ function toScanArea(clipperPolygon, scanJSON) {
 	var scanarea = new ScanArea(scanJSON.id, [list], scanJSON.received);
 	return scanarea;
 }
+
+
+
+
+
+
+
+
+
+
+///////////////////
+// External Data //
+///////////////////
+
+function getExternalData(){
+	var urlString = API_URL+"getExternalData";
+				
+	var xmlHttpExternalData = new XMLHttpRequest();
+	
+		xmlHttpExternalData.open( "GET", urlString, true ); // true for asynchronous request
+					
+		xmlHttpExternalData.onload = function (e) {
+			if (xmlHttpExternalData.readyState === 4) {
+				if (xmlHttpExternalData.status === 200) {
+					console.log(xmlHttpExternalData.responseText)
+				} else {
+					ShowNewMessage('External Data Access Error', 'Unable to access External Data from C2', 'medium', '');
+				}
+			}
+		};
+		xmlHttpExternalData.onerror = function (e) {
+			ShowNewMessage('External Data Access Error', 'Unable to access External Data from C2', 'medium', '');
+		};
+		xmlHttpExternalData.send(null);
+}
+
