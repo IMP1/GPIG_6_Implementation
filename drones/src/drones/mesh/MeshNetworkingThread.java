@@ -62,6 +62,7 @@ public class MeshNetworkingThread extends Thread {
 		try {
     		groupAddress = InetAddress.getByName(Message.MESH_GROUP_ADDRESS);
     		socket = new MulticastSocket(Message.MESH_PORT);
+    		socket.setTimeToLive(2);
     		socket.joinGroup(groupAddress);
 		} catch (IOException e) {
 			e.printStackTrace();
