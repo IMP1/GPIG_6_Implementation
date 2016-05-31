@@ -23,6 +23,7 @@ import broadcast.Broadcast;
 import datastore.Datastore;
 import datastore.Drone;
 import datastore.Scan;
+import gpig.all.schema.Arc;
 import gpig.all.schema.BoundingBox;
 import gpig.all.schema.Coord;
 import gpig.all.schema.GISPosition;
@@ -142,13 +143,14 @@ public class FrontendServerHandler implements Runnable{
 	        //Edges
 	        ArrayList<ArrayList<Coord>> edges = datastore.getEdges();
 	        for (final ArrayList<Coord> edgeslist:edges){
-	        	Poly poly = new Poly();
-		        poly.coords = edgeslist;
+	        	Arc arc = new Arc();
+	        	arc.coords = edgeslist;
+	        	System.err.println(datastore.gson.toJson(arc.coords));
 		        WaterEdge wateredge = new WaterEdge();
 		        
 
 		        GISPosition gisedge = new GISPosition();
-		        gisedge.position = poly;
+		        gisedge.position = arc;
 		        gisedge.timestamp = ts;
 		        gisedge.payload = wateredge;
 		        data.positions.add(gisedge);

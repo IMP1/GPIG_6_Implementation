@@ -155,20 +155,24 @@ public class Datastore {
 		HashMap<String,Scan> scantemp = (HashMap<String, Scan>) scans.clone();
 		for(final String id: scantemp.keySet()){
 			ArrayList<Coord> edges = new ArrayList<Coord>();
-			int i = 0;
-			
+			int i = 0;			
 			//Concurrency yo.
+			boolean cont = false;
 			for(final double reading: scantemp.get(id).rawDistanceReadings){
-				System.out.println(reading);
+				if(cont && reading >= SensorInterface.MAX_DIST){
+					edgesList.add(edges);
+					edges = new ArrayList<Coord>();
+					cont = false;
+				}
 				if(reading < SensorInterface.MAX_DIST){
 					Coord coord = new Coord();
 					coord.latitude = (float) scantemp.get(id).distanceReadings[i*2];
 					coord.longitude = (float) scantemp.get(id).distanceReadings[i*2+1];
 					edges.add(coord);
+					cont = true;
 				}
 				i++;
 			}
-			edgesList.add(edges);
 		}
 		return edgesList;
 	}

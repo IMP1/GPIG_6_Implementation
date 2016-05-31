@@ -46,6 +46,11 @@ public class SearchAreaWaiter {
 			String[] assigned = new String[this.searchArea.numberRequested];
 			for (int i = 0; i < this.searchArea.numberRequested; i++){
 				String droneID =  popClosestDrone();
+				if(droneID == null){
+					String[] error = new String[1];
+					error[0] = "Error : Insufficient Drones";
+					return error;
+				}
 				MoveCommand command = new MoveCommand(droneID,LocalDateTime.now(), this.searchArea.locLat, this.searchArea.locLong, this.searchArea.radius);
 				datastore.getDroneById(droneID).setStatus(DroneState.MOVING);
 				datastore.getDroneById(droneID).setLock();
@@ -67,7 +72,8 @@ public class SearchAreaWaiter {
 	        System.err.println("Status"+datastore.getDroneById(key).getStatus());
 	        System.err.println("Locked?"+datastore.getDroneById(key).isLocked());
 	        System.err.println("eta "+value);
-	        if (value <= minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.MOVING) && !datastore.getDroneById(key).isLocked()) {
+	        if (value <= minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.MOVING) && !datastore.getDroneById(key).isLocked() && 
+	        		!datastore.getDroneById(key).getStatus().equals(DroneState.FAULT) && !datastore.getDroneById(key).getStatus().equals(DroneState.RETURNING)) {
 	        	minValue = value;
 	            minKey = key;
 	        }
@@ -75,7 +81,8 @@ public class SearchAreaWaiter {
 		if(minValue == Double.MAX_VALUE){
 			for (String key : etas.keySet()) {
 		        Double value = etas.get(key);
-		        if (value <= minValue ) {
+		        if (value <= minValue && !datastore.getDroneById(key).getStatus().equals(DroneState.FAULT) && !datastore.getDroneById(key).isLocked() && 
+		        		!datastore.getDroneById(key).getStatus().equals(DroneState.RETURNING)) {
 		            minValue = value;
 		            minKey = key;
 		        }

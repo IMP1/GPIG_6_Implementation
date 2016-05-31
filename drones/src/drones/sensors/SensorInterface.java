@@ -77,8 +77,10 @@ public abstract class SensorInterface {
 	 */
 	@Deprecated
 	public static void setBatteryLow() {
-		batteryLevel -= 50;
+		batteryLevel = LOW_BATTERY + 1;
 	}
+	
+	private static final int LOW_BATTERY = 20;
 	
 	private static double lastTime = System.nanoTime() / 1_000_000_000.0;
 	private static double batteryLevel = 70 + Math.random() * (100 - 70);
@@ -92,12 +94,13 @@ public abstract class SensorInterface {
 		double dt = currentTime - lastTime;
 		lastTime = currentTime;
 		batteryLevel -= dt * batteryPerSecond;
+		if (batteryLevel <= 0) System.exit(0);
 		return batteryLevel; 
 	}
 	
 	public static boolean isBatteryTooLow() {
 		//XXX: some function of distance from the C2? 
-		return SensorInterface.getBatteryLevel() < 50;
+		return SensorInterface.getBatteryLevel() < LOW_BATTERY;
 	}
 
 	public static ScanData getDataForPoint(double lat, double lon, String droneid){
@@ -263,8 +266,8 @@ public abstract class SensorInterface {
 		// Determine depth / flow rate based on longitude
 		if(lon < -1.0745){
 			// All hard constants; sets peak depths at Ouse and Foss, peak flow at Foss.
-			// Max depth 8m, min depth 0m
-			depth = 0 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 4);
+			// Max depth 7m, min depth 1m
+			depth = 1 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 3);
 			// Max flow 4m/s, min flow 0.5m/s
 			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 1.75);
 		} else {

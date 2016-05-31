@@ -41,8 +41,9 @@ public class MeshInterfaceThread extends Thread {
 	private HashMap<String, Future<PathWrapper>> paths = new HashMap<>();
 	private ArrayList<Command> commandBuffer = new ArrayList<>();
 	private ArrayList<ScanData> scanBuffer = new ArrayList<>();
-	private DronePosition c2Position;
-
+	private DronePosition c2Position = null;
+	private Object positionMonitor = new Object();
+	
 	/**
 	 * Constructor for the Mesh Interface. 
 	 * Initialises the networking thread and routing handler. 
@@ -51,6 +52,20 @@ public class MeshInterfaceThread extends Thread {
 		router = new RoutingHandler();
 		networkingThread = new MeshNetworkingThread();
 		networkingThread.start();
+	}
+
+	private DronePosition getC2Position() {
+		synchronized (positionMonitor) {
+			return c2Position;
+		}
+	}
+	
+	private void setC2Position(StatusData status) {
+		synchronized (positionMonitor) {
+			if (c2Position == null || c2Position.time.isBefore(status.timestamp)) {
+				c2Position = new DronePosition(status.timestamp, status.latitude, status.longitude);
+			}
+		}
 	}
 
 	/**
@@ -148,10 +163,13 @@ public class MeshInterfaceThread extends Thread {
 					requestRouteCalculation(pathCommand.id, pathCommand.latitude, pathCommand.longitude, 0);
 				}
 			} else if (command instanceof MoveCommand) {
-				if (Drone.state() == StatusData.DroneState.RETURNING) return;
-				if (Drone.state() == StatusData.DroneState.FAULT) return;
-				MoveCommand moveCommand = (MoveCommand)command;
-				requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
+				if (Drone.state() == StatusData.DroneState.RETURNING || Drone.state() == StatusData.DroneState.FAULT) {
+					if (MeshNetworkingThread.DEBUG_MESSAGES) System.out.println("[Mesh] Ignoring Move command.");
+					return;
+				} else {
+					MoveCommand moveCommand = (MoveCommand)command;
+					requestRouteNavigation(moveCommand.latitude, moveCommand.longitude, moveCommand.radius);
+				}
 			}
 		}
 
@@ -178,8 +196,8 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void returnToBase() {
 		Drone.setState(DroneState.RETURNING);
-		if (c2Position != null) {
-			requestRouteNavigation(c2Position.latitude, c2Position.longitude, 0);
+		if (getC2Position() != null) {
+			requestRouteNavigation(getC2Position().latitude, getC2Position().longitude, 0);
 		}
 	}
 	
@@ -235,9 +253,7 @@ public class MeshInterfaceThread extends Thread {
 			drones.MapHelper.updateDronePosition(status.id, status.timestamp, status.latitude, status.longitude);
 		}
 		if (status.id.equals(Message.C2_ID)) {
-			if (c2Position == null || c2Position.time.isBefore(status.timestamp)) {
-				c2Position = new DronePosition(status.timestamp, status.latitude, status.longitude);
-			}
+			setC2Position(status);
 		}
 	}
 	
