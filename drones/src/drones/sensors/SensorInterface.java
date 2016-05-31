@@ -94,6 +94,7 @@ public abstract class SensorInterface {
 		double dt = currentTime - lastTime;
 		lastTime = currentTime;
 		batteryLevel -= dt * batteryPerSecond;
+		if (batteryLevel <= 0) System.exit(0);
 		return batteryLevel; 
 	}
 	
