@@ -229,26 +229,15 @@ map.on("render", function() {
 })
 
 var last_zoomlevel = 0;
-var zoomLevel_popups_max_detail = 16.5;
-var zoomLevel_popups_min_detail = 15.8;
+
+var zoomLevel_popups_high_detail = 16.5;
+var zoomLevel_popups_med_detail  = 15.8;
+var zoomLevel_popups_low_detail  = 13.8;
 
 map.on('move', function(e) {
-    var z = e.target.getZoom();
-    
-
-    if(last_zoomlevel != z){
-        removeAllPopups();
-    }
-
-    if (z < zoomLevel_popups_min_detail) {
-        removeAllPopups();
-    }else{
-        addNewPopups();
-    }
-
-    last_zoomlevel = z;
-
+   showPopups();
 });
+
 
 
 
@@ -631,85 +620,145 @@ function redrawSearchAreas(){
 
 var infoPopups = [];
 var lastDataScanned = 0;
-var subsampleScans; // Use every nth scan for center;
+var subsampleScans; // Use every nth scan for center
 
-// var zoomLevel_popups_max_detail = 17;
-// var zoomLevel_popups_min_detail = 14;
+zoomLevel_popups_high_detail = 17.5;
+zoomLevel_popups_med_detail  = 15.8;
+zoomLevel_popups_low_detail  = 13.8;
+
+var high_level_popups = [];
+var med_level_popups  = [];
+var low_level_popups  = [];
+
+var levels            = [high_level_popups, med_level_popups];
+var radius_levels     = [40, 100];
 
 function addNewPopups(){
     // Go from last scan data
-    if(map.getZoom() > zoomLevel_popups_min_detail && showingTooltips){
-        for(var i = lastDataScanned; i < scanInfoArray.length; i+= subsampleScans){
-            addNewPopupIfRequired(i);
-        }
-        lastDataScanned = scanInfoArray.length;
+    for(var i = lastDataScanned; i < scanInfoArray.length; i+= 30){
+        addNewPopupIfRequired(i);
+    }
+    lastDataScanned = scanInfoArray.length;
+}
+
+function removeAllPopups(){
+    infoPopups.forEach(function(tooltip) {
+        tooltip.remove();
+    }, this);
+    infoPopups = [];
+}
+
+function showPopups(){
+
+    removeAllPopups()
+    var zoom = map.getZoom();
+
+    if(zoom >= zoomLevel_popups_high_detail){
+        displayPopups(high_level_popups);
+    }else if(zoom >= zoomLevel_popups_med_detail){
+        displayPopups(med_level_popups);
+    }else if(zoom >= zoomLevel_popups_low_detail){
+        displayPopups(low_level_popups);
+    }else{
+        removeAllPopups();
     }
 }
 
-function addNewPopupIfRequired(i){
-    var scan           = scanInfoArray[i];
-    var centerLngLat   = new mapboxgl.LngLat(scan.center[1], scan.center[0]);
-
-    var tooltip_radius;
-
-    if(map.getZoom() >= zoomLevel_popups_max_detail){
-        tooltip_radius = 60;
-        subsampleScans = 5;
-    }else if(map.getZoom() >= zoomLevel_popups_min_detail){
-        tooltip_radius = 150;
-        subsampleScans = 15;
-    }
-    
-    // Check if there's a tooltip within n metres 
-    var within_radius  = false;
-    
-    infoPopups.forEach(function(tooltip) {
-        
-        var dist = unprojectedDistance(tooltip._lngLat, centerLngLat);
-        if(dist < tooltip_radius){
-            within_radius = true;
-        }            
-        
-    }, this);
-    
-    if(!within_radius){
-    
-        var depth_string    = roundToDecimalPlaces(scan.depth, 2)   +'m';
-        var flowrate_string = roundToDecimalPlaces(scan.flowrate, 2)+'m/s';
-        
-        var depth_severity = getDepthSeverity(scan.depth);
-        var flow_severity  = getFlowSeverity(scan.flowrate);
-
-        var depth_class     = 'severity-'+depth_severity;
-        var flow_class      = 'severity-'+flow_severity;
-        
-        var warnings        = getWarnings(scan.depth, scan.flowrate);
-        
-        var html_string     = '';
-
-        warnings.forEach(function(warning) {
-            html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning.icon+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning.shortdesc+'</div></div>   </div>'
-        }, this);
-
-        html_string        += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
-        html_string        += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
-
-        var div = document.createElement('div');
-            div.innerHTML = html_string;
+function displayPopups(popupArray){
+    popupArray.forEach(function(popup){
 
         var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false, anchor:'bottom'})
-            .setLngLat([scan.center[1], scan.center[0]])
-            .setDOMContent(div)
+            .setLngLat(popup.coordinates)
+            .setDOMContent(popup.div)
             .addTo(map);
-
-        if(warnings.length > 0){
-            div.addEventListener('click', function(e) {            
-                showWarningDetails(warnings);
-            });
-        }
-            
         infoPopups.push(tooltip);
-    }  
+
+    });
+}
+
+function addNewPopupIfRequired(i){
+
+    // Popups are added as objects to high,med and low detail arrays. 
+
+    var scan           = scanInfoArray[i];
+    var centerLngLat   = new mapboxgl.LngLat(scan.center[1], scan.center[0]);   
+
+    for (var i = 0; i<levels.length; i++) {       
+
+        var popup_array = levels[i];
+        var radius      = radius_levels[i];
+
+        // Check if there's a tooltip within n metres 
+        var within_radius  = false;        
+        popup_array.forEach(function(tooltip) {
+
+            var tooltipLngLat = new mapboxgl.LngLat(tooltip.coordinates[0], tooltip.coordinates[1]);             
+            var dist          = unprojectedDistance(tooltipLngLat, centerLngLat);
+            if(dist < radius) within_radius = true;           
+            
+        }, this);
+        
+        if(!within_radius){
+        
+            var depth_string    = roundToDecimalPlaces(scan.depth, 2)   +'m';
+            var flowrate_string = roundToDecimalPlaces(scan.flowrate, 2)+'m/s';
+            
+            var depth_severity  = getDepthSeverity(scan.depth);
+            var flow_severity   = getFlowSeverity(scan.flowrate);
+
+            var depth_class     = 'severity-'+depth_severity;
+            var flow_class      = 'severity-'+flow_severity;
+            
+            var warnings        = getWarnings(scan.depth, scan.flowrate);
+            
+            var html_string     = '';
+
+            warnings.forEach(function(warning) {
+                html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning.icon+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning.shortdesc+'</div></div>   </div>'
+            }, this);
+
+            html_string        += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
+            html_string        += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
+
+            var div = document.createElement('div');
+                div.innerHTML = html_string;
+
+            if(warnings.length > 0){
+                div.addEventListener('click', function(e) {            
+                    showWarningDetails(warnings);
+                });
+            }
+
+            var coordinates = [scan.center[1], scan.center[0]];
+            var warningTooltip = new WarningTooltip(div, coordinates);
+            popup_array.push(warningTooltip);
+
+            // Show Alerts for close zoom popups
+            if(popup_array == high_level_popups && warnings.length > 0){ 
+
+                var messageString = '';
+
+                warnings.forEach(function(warning) {
+                    messageString += ' '+warning.longdesc;
+                }, this);
+
+                var func = function(){ return flyToCoordinates(coordinates) }
+                ShowNewMessage('New Flood Information', messageString, 'medium', func);
+            } 
+        }
+    }
+}
+
+function flyToCoordinates(coordinates){
+     map.flyTo({
+        center: offsetCoordinates(coordinates),
+        zoom: defaultZoom,        
+        speed: 2, 
+        curve: 1,         
+        easing: function (t) {
+            return t;
+        }
+    });    
 }
 
 function getWarnings(depth, flow){
@@ -717,23 +766,23 @@ function getWarnings(depth, flow){
     
     // Depth
     if(depth >= 6){
-        warnings.push({'icon':'helicopter', 'shortdesc':'Helicopter Required', 'longdesc':'Depth is > 4m. Must be accessed via air.'});
+        warnings.push({'icon':'boat', 'shortdesc':'Helicopter Required', 'longdesc':'Depth is > 4m. Must be accessed via air.'});
     }else if(depth >= 2){
         warnings.push({'icon':'boat', 'shortdesc':'Boat Required', 'longdesc':'Depth is > 2m. Boat required to navigate this area.'});
     }else if(depth >= 1){
-        warnings.push({'icon':'waders', 'shortdesc':'Waders Required', 'longdesc':'Depth is > 1m. Waders required for safe traversal.'});
+        warnings.push({'icon':'boat', 'shortdesc':'Waders Required', 'longdesc':'Depth is > 1m. Waders required for safe traversal.'});
     }else if(depth >= .3){
-        warnings.push({'icon':'lifejacket', 'shortdesc':'Life-Jackets', 'longdesc':'Depth is > .3m. Life Jacket is required for safety.'});
+        warnings.push({'icon':'boat', 'shortdesc':'Life-Jackets', 'longdesc':'Depth is > .3m. Life Jacket is required for safety.'});
     }
 
     // Flow
     
     if(flow >= 1.5 && depth > 4){
-        warnings.push({'icon':'rapidwater', 'shortdesc':'Deep Water', 'longdesc':'This area is deep and has fast moving water and requires caution.'});
+        warnings.push({'icon':'boat', 'shortdesc':'Deep Water', 'longdesc':'This area is deep and has fast moving water and requires caution.'});
     }else if(flow >= 3 && depth > .5){
-        warnings.push({'icon':'rapidwater', 'shortdesc':'Unstable Surfaces', 'longdesc':'The fast moving water here may make surfaces slick and unstable and requires extra caution.'});
+        warnings.push({'icon':'boat', 'shortdesc':'Unstable Surfaces', 'longdesc':'The fast moving water here may make surfaces slick and unstable and requires extra caution.'});
     }else if(flow >= 4){
-        warnings.push({'icon':'rapidwater', 'shortdesc':'Rapid Water', 'longdesc':'This area has fast moving water and requires caution.'});
+        warnings.push({'icon':'boat', 'shortdesc':'Rapid Water', 'longdesc':'This area has fast moving water and requires caution.'});
     }
 
     // Combo
@@ -775,14 +824,6 @@ function getFlowSeverity(flow){
     }else{
         return 1;
     }
-}
-
-function removeAllPopups(){
-    infoPopups.forEach(function(tooltip) {
-        tooltip.remove();
-    }, this);
-    lastDataScanned = 0;
-    infoPopups = [];
 }
 
 function showWarningDetails(warnings){

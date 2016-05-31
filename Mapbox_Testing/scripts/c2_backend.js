@@ -488,6 +488,8 @@ function getScanInfo(){
 	}else{
 		parseScanAreaResponse(scanTestData);
 	}
+
+	addNewPopups();
 	
 }
 
