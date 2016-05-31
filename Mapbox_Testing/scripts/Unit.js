@@ -9,7 +9,7 @@ var Unit = function(id){
     
     if(id == 'c2'){
         this.name   = 'C2';
-        this.symbol = 'harbor';
+        this.symbol = 'ferry';
     }else{
         this.name   = 'Drone '+UnitCount;
         this.symbol = 'marker';

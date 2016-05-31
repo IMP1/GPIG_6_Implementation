@@ -641,13 +641,32 @@ function getExternalData(){
 			}
 		};
 		xmlHttpExternalData.onerror = function (e) {
-			ShowNewMessage('External Data Access Error', 'Unable to access External Data from C2', 'medium', '');
+			console.log('Error Accessing C2 GetExternalData')
 		};
 		xmlHttpExternalData.send(null);
 }
 
 function parseExternalData(externalDataJSONArray){
-	externalDataJSONArray.forEach(function(externalDataJSON) {
-	   console.log(externalDataJSON)
+
+	// Clear Features
+	externalDataPoints.features = [];
+
+	externalDataJSONArray.forEach(function(externalDataJSON) {		
+
+		// Switch on type
+		var extData;
+
+		switch(externalDataJSON.type){
+				case "StrandedPerson":
+					var coordinates = [externalDataJSON.loclong, externalDataJSON.loclat];
+					extData = new ExternalDataPoint(coordinates, externalDataJSON.type, 'swimming');
+					externalDataPoints.features.push(extData);
+					break;
+				default:
+					break;
+		}		
+
     }, this);
+
+    map.getSource('ExternalDataPoints').setData(externalDataPoints);
 }

@@ -112,6 +112,11 @@ var markers = {
     "features": []
 };
 
+var externalDataPoints = {
+    "type": "FeatureCollection",
+    "features": []
+};
+
 
 
 ///////////////
@@ -140,8 +145,6 @@ map.on('load', function () {
         "type": "geojson",
         "data": markers
     });
-   
-    updateMap();
     
     // ScanArea Data
     map.addSource('ScanAreaData',{
@@ -180,8 +183,25 @@ map.on('load', function () {
             "line-width": 4
         }
     });
+
+    // External Data Points
+    map.addSource("ExternalDataPoints", {
+        "type": "geojson",
+        "data": externalDataPoints
+    });
+
+    map.addLayer({
+        "id":     'ExtDataPoints',
+        "type":   "symbol",
+        "source": "ExternalDataPoints",
+        "layout": {
+            "icon-image": "{marker-symbol}-15",
+            "icon-allow-overlap": true
+        }
+    });   
     
-    // Setup
+    // Setup   
+    updateMap();
     setupAPICalls(); 
     setInterval(refreshUI, refreshRate);     
     setupKeypresses();  
