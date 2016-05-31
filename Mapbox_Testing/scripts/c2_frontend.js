@@ -683,7 +683,7 @@ function addNewPopupIfRequired(i){
         var depth_class     = 'severity-'+depth_severity;
         var flow_class      = 'severity-'+flow_severity;
         
-        var warnings        = getWarnings(depth_severity, flow_severity);
+        var warnings        = getWarnings(scan.depth, scan.flowrate);
         
         var html_string     = '';
 
@@ -712,18 +712,31 @@ function addNewPopupIfRequired(i){
     }  
 }
 
-function getWarnings(depth_severity, flow_severity){
+function getWarnings(depth, flow){
     var warnings = [];
     
-    // Warnings of form 'icon', 'text' (2 Lines)
-    
-    if(depth_severity >= 6){
-        warnings.push({'icon':'boat', 'shortdesc':'Boat Required', 'longdesc':'This area requires a boat to traverse.'});
+    // Depth
+    if(depth >= 6){
+        warnings.push({'icon':'helicopter', 'shortdesc':'Helicopter Required', 'longdesc':'Depth is > 4m. Must be accessed via air.'});
+    }else if(depth >= 2){
+        warnings.push({'icon':'boat', 'shortdesc':'Boat Required', 'longdesc':'Depth is > 2m. Boat required to navigate this area.'});
+    }else if(depth >= 1){
+        warnings.push({'icon':'waders', 'shortdesc':'Waders Required', 'longdesc':'Depth is > 1m. Waders required for safe traversal.'});
+    }else if(depth >= .3){
+        warnings.push({'icon':'lifejacket', 'shortdesc':'Life-Jackets', 'longdesc':'Depth is > .3m. Life Jacket is required for safety.'});
     }
+
+    // Flow
     
-    if(depth_severity >= 4){
-        warnings.push({'icon':'boat', 'shortdesc':'Rapid Water', 'longdesc':'This area has rapid water yo.'});
+    if(flow >= 1.5 && depth > 4){
+        warnings.push({'icon':'rapidwater', 'shortdesc':'Deep Water', 'longdesc':'This area is deep and has fast moving water and requires caution.'});
+    }else if(flow >= 3 && depth > .5){
+        warnings.push({'icon':'rapidwater', 'shortdesc':'Unstable Surfaces', 'longdesc':'The fast moving water here may make surfaces slick and unstable and requires extra caution.'});
+    }else if(flow >= 4){
+        warnings.push({'icon':'rapidwater', 'shortdesc':'Rapid Water', 'longdesc':'This area has fast moving water and requires caution.'});
     }
+
+    // Combo
     
     return warnings;
 }
