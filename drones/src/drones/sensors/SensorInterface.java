@@ -40,7 +40,7 @@ public abstract class SensorInterface {
 	private static double gpsLat = DEFAULT_GPS_LAT;
 	private static double gpsLng = DEFAULT_GPS_LONG;
 	
-	private static final double MAX_DIST = 20.0;
+	public static final double MAX_DIST = 20.0;
 
 	/**
 	 * Get the current latitude (via GPS)
@@ -100,7 +100,7 @@ public abstract class SensorInterface {
 		return SensorInterface.getBatteryLevel() < 50;
 	}
 
-	public static ScanData getDataForPoint(double lat, double lon){
+	public static ScanData getDataForPoint(double lat, double lon, String droneid){
 
 		double[] output = new double[360];
 		ScanData outputs = null;
@@ -137,6 +137,9 @@ public abstract class SensorInterface {
 					}
 			}
 		}
+
+		// Indicator for if we ever encounter a polygon
+		boolean onWater = false;
 				
 		for(int i = 0; i < 360; i++){
 
@@ -195,6 +198,7 @@ public abstract class SensorInterface {
 					// x3,y3 shall be the points at the counter. 
 					// x4,y4 shall be the points at the counter + 1. Since this is a polygon, we 
 					// wrap around at the end.
+					onWater = true;
 					
 					
 					for(int j = 0; j < edge.lat.size(); j++){
@@ -252,18 +256,26 @@ public abstract class SensorInterface {
 			}
 		}
 		
-		if(depth != 10.0){
-			double mindist = Double.MIN_VALUE;
-			for(int i = 0; i < output.length; i++){
-				if(output[i] > mindist){
-					mindist = output[i];
-				}
-			}
-			depth = Math.sqrt(mindist); // Bit of a fudge factor, make it non-linear to distance ;)
-			flow = Math.sin(mindist);
+		if (!onWater) {
+			return null;
 		}
 		
-		outputs = new ScanData(Drone.ID, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
+		// Determine depth / flow rate based on longitude
+		if(lon < -1.0745){
+			// All hard constants; sets peak depths at Ouse and Foss, peak flow at Foss.
+			// Max depth 8m, min depth 0m
+			depth = 0 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 4);
+			// Max flow 4m/s, min flow 0.5m/s
+			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 1.75);
+		} else {
+			// Linear increase/decrease in depth/flow moving east
+			// Max depth 0.4m, min depth 0.1m
+			depth = 0.1 + (((lon + 1.072090) / 0.004696) * 0.3);
+			// Max flow 2m/s, min flow 0.5m/s
+			flow = 2 - (((lon + 1.072090) / 0.004696) * 1.5);
+		}
+		
+		outputs = new ScanData(droneid, java.time.LocalDateTime.now(), lat, lon, depth, flow, output);
 		
 		return outputs;
 	}

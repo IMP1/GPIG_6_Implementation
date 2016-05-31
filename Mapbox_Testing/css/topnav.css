@@ -49,6 +49,7 @@
     height: 60px;
     line-height: 60px; }
     #top-nav #right-section button {
+      cursor: pointer;
       background: rgba(0, 0, 0, 0.15);
       color: white;
       border: none;
@@ -59,5 +60,9 @@
       font-size: 13px;
       font-weight: 600;
       min-width: 200px; }
-      #top-nav #right-section button :hover {
-        background: rgba(27, 198, 226, 0.5); }
+      #top-nav #right-section button:hover {
+        background: rgba(0, 0, 0, 0.3); }
+      #top-nav #right-section button:active {
+        background: rgba(0, 0, 0, 0.5); }
+
+/*# sourceMappingURL=topnav.css.map */

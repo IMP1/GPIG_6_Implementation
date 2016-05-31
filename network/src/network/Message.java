@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  */
 public abstract class Message {
 
-	public static final String MESH_GROUP_ADDRESS = "234.0.0.12";
+	public static final String MESH_GROUP_ADDRESS = "234.0.0.5";
 	public static final int MESH_PORT = 5224;
 	public static final int PACKAGE_SIZE = 8192;
 	public static final String C2_ID = "c2";

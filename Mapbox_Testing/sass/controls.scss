@@ -86,6 +86,10 @@
 			font-weight:300;
 		}
 	}
+
+	.clickable{
+		cursor: pointer;
+	}
 	
 	.high{			
 		background-image:linear-gradient(rgba($message-high-level-1,$message_opacity), rgba($message-high-level-2,$message_opacity));
@@ -153,7 +157,7 @@
 			
 			.unit-name {
 				float:left;
-				font-size: 10px;
+				font-size: 13px;
 				height:30%;
 				width:100%;
 				color:$highlight_color;
@@ -182,6 +186,11 @@
 					.text{
 						float:left;
 						height:20px;
+					}
+					
+					.warning{
+						color:$message-high-level-1;
+						font-weight:600;
 					}
 			}
 		}

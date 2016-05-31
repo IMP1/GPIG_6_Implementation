@@ -4,14 +4,35 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import broadcast.Broadcast;
 import datastore.Datastore;
 import datastore.Drone;
+import datastore.Scan;
+import gpig.all.schema.BoundingBox;
+import gpig.all.schema.Coord;
+import gpig.all.schema.GISPosition;
+import gpig.all.schema.GPIGData;
+import gpig.all.schema.Point;
+import gpig.all.schema.Poly;
+import gpig.all.schema.Timestamp;
+import gpig.all.schema.datatypes.Depth;
+import gpig.all.schema.datatypes.Flow;
+import gpig.all.schema.datatypes.WaterEdge;
 import network.MoveCommand;
 import network.PathCommand;
 
@@ -77,20 +98,94 @@ public class FrontendServerHandler implements Runnable{
 			Double locLat = drones.get("c2").getLocLat();
 			Double locLong = drones.get("c2").getLocLong();
 			for (String key : drones.keySet()){
-				System.out.println(key);
 				if(key != "c2"){
 					MoveCommand command = new MoveCommand(key,LocalDateTime.now(), locLat, locLong, 0);
 					Broadcast.broadcast(command.toString());
 				}
 
 			}
+			reply("Success!");
 		}
 		if(request.contains("GetScanInfo")){
 //			System.out.println(request);
-			String known_scans_string = request.replace("GET /GetScanInfo?known_scans=", "").replace(" HTTP/1.1", "");//ew.
-			String[] known_scans = known_scans_string.split(",");
-			String data = getScanData(known_scans);
+			String known_scans_string = request.replace("GET /GetScanInfo?last_timestamp=", "").replace(" HTTP/1.1", "");//ew.
+//			String str = "1986-04-08 12:30";
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+			LocalDateTime dateTime = LocalDateTime.parse(known_scans_string, formatter);
+			dateTime = dateTime.plusSeconds(1);
+			String data = getScanData(dateTime);
+//			System.err.println(data);
 			reply(data);
+		}
+		if(request.contains("GetExternalData")){
+			String data = datastore.getExternalDataAsJson();
+			reply(data);
+		}
+		if(request.contains("ExternalEndpoint")){
+	        StringWriter sw = new StringWriter();
+	        
+			Timestamp ts = new Timestamp();
+	        ts.date = new Date();
+	        
+	        GPIGData data = new GPIGData();
+	        data.positions = new HashSet<>();
+	        
+	        //Edges
+	        ArrayList<ArrayList<Coord>> edges = datastore.getEdges();
+	        for (final ArrayList<Coord> edgeslist:edges){
+	        	Poly poly = new Poly();
+		        poly.coords = edgeslist;
+		        WaterEdge wateredge = new WaterEdge();
+		        
+
+		        GISPosition gisedge = new GISPosition();
+		        gisedge.position = poly;
+		        gisedge.timestamp = ts;
+		        gisedge.payload = wateredge;
+		        data.positions.add(gisedge);
+	        }
+	        HashMap<String, Scan> scans = datastore.getScans();
+	        for(final String key:scans.keySet()){
+	        	Scan scan = scans.get(key);
+	        	Point point = new Point();
+	        	Coord coord = new Coord();
+	        	coord.latitude = (float) scan.locLat;
+	        	coord.longitude = (float) scan.locLong;
+	        	point.coord = coord;
+	        	
+	        	Depth depth = new Depth();
+	        	depth.depth = (float) scan.depth;
+	        	
+	        	GISPosition position = new GISPosition();
+	        	position.position = point;
+	        	position.timestamp = ts;
+	        	position.payload = depth;
+	        	
+	        	data.positions.add(position);
+	        	
+	        	Flow flow = new Flow();
+	        	flow.flow = (float) scan.flowRate;
+	        	GISPosition flowposition = new GISPosition();
+	        	flowposition.position = point;
+	        	flowposition.timestamp = ts;
+	        	flowposition.payload = flow;
+	        	
+	        	data.positions.add(flowposition);
+	        }
+	        JAXBContext jaxbContext = null;
+	        try {
+	            jaxbContext = JAXBContext.newInstance(GPIGData.class);
+	            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+	            // output pretty printed
+	            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+	            jaxbMarshaller.marshal(data, sw);
+	        } catch (JAXBException e) {
+	            e.printStackTrace();
+	        }
+	        System.out.println(sw.toString());
+			reply(sw.toString());
 		}
 	}
 	
@@ -99,7 +194,7 @@ public class FrontendServerHandler implements Runnable{
 		
 	}
 	
-	public String getScanData(String[] known_scans){
+	public String getScanData(LocalDateTime known_scans){
 		return datastore.getScansAsJSON(known_scans);
 	}
 	

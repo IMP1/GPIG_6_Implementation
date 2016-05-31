@@ -123,22 +123,26 @@ public class MeshInterfaceThread extends Thread {
 	
 	private void tick() {
 		synchronized (paths) {
+			ArrayList<String> finishedPaths = new ArrayList<String>();
 			for (String commandID : paths.keySet()) {
 				if (paths.get(commandID).isDone()) {
 					try {
 						broadcastRouteData(commandID, paths.get(commandID).get());
-						paths.remove(commandID);
+						finishedPaths.add(commandID);
 					} catch (InterruptedException | ExecutionException e) {
 						e.printStackTrace();
 					}
 				}
+			}
+			for (String commandID : finishedPaths) {
+				paths.remove(commandID);
 			}
 		}
 
 		for (Command command : getCommands()) {
 			if (command instanceof PathCommand) {
 				PathCommand pathCommand = (PathCommand)command;
-				if (Drone.state() != DroneState.IDLE) {
+				if (Drone.state() == DroneState.RETURNING || Drone.state() == DroneState.FAULT) {
 					broadcastUndoableRoute(pathCommand.id);
 				} else {
 					requestRouteCalculation(pathCommand.id, pathCommand.latitude, pathCommand.longitude, 0);
