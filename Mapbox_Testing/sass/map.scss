@@ -9,54 +9,126 @@
       width:calc(100% - 500px); 
 }
 
-#layer-controls{
+#map-overlay{
+
 	position:absolute;
+	// background:red;
 	$layer_spacing:20px;
 	right:$layer_spacing;
 	top:$layer_spacing+$control_header_height;
 	width:200px;
 	height:auto;
-	background:rgba(white, .5);
-	text-align:center;
-	border-radius:$border_radius/4;
-	overflow:hidden;
 
-	$background_opacity:.8;
-	background-image: linear-gradient(rgba($background_light_color,$background_opacity), rgba($background_dark_color,$background_opacity));
+	.map-overlay-panel{
+		float:left;
+		width:100%;
+		margin-bottom:$layer_spacing/2;
+		height:auto;
+		background:rgba(white, .5);
+		border-radius:$border_radius/4;
+		overflow:hidden;
+		$background_opacity:.8;
+		background-image: linear-gradient(rgba($background_light_color,$background_opacity), rgba($background_dark_color,$background_opacity));
 
-	h2{
-		margin:0 0 10px 0;
-		font-size:20px;
-		font-weight:500;
-		padding:10px 0 10px 0;
-		border-bottom: 1px solid rgba(0,0,0,.2);
-		color:white;
+		h2{
+			margin:0 0 0 0;
+			font-size:20px;
+			font-weight:500;
+			padding:10px 0 10px 0;
+			border-bottom: 1px solid rgba(0,0,0,.2);
+			color:white;
+			text-align:center;	
+		}
+
+		.close{
+  			float:left;
+  			width:100%;
+  			font-size:10px;
+  			text-align:center;
+  			color:white;
+  			padding:5px 0 5px 0;
+  		}
+
+		.warning-info{
+			border-bottom: 1px solid rgba(0,0,0,.2);
+			height:80px;
+			padding:5px 5px 5px 10px;
+
+			.icon{
+				float:left;
+				width:30%;
+				position:relative;
+				top: 50%;
+				transform: translateY(-50%);
+				img{
+					width:100%;
+					height:100%;
+				}
+	  		}
+
+	  		.text-content{
+	  			float:left;
+				width:calc(63%);
+				text-align:left;
+				position:relative;
+				top: 50%;
+				transform: translateY(-50%);
+				padding-left:3%;
+				
+				
+				h2{
+					text-align:left;
+					border:none;
+					font-size:15px;
+					padding:0;
+					margin:0;
+				}
+
+				p{
+					color:#c0c8d2;
+					margin:0;
+				}
+	  		}
+
+
+		}
 	}
 
-	button{
-		cursor: pointer;
-		margin:0 0 5px 0;
-		background:rgba(0,0,0, .15);
-		color:white;
-		border:none;
-		border-radius:$border_radius/2;
-		padding:10px;
-		$margin:5px;
-		margin:0 $margin 10px $margin;
-		outline:none;
-		font-size:13px;
-		font-weight: 400;
-		width:90%;
-		&:hover{
-			background:rgba(0,0,0, .3);
-		}
-		&:active{
-			background:rgba(0,0,0, .5);
-		}
-	}
 
-	.on{
-		background:$highlight_color;
+
+	#layer-controls{			
+		
+		text-align:center;		
+
+		h2{
+			margin:0 0 10px 0;
+		}	
+
+		button{
+			cursor: pointer;
+			margin:0 0 5px 0;
+			background:rgba(0,0,0, .15);
+			color:white;
+			border:none;
+			border-radius:$border_radius/2;
+			padding:10px;
+			$margin:5px;
+			margin:0 $margin 10px $margin;
+			outline:none;
+			font-size:13px;
+			font-weight: 400;
+			width:90%;
+			&:hover{
+				background:rgba(0,0,0, .3);
+			}
+			&:active{
+				background:rgba(0,0,0, .5);
+			}
+		}
+
+		.on{
+			background:$highlight_color;
+		}
 	}
 }
 

@@ -688,16 +688,25 @@ function addNewPopupIfRequired(i){
         var html_string     = '';
 
         warnings.forEach(function(warning) {
-            html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning[0]+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning[1]+'</div></div>   </div>'
+            html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning.icon+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning.shortdesc+'</div></div>   </div>'
         }, this);
 
         html_string        += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
         html_string        += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
 
+        var div = document.createElement('div');
+            div.innerHTML = html_string;
+
         var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false, anchor:'bottom'})
             .setLngLat([scan.center[1], scan.center[0]])
-            .setHTML(html_string)
+            .setDOMContent(div)
             .addTo(map);
+
+        if(warnings.length > 0){
+            div.addEventListener('click', function(e) {            
+                showWarningDetails(warnings);
+            });
+        }
             
         infoPopups.push(tooltip);
     }  
@@ -709,11 +718,11 @@ function getWarnings(depth_severity, flow_severity){
     // Warnings of form 'icon', 'text' (2 Lines)
     
     if(depth_severity >= 6){
-        warnings.push(['boat', 'Boat Required']);
+        warnings.push({'icon':'boat', 'shortdesc':'Boat Required', 'longdesc':'This area requires a boat to traverse.'});
     }
     
     if(depth_severity >= 4){
-        warnings.push(['boat', 'Rapid Water']);
+        warnings.push({'icon':'boat', 'shortdesc':'Rapid Water', 'longdesc':'This area has rapid water yo.'});
     }
     
     return warnings;
@@ -763,6 +772,62 @@ function removeAllPopups(){
     infoPopups = [];
 }
 
+function showWarningDetails(warnings){
+
+    var prev_warning = document.getElementById('warning-overlay');
+    if(prev_warning){
+        prev_warning.parentNode.removeChild(prev_warning);
+    }
+
+    var map_overlay = document.getElementById('map-overlay');
+
+    var warning_overlay           = document.createElement('div');
+        warning_overlay.id = 'warning-overlay'
+        warning_overlay.className = 'map-overlay-panel';
+    map_overlay.appendChild(warning_overlay);
+
+        var warning_header       = document.createElement('h2');
+            warning_header.textContent = 'Warning Details'  
+        warning_overlay.appendChild(warning_header);
+
+        warnings.forEach(function(warning) {
+            
+            var warning_section       = document.createElement('div');
+                warning_section.className = 'warning-info';
+            warning_overlay.appendChild(warning_section);
+
+                var warning_section_icon       = document.createElement('div');
+                    warning_section_icon.className = 'icon';  
+                warning_section.appendChild(warning_section_icon);
+
+                    var warning_section_img       = document.createElement('img');
+                        warning_section_img.src   = 'images\\icons\\warning_'+warning.icon+'.png';
+                    warning_section_icon.appendChild(warning_section_img);
+
+                var warning_section_text       = document.createElement('div');
+                    warning_section_text.className = 'text-content';  
+                warning_section.appendChild(warning_section_text);
+
+                    var warning_section_header       = document.createElement('h2');
+                        warning_section_header.textContent = warning.shortdesc;
+                    warning_section_text.appendChild(warning_section_header);
+
+                    var warning_section_body      = document.createElement('p');
+                        warning_section_body.textContent = warning.longdesc;
+                    warning_section_text.appendChild(warning_section_body);
+
+        }, this);
+
+        var warning_close       = document.createElement('div');
+            warning_close.className = 'close';
+            warning_close.textContent = 'Click/Tap to Close'
+        warning_overlay.appendChild(warning_close);
+
+    warning_overlay.addEventListener('click', function(e) {            
+        warning_overlay.parentNode.removeChild(warning_overlay);
+    });
+
+}
 
 
 
@@ -787,7 +852,7 @@ function showUnitFault(){
 function addUnitBatteryFault(unit){    
     if(!unit.batteryFaultDisplayed){     
         console.log(unit);
-        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+unit.batteryLevel+'%. It has been automatically recalled to C2.', 'medium', '');    
+        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+Math.round(unit.batteryLevel)+'%. It has been automatically recalled to C2.', 'medium', '');    
         unit.batteryFaultDisplayed = true;    
     }
 }

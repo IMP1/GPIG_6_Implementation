@@ -14,7 +14,7 @@ $popup_width:100px;
 }
 
 .mapboxgl-popup{
-	 pointer-events: none;
+	 cursor: pointer;
 	 overflow:hidden;
   	.warning{
   		$warning_height:46px;

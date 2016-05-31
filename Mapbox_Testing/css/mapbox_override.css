@@ -9,7 +9,7 @@
   border-top-color: rgba(255, 255, 255, 0.5); }
 
 .mapboxgl-popup {
-  pointer-events: none;
+  cursor: pointer;
   overflow: hidden;
   /*.left{
   	background:red;
