@@ -77,8 +77,10 @@ public abstract class SensorInterface {
 	 */
 	@Deprecated
 	public static void setBatteryLow() {
-		batteryLevel -= 50;
+		batteryLevel = LOW_BATTERY + 1;
 	}
+	
+	private static final int LOW_BATTERY = 20;
 	
 	private static double lastTime = System.nanoTime() / 1_000_000_000.0;
 	private static double batteryLevel = 70 + Math.random() * (100 - 70);
@@ -92,12 +94,13 @@ public abstract class SensorInterface {
 		double dt = currentTime - lastTime;
 		lastTime = currentTime;
 		batteryLevel -= dt * batteryPerSecond;
+		if (batteryLevel <= 0) System.exit(0);
 		return batteryLevel; 
 	}
 	
 	public static boolean isBatteryTooLow() {
 		//XXX: some function of distance from the C2? 
-		return SensorInterface.getBatteryLevel() < 50;
+		return SensorInterface.getBatteryLevel() < LOW_BATTERY;
 	}
 
 	public static ScanData getDataForPoint(double lat, double lon, String droneid){
