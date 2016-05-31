@@ -144,16 +144,18 @@ public class Datastore {
 
 	public ArrayList<ArrayList<Coord>> getEdges() {
 		ArrayList<ArrayList<Coord>> edgesList = new ArrayList<ArrayList<Coord>>();
-		for(final String id: scans.keySet()){
+		HashMap<String,Scan> scantemp = (HashMap<String, Scan>) scans.clone();
+		for(final String id: scantemp.keySet()){
 			ArrayList<Coord> edges = new ArrayList<Coord>();
 			int i = 0;
-			for(final double reading: scans.get(id).rawDistanceReadings){
+			
+			//Concurrency yo.
+			for(final double reading: scantemp.get(id).rawDistanceReadings){
 				System.out.println(reading);
 				if(reading < SensorInterface.MAX_DIST){
 					Coord coord = new Coord();
-					coord.latitude = (float) scans.get(id).distanceReadings[i*2];
-					coord.longitude = (float) scans.get(id).distanceReadings[i*2+1];
-					System.out.println(coord.latitude +" "+coord.longitude);
+					coord.latitude = (float) scantemp.get(id).distanceReadings[i*2];
+					coord.longitude = (float) scantemp.get(id).distanceReadings[i*2+1];
 					edges.add(coord);
 				}
 				i++;
