@@ -266,8 +266,8 @@ public abstract class SensorInterface {
 		// Determine depth / flow rate based on longitude
 		if(lon < -1.0745){
 			// All hard constants; sets peak depths at Ouse and Foss, peak flow at Foss.
-			// Max depth 8m, min depth 0m
-			depth = 0 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 4);
+			// Max depth 7m, min depth 1m
+			depth = 1 + ((Math.sin((Math.PI / 2) + ((2*Math.PI) * ((lon + 1.083452) / 0.004517))) + 1) * 3);
 			// Max flow 4m/s, min flow 0.5m/s
 			flow = 1 + ((Math.sin(((3*Math.PI) / 2) + (Math.PI * ((lon + 1.083452) / 0.004517))) + 1) * 1.75);
 		} else {
