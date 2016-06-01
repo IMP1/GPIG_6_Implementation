@@ -12,7 +12,7 @@ var Unit = function(id){
         this.symbol = 'ferry';
     }else{
         this.name   = 'Drone '+UnitCount;
-        this.symbol = 'marker';
+        this.symbol = 'Drone';
     }
     
     // Create visual map marker  

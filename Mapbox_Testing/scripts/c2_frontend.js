@@ -299,7 +299,8 @@ function addNewUnitMapLayer(unit){
         "type":   "symbol",
         "source": "markers",
         "layout": {
-            "icon-image": unit.symbol + "-15",
+            "icon-image": "Drone",//unit.symbol + "-15",
+            "icon-size" : .05,
             "icon-allow-overlap": true
         }
     });   
