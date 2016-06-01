@@ -294,13 +294,15 @@ function updateMap(){
 }
 
 function addNewUnitMapLayer(unit){
+    console.log(unit.bearing);
     map.addLayer({
         "id":     unit.id,
         "type":   "symbol",
         "source": "markers",
         "layout": {
-            "icon-image": "Drone",//unit.symbol + "-15",
-            "icon-size" : .05,
+            "icon-image": unit.symbol + "-15",
+            "icon-size" : 1,
+            "icon-rotate" : unit.bearing,
             "icon-allow-overlap": true
         }
     });   
@@ -408,11 +410,14 @@ function updateUnitFeatureCollections(){
         
         // Map Markers
         markers.features.push(unit.marker);
+        
+        map.setLayoutProperty(unit.id, 'icon-rotate', unit.bearing);
     }, this);
     
     // Update Map Sources
     map.getSource('UnitPathData').setData(unitPathData);
     map.getSource('markers').setData(markers);
+    
     
 }
 
@@ -947,3 +952,22 @@ function removeUnitUnseenFault(unit){
     }
     
 }
+
+
+
+
+
+/////////////
+// Weather //
+/////////////
+
+var OPEN_WEATHER_KEY = 'd7542c37647dae0d4be7b0f2cfc665c7';
+
+function getWeatherJSON(){
+    
+    //API KEY : d7542c37647dae0d4be7b0f2cfc665c7
+    //{"_id":2633351,"name":"City of York","country":"GB","coord":{"lon":-1.09142,"lat":53.963959}}
+    //http://api.openweathermap.org/data/2.5/forecast/city?id=524901&APPID={APIKEY}
+    
+}
+

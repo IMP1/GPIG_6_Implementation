@@ -12,7 +12,7 @@ var Unit = function(id){
         this.symbol = 'ferry';
     }else{
         this.name   = 'Drone '+UnitCount;
-        this.symbol = 'Drone';
+        this.symbol = 'marker';
     }
     
     // Create visual map marker  
@@ -26,6 +26,9 @@ var Unit = function(id){
     this.batteryFaultDisplayed = false;
     this.unseenFaultDisplayed  = false;
     this.unseenFaultTooltip;
+    
+    // Bearing
+    this.bearing = 0;
     
     // Depth
     this.lastKnownDepth = 0;
@@ -57,6 +60,10 @@ var UnitPath = function(pathCoordinates){
 
 function updateUnitFromJSON(unit, unitID, unitJSON){
     
+    var storedMarker = new UnitMarker(unit);
+        storedMarker.geometry.coordinates = [unit.coordinates[1], unit.coordinates[0]];
+    
+    // JSON
 	unit.id              = unitID;
 	unit.batteryLevel    = unitJSON.batteryLevel;
 	unit.coordinates[1]  = unitJSON.locLat;
@@ -73,6 +80,11 @@ function updateUnitFromJSON(unit, unitID, unitJSON){
     }
     
     unit.lastUpdated = dateFromJSON(unitJSON.timestamp);
+    
+    // Bearing
+    var bear = turf.bearing(unit.marker, storedMarker);
+//    console.log(bear)
+    unit.bearing = bear;
  
 }
 
