@@ -634,11 +634,17 @@ var levels            = [high_level_popups, med_level_popups];
 var radius_levels     = [40, 100];
 
 function addNewPopups(){
+    
+
+    // Only add if not loading for first time.
+    var showMessage = scanInfoArray.length - lastDataScanned != scanInfoArray.length;
+
     // Go from last scan data
     for(var i = lastDataScanned; i < scanInfoArray.length; i+= 30){
-        addNewPopupIfRequired(i);
+        addNewPopupIfRequired(i, showMessage);
     }
     lastDataScanned = scanInfoArray.length;
+   
 }
 
 function removeAllPopups(){
@@ -676,7 +682,7 @@ function displayPopups(popupArray){
     });
 }
 
-function addNewPopupIfRequired(i){
+function addNewPopupIfRequired(i, showMessage){
 
     // Popups are added as objects to high,med and low detail arrays. 
 
@@ -743,7 +749,8 @@ function addNewPopupIfRequired(i){
                 }, this);
 
                 var func = function(){ return flyToCoordinates(coordinates) }
-                ShowNewMessage('New Flood Information', messageString, 'medium', func);
+
+                if(showMessage) ShowNewMessage('New Flood Information', messageString, 'medium', func);
             } 
         }
     }
