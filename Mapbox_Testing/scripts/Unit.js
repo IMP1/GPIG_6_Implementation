@@ -38,9 +38,12 @@ var Unit = function(id){
 }
 
 var UnitMarker = function(unit){
+    var markerSymbol = unit.symbol;
+    markerSymbol += '-15';   
+     
     this.type = "Feature";
     this.properties = {
-        "marker-symbol": unit.symbol
+        "marker-symbol": markerSymbol
     }
     this.geometry = {
         "type": "Point",
@@ -60,8 +63,8 @@ var UnitPath = function(pathCoordinates){
 
 function updateUnitFromJSON(unit, unitID, unitJSON){
     
-    var storedMarker = new UnitMarker(unit);
-        storedMarker.geometry.coordinates = [unit.coordinates[1], unit.coordinates[0]];
+    // Store For Bearing Calc (bit hacky)
+    var storedMarker = new UnitMarker(JSON.parse(JSON.stringify(unit)));
     
     // JSON
 	unit.id              = unitID;
@@ -82,9 +85,10 @@ function updateUnitFromJSON(unit, unitID, unitJSON){
     unit.lastUpdated = dateFromJSON(unitJSON.timestamp);
     
     // Bearing
-    var bear = turf.bearing(unit.marker, storedMarker);
-//    console.log(bear)
-    unit.bearing = bear;
+    
+    if(!storedMarker.geometry.coordinates.equals(unit.marker.geometry.coordinates)){
+        unit.bearing = turf.bearing(unit.marker, storedMarker);
+    }
  
 }
 

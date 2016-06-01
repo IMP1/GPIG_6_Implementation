@@ -107,11 +107,6 @@ var unitPathData = {
     "features": []
 };
 
-var markers = {
-    "type": "FeatureCollection",
-    "features": []
-};
-
 var externalDataPoints = {
     "type": "FeatureCollection",
     "features": []
@@ -139,12 +134,7 @@ var map = new mapboxgl.Map({
     maxBounds: bounds
 })
 
-map.on('load', function () {
-    
-    map.addSource("markers", {
-        "type": "geojson",
-        "data": markers
-    });
+map.on('load', function () {   
     
     // ScanArea Data
     map.addSource('ScanAreaData',{
@@ -266,21 +256,19 @@ var map_overlays = document.getElementById('map_overlays');
 ///////////////////
 
 function showAllUnits(){  
+              
+    var bounds = new mapboxgl.LngLatBounds();
 
-          
-        var bounds = new mapboxgl.LngLatBounds();
+    units.forEach(function(unit) {
+        bounds.extend(unit.marker.geometry.coordinates);
+    });
 
-        markers.features.forEach(function(feature) {
-            bounds.extend(feature.geometry.coordinates);
-        });
+    // Check Units aren't in same place
+    if(bounds._ne.lat == bounds._sw.lat || bounds._ne.lng == bounds._sw.lng){
 
-        // Check Units aren't in same place
-        if(bounds._ne.lat == bounds._sw.lat || bounds._ne.lng == bounds._sw.lng){
-
-        }else{
-            map.fitBounds(bounds, { padding: '100' });   
-        }
-         
+    }else{
+        map.fitBounds(bounds, { padding: '100' });   
+    }         
 }
 
 function updateMap(){
@@ -293,19 +281,25 @@ function updateMap(){
     }
 }
 
-function addNewUnitMapLayer(unit){
-    console.log(unit.bearing);
+function addNewUnitMapLayer(unit){   
+    
+    map.addSource(unit.id, {
+        "type": "geojson",
+        "data": unit.marker
+    });
+    
     map.addLayer({
         "id":     unit.id,
         "type":   "symbol",
-        "source": "markers",
+        "source": unit.id,
         "layout": {
-            "icon-image": unit.symbol + "-15",
-            "icon-size" : 1,
-            "icon-rotate" : unit.bearing,
+            "icon-image": "{marker-symbol}",
+            "icon-size": 1.1,
+            "icon-rotate" : 0,
             "icon-allow-overlap": true
         }
-    });   
+    });
+ 
 }
 
 
@@ -399,7 +393,7 @@ function refreshUI(){
 
 function updateUnitFeatureCollections(){
     
-    markers.features      = [];
+    // markers.features      = [];
     unitPathData.features = [];
     
     units.forEach(function(unit) { 
@@ -409,14 +403,17 @@ function updateUnitFeatureCollections(){
         }
         
         // Map Markers
-        markers.features.push(unit.marker);
         
-        map.setLayoutProperty(unit.id, 'icon-rotate', unit.bearing);
+        map.getSource(unit.id).setData(unit.marker);
+        
+        if(unit.id != 'c2'){
+            map.setLayoutProperty(unit.id, 'icon-rotate', unit.bearing);
+        }
     }, this);
     
     // Update Map Sources
     map.getSource('UnitPathData').setData(unitPathData);
-    map.getSource('markers').setData(markers);
+    
     
     
 }
