@@ -35,7 +35,7 @@ function distance(ll0, ll1) {
 // Constant Vars //
 ///////////////////
 
-var mapCenter   = [-1.0873, 53.9600];
+var mapCenter   = [-1.0790205001831055, 53.9559845244269];
 var defaultZoom = 18;
 var latOffset   = 0;
 var longOffset  = 0;
@@ -265,7 +265,7 @@ function showAllUnits(){
 
     // Check Units aren't in same place
     if(bounds._ne.lat == bounds._sw.lat || bounds._ne.lng == bounds._sw.lng){
-
+        flyToCoordinates(mapCenter);
     }else{
         map.fitBounds(bounds, { padding: '100' });   
     }         
@@ -968,13 +968,15 @@ function removeUnitUnseenFault(unit){
 // Weather //
 /////////////
 
-var OPEN_WEATHER_KEY = 'd7542c37647dae0d4be7b0f2cfc665c7';
+function updateWeatherUI(){
 
-function getWeatherJSON(){
+    var currentHour = new Date();
+    // currentHour = currentHour.getHours()
     
-    //API KEY : d7542c37647dae0d4be7b0f2cfc665c7
-    //{"_id":2633351,"name":"City of York","country":"GB","coord":{"lon":-1.09142,"lat":53.963959}}
-    //http://api.openweathermap.org/data/2.5/forecast/city?id=524901&APPID={APIKEY}
+    for(var i = 2; i<=4; i++){
+        var weather_time_element = document.getElementById('weather-time-'+i);
+            weather_time_element.textContent = currentHour.getHours()+i-1+':00';
+    }
     
 }
 

@@ -134,11 +134,12 @@ function setupAPICalls(){
 	getUnitsInfo();
 	getScanInfo();
 	getExternalData();
+	getWeatherJSON();
 	
 	setInterval(getUnitsInfo, refreshRate);
 	setInterval(getScanInfo, refreshRate);
 	setInterval(getExternalData, refreshRate);
-	
+	setInterval(getWeatherJSON, refreshRate);
 }
 
 function setupKeypresses(){
@@ -701,4 +702,43 @@ function parseExternalData(externalDataJSONArray){
     }, this);
 
     map.getSource('ExternalDataPoints').setData(externalDataPoints);
+}
+
+
+
+
+
+/////////////
+// Weather //
+/////////////
+
+var OPEN_WEATHER_KEY = 'd7542c37647dae0d4be7b0f2cfc665c7';
+
+function getWeatherJSON(){
+    
+    //API KEY : d7542c37647dae0d4be7b0f2cfc665c7
+    //{"_id":2633351,"name":"City of York","country":"GB","coord":{"lon":-1.09142,"lat":53.963959}}
+    //http://api.openweathermap.org/data/2.5/forecast/city?id=524901&APPID={APIKEY}
+
+    //api.openweathermap.org/data/2.5/forecast/city?id=524901&APPID=1111111111 
+
+    var xmlHttpWeatherData = new XMLHttpRequest();
+		xmlHttpWeatherData.open( "GET", 'http://api.openweathermap.org/data/2.5/forecast?lat='+mapCenter[0]+'&lon='+mapCenter[1]+'&APPID='+OPEN_WEATHER_KEY, true ); // true for asynchronous request
+
+		xmlHttpWeatherData.onload = function (e) {
+			if (xmlHttpWeatherData.readyState === 4) {
+				if (xmlHttpWeatherData.status === 200) {
+					console.log(JSON.parse(xmlHttpWeatherData.responseText));
+					updateWeatherUI();
+				} else {
+					console.log(xmlHttpWeatherData.responseText);
+				}
+			}
+		};
+		xmlHttpWeatherData.onerror = function (e) {
+			console.log('Error Accessing Weather Data')
+		};
+		xmlHttpWeatherData.send(null);
+
+
 }

@@ -17,6 +17,8 @@
         <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
         <link href='css/lib/maki.css' rel='stylesheet' />
         <link href='css/lib/font-awesome.css' rel='stylesheet' />
+        <link href='css/lib/weather-icons.css' rel='stylesheet' />
+        <link href='css/lib/weather-icons-wind.css' rel='stylesheet' />
         
         <!--Local CSS (from SASS)-->
         <link href='css/index.css' rel='stylesheet' />
@@ -86,15 +88,53 @@
         <div id='controls'>
             
 <!--            Environmental Factors-->
-            <!--<h1>Environment</h2>
+            <h1>Weather</h2>
             <div id="environmental-factors" class='panel'>
                 <div class="weather-overview">
-                
+                    <div class="weather-icon">
+                       <i class="wi wi-night-sleet"></i>
+                    </div>
+                    <div class="weather-text">
+                        <b id='weather-1'>10°C - 7mph</b>
+                    </div>
+                    <div class="weather-text" id='weather-time-1'>
+                        Currently
+                    </div>
                 </div>
                 <div class="weather-overview">
-                    
-                </div>                             
-            </div>-->
+                    <div class="weather-icon high-alert">
+                       <i class="wi wi-storm-showers"></i>
+                    </div>
+                    <div class="weather-text high-alert">
+                        <b id='weather-2'>5°C - 10mph</b>
+                    </div>
+                    <div class="weather-text high-alert" id='weather-time-2'>
+                        14:00
+                    </div>
+                </div>   
+                <div class="weather-overview">
+                    <div class="weather-icon">
+                       <i class="wi wi-rain-wind high-alert"></i>
+                    </div>
+                    <div class="weather-text high-alert">
+                        <b id='weather-3'>8°C - 12mph</b>
+                    </div>
+                    <div class="weather-text high-alert" id='weather-time-3'>
+                        15:00
+                    </div>
+                </div>
+                <div class="weather-overview">
+                    <div class="weather-icon">
+                       <i class="wi wi-day-cloudy"></i>
+                    </div>
+                    <div class="weather-text">
+                        <b id='weather-4'>12°C - 3mph</b>
+                    </div>
+                    <div class="weather-text" id='weather-time-4'>
+                        16:00
+                    </div>
+                </div>                
+            </div>
             
             <!--Search Unit Controls-->
             <h1>Search Units</h2>
