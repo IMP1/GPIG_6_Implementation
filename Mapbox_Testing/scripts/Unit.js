@@ -37,6 +37,13 @@ var Unit = function(id){
     return this;
 }
 
+var TempMarker = function(coordinates){
+    this.geometry = {
+        "type": "Point",
+        "coordinates": coordinates
+    }
+}
+
 var UnitMarker = function(unit){
     var markerSymbol = unit.symbol;
     markerSymbol += '-15';   
@@ -64,7 +71,7 @@ var UnitPath = function(pathCoordinates){
 function updateUnitFromJSON(unit, unitID, unitJSON){
     
     // Store For Bearing Calc (bit hacky)
-    var storedMarker = new UnitMarker(JSON.parse(JSON.stringify(unit)));
+    var storedMarker = new TempMarker(JSON.parse(JSON.stringify(unit.coordinates)));
     
     // JSON
 	unit.id              = unitID;

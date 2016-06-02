@@ -36,7 +36,7 @@ function distance(ll0, ll1) {
 ///////////////////
 
 var mapCenter   = [-1.0790205001831055, 53.9559845244269];
-var defaultZoom = 18;
+var defaultZoom = 16;
 var latOffset   = 0;
 var longOffset  = 0;
 
@@ -204,7 +204,7 @@ map.on('load', function () {
 
     // Set to opposite of desired (bit hacky)
     floodOutlineVisible  = true;
-    showingTooltips      = false;
+    showingTooltips      = true;
     envDataVisible       = true;
     showingLayerControls = true;
     toggleLayerControls();       
@@ -265,7 +265,15 @@ function showAllUnits(){
 
     // Check Units aren't in same place
     if(bounds._ne.lat == bounds._sw.lat || bounds._ne.lng == bounds._sw.lng){
-        flyToCoordinates(mapCenter);
+         map.flyTo({
+            center: offsetCoordinates(mapCenter),
+            zoom: defaultZoom,        
+            speed: 2, 
+            curve: 1,         
+            easing: function (t) {
+                return t;
+            }
+        });    
     }else{
         map.fitBounds(bounds, { padding: '100' });   
     }         
@@ -296,12 +304,23 @@ function addNewUnitMapLayer(unit){
             "icon-image": "{marker-symbol}",
             "icon-size": 1.1,
             "icon-rotate" : 0,
-            "icon-allow-overlap": true
+            "icon-allow-overlap": true,
+            "text-field": unit.name,
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top",
+            "text-size": 12
         }
     });
  
 }
 
+function removeUnitLayer(unit){
+    removeUnitUnseenFault(unit);
+    removeUnitFault(unit)
+    map.removeSource(unit.id);
+    map.removeLayer(unit.id);
+}
 
 function toggleTooltips(){
     showingTooltips = !showingTooltips;
@@ -913,20 +932,36 @@ function showWarningDetails(warnings){
 // Faults //
 ////////////
 
-var faultDisplayed = false;
-
-function showUnitFault(){
+function showUnitFault(unit){
     
-    if(!faultDisplayed){        
-        ShowNewMessage('Major Drone Fault', 'There is an unexpected fault with Drone. Please attend unit.', 'high', '');    
-        faultDisplayed = true;    
+    if(!unit.majorFaultDisplayed){ 
+        //Show msg + add marker
+        unit.majorFaultDisplayed = true;
+        var func = function(){ return flyToUnit(unit) }
+        ShowNewMessage('Major Drone Fault', 'There is an unexpected fault with '+unit.name+'. Please attend unit.', 'high', func);  
+
+        //Tooltip
+        var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
+            .setLngLat(unit.coordinates)
+            .setHTML('<div class=\'fault\'>Major Unit Fault<\div>')
+            .addTo(map);
+
+        unit.majorFaultTooltip = tooltip;
+    }
+    
+}
+
+function removeUnitFault(unit){
+    if(unit.majorFaultDisplayed){
+        unit.majorFaultDisplayed = false; 
+        unit.majorFaultTooltip.remove(); 
     }
 }
 
 function addUnitBatteryFault(unit){    
     if(!unit.batteryFaultDisplayed){     
         console.log(unit);
-        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+Math.round(unit.batteryLevel)+'%. It has been automatically recalled to C2.', 'medium', '');    
+        ShowNewMessage('Drone Battery Warning', 'Drone Battery at '+Math.round(unit.batteryLevel)+'%. It has been automatically recalled to C2.', 'high', '');    
         unit.batteryFaultDisplayed = true;    
     }
 }
@@ -945,7 +980,7 @@ function showUnitUnseenFault(unit, timeUnseenSeconds){
         //Tooltip
         var tooltip = new mapboxgl.Popup({closeOnClick: false, closeButton:false})
             .setLngLat(unit.coordinates)
-            .setHTML('Major Unit Fault')
+            .setHTML('<div class=\'fault\'>Major Unit Fault<\div>')
             .addTo(map);
 
         unit.unseenFaultTooltip = tooltip;

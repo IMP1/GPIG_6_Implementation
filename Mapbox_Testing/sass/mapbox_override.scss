@@ -14,6 +14,15 @@ $popup_width:100px;
 }
 
 .mapboxgl-popup{
+	
+	.fault{
+		text-align:center;
+		color:red;
+		font-weight:600;
+		font-size:20px;
+		line-height:25px;
+	}
+	
 	 cursor: pointer;
 	 overflow:hidden;
   	.warning{

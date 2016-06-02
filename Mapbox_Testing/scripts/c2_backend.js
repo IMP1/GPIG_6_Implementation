@@ -239,7 +239,6 @@ function addNewUnit(unitKey, unitJSON){
 	addNewUnitControls(unit);
 
 	updateUnitFeatureCollections()
-	showAllUnits();
 }
 
 function removeUnit(unit){
@@ -255,6 +254,7 @@ function removeUnit(unit){
 				if (xmlHttpRemoveDrone.status === 200) {
 					removeByAttr(units, 'id', unit.id);
 					removeUnitUI(unit)
+					removeUnitLayer(unit);
 					ShowNewMessage(unit.name+' Succesfully Removed', '', 'success');
 				} else {
 					ShowNewMessage('Error Removing '+unit.name, 'Unable to remove Search Unit', 'high', '');
@@ -530,7 +530,7 @@ function parseScanAreaResponse(scanAreasJSON){
 		var scanJSON           = scanAreasJSON[scanKey];
 			scanJSON.id        = scanKey;
 		
-		var subsampleRate      = .1; //ie 36/360 available points
+		var subsampleRate      = .05; //ie 36/360 available points
 		var polygonCoordinates = ConvertCoordinatesTo2DArray(scanJSON.distanceReadings, subsampleRate);
 		
 		var scanArea           = new ScanArea(scanJSON.id, [polygonCoordinates], scanJSON.received);		
@@ -578,7 +578,7 @@ function parseScanAreaResponse(scanAreasJSON){
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
 
-	showPopups();
+	// showPopups();
 }
 
 function polygonsIntersect(scanArea1, scanArea2) {
@@ -728,7 +728,6 @@ function getWeatherJSON(){
 		xmlHttpWeatherData.onload = function (e) {
 			if (xmlHttpWeatherData.readyState === 4) {
 				if (xmlHttpWeatherData.status === 200) {
-					console.log(JSON.parse(xmlHttpWeatherData.responseText));
 					updateWeatherUI();
 				} else {
 					console.log(xmlHttpWeatherData.responseText);
