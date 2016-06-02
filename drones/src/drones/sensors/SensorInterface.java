@@ -77,7 +77,7 @@ public abstract class SensorInterface {
 	 */
 	@Deprecated
 	public static void setBatteryLow() {
-		batteryLevel = LOW_BATTERY + 1;
+		batteryLevel = LOW_BATTERY  + 0.015f;
 	}
 	
 	private static final int LOW_BATTERY = 20;

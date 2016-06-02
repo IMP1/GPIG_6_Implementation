@@ -126,7 +126,7 @@ public class Drone {
 	
 	private static void delayFault() {
 		try {
-			Thread.sleep(4 * 1000);
+			Thread.sleep(15 * 1000);
 			Thread.sleep((long)(Math.random() * 1000));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
