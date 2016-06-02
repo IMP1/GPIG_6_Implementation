@@ -722,9 +722,13 @@ function addNewPopupIfRequired(i, showMessage){
             
             var html_string     = '';
 
-            warnings.forEach(function(warning) {
-                html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning.icon+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning.shortdesc+'</div></div>   </div>'
-            }, this);
+            // warnings.forEach(function(warning) {
+            //     html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warning.icon+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warning.shortdesc+'</div></div>   </div>'
+            // }, this);
+
+            if(warnings.length > 0){
+                html_string    += '<div class=\'warning\'>  <div class=\'icon\'><img src=\'images\\icons\\warning_'+warnings[0].icon+'.png\'></img></div>     <div class=\'warning_text\'><div class=\'inner\'>'+warnings.length+' Flood Warnings</div></div>   </div>'
+            }
 
             html_string        += '<div class=\'left\'>   <div class=\'img icon fa fa-sort-amount-asc '+depth_class+'\'></div> <div class=\'text '+depth_class+'\'>'+depth_string+'</div>   </div>';
             html_string        += '<div class=\'right\'>  <div class=\'img icon fa fa-tachometer '+flow_class+'\'>   </div><div class=\'text '+flow_class+'\'>'+flowrate_string+'</div> </div>';
