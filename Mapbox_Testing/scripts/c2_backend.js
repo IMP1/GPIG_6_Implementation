@@ -576,6 +576,8 @@ function parseScanAreaResponse(scanAreasJSON){
 		
 	// Redraw Map
 	map.getSource('ScanAreaData').setData(scanData);
+
+	showPopups();
 }
 
 function polygonsIntersect(scanArea1, scanArea2) {

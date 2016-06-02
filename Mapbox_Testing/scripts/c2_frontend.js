@@ -308,12 +308,12 @@ function toggleTooltips(){
 
     var btnElement = document.getElementById('btn-toggle-flood-info');
     if(showingTooltips){
-        addNewPopups();
         btnElement.classList.add("on");
     }else{
-        removeAllPopups();
         btnElement.classList.remove("on");
     }
+
+    showPopups();
 }
 
 function toggleLayerControls(){
@@ -636,6 +636,8 @@ var low_level_popups  = [];
 var levels            = [high_level_popups, med_level_popups];
 var radius_levels     = [40, 100];
 
+var POPUPS_ENABLED = true;
+
 function addNewPopups(){
     
 
@@ -659,17 +661,21 @@ function removeAllPopups(){
 
 function showPopups(){
 
-    removeAllPopups()
+    removeAllPopups();
     var zoom = map.getZoom();
 
-    if(zoom >= zoomLevel_popups_high_detail){
-        displayPopups(high_level_popups);
-    }else if(zoom >= zoomLevel_popups_med_detail){
-        displayPopups(med_level_popups);
-    }else if(zoom >= zoomLevel_popups_low_detail){
-        displayPopups(low_level_popups);
-    }else{
-        removeAllPopups();
+    if(showingTooltips){
+
+        if(zoom >= zoomLevel_popups_high_detail){
+            displayPopups(high_level_popups);
+        }else if(zoom >= zoomLevel_popups_med_detail){
+            displayPopups(med_level_popups);
+        }else if(zoom >= zoomLevel_popups_low_detail){
+            displayPopups(low_level_popups);
+        }else{
+            removeAllPopups();
+        }
+
     }
 }
 
