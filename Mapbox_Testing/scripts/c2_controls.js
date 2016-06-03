@@ -150,9 +150,17 @@ function updateStatus(unit){
     
     var element_state = document.getElementById(unit.id+'-'+unit_element_ids[1]);
         element_state.textContent = 'Status : '+unit.status.capitalizeFirstLetter();
+        
+    var element_state_icon = document.getElementById(unit.id+'-icon-'+unit_element_ids[1]);
     
     if(unit.status == 'fault'){
-        
+        element_state_icon.classList.add("warning");
+        element_state.classList.add("warning");
+        showUnitFault(unit)
+    }else{
+        element_state.classList.remove("warning");
+        element_state_icon.classList.remove("warning");
+        removeUnitFault(unit)
     }
     
 }
